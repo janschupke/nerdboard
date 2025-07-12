@@ -18,28 +18,28 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-all duration-300">
+    <div className="min-h-screen w-full flex flex-col bg-theme-primary transition-all duration-300">
       {/* Header - Full Width */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between w-full">
+      <header className="bg-surface-primary border-b border-theme-primary px-4 py-3 flex items-center justify-between w-full">
         <div className="flex items-center space-x-3">
           <button
             onClick={toggleSidebar}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary rounded-lg transition-colors"
             aria-label="Toggle sidebar"
           >
             <Icon name="menu" size="md" />
           </button>
-          <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Nerdboard</h1>
+          <h1 className="text-xl font-semibold text-theme-primary">Nerdboard</h1>
         </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={toggleTheme}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary rounded-lg transition-colors"
             aria-label="Toggle theme"
           >
             {theme === 'dark' ? <Icon name="sun" size="md" /> : <Icon name="moon" size="md" />}
           </button>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-theme-secondary">
             {state.tiles.length} tiles
           </span>
         </div>

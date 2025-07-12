@@ -87,7 +87,7 @@ export function DraggableTile({ tile, index, children, onMove }: DraggableTilePr
         onMouseDown={handleResizeMouseDown}
         title="Resize tile"
       >
-        <div className="w-full h-full bg-gray-300 dark:bg-gray-600 rounded-bl-lg opacity-80 hover:opacity-100 transition-opacity flex items-center justify-center">
+        <div className="w-full h-full bg-theme-secondary rounded-bl-lg opacity-80 hover:opacity-100 transition-opacity flex items-center justify-center">
           <Icon name="resize" size="sm" />
         </div>
       </div>

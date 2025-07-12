@@ -31,7 +31,7 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
   };
 
   const getTileClasses = () => {
-    const baseClasses = 'relative bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden';
+    const baseClasses = 'relative bg-surface-primary rounded-lg shadow-md border border-theme-primary overflow-hidden';
     return baseClasses;
   };
 
@@ -68,10 +68,10 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
       data-tile-type={tile.type}
     >
       {/* Tile Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+      <div className="flex items-center justify-between p-3 border-b border-theme-primary bg-surface-secondary">
         {/* Drag Handle */}
         <div
-          className="flex items-center justify-center w-6 h-6 mr-2 cursor-grab text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+          className="flex items-center justify-center w-6 h-6 mr-2 cursor-grab text-theme-secondary hover:text-theme-primary"
           aria-label="Drag tile"
           {...dragHandleProps}
         >
@@ -79,14 +79,14 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
         </div>
         {/* Title and Icon */}
         <div className="flex-1 flex items-center space-x-2 min-w-0">
-          <Icon name={getTileIcon()} size="sm" className="text-primary-600 dark:text-primary-400" />
-          <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{getTileTitle()}</h3>
+          <Icon name={getTileIcon()} size="sm" className="text-accent-primary" />
+          <h3 className="text-sm font-medium text-theme-primary truncate">{getTileTitle()}</h3>
         </div>
         {/* Close Button */}
         {onRemove && (
           <button
             onClick={() => onRemove(tile.id)}
-            className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-200 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-600 rounded transition-colors ml-2"
+            className="p-1 text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary rounded transition-colors ml-2"
             aria-label={`Remove ${getTileTitle()} tile`}
           >
             <Icon name="close" size="sm" />

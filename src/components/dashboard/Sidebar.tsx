@@ -28,7 +28,7 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
   return (
     <aside
       role="complementary"
-      className={`h-screen bg-white dark:bg-gray-800 shadow-lg border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out w-64 flex-shrink-0
+      className={`h-screen bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out w-64 flex-shrink-0
         ${isOpen ? 'translate-x-0' : '-translate-x-64'}
       `}
       style={{ minWidth: isOpen ? 256 : 0, width: isOpen ? 256 : 0, overflow: 'hidden' }}
@@ -40,7 +40,7 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
             {availableTiles.map((tile) => (
               <div
                 key={tile.type}
-                className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-primary-300 dark:hover:border-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors cursor-pointer"
+                className="p-4 border border-theme-primary rounded-lg hover:border-accent-primary hover:bg-accent-muted transition-colors cursor-pointer"
                 onClick={() => onTileSelect(tile.type)}
                 role="button"
                 tabIndex={0}
@@ -59,18 +59,18 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
               >
                 <div className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
-                    <Icon name={tile.icon} size="md" className="text-primary-600 dark:text-primary-400" />
+                    <Icon name={tile.icon} size="md" className="text-accent-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    <h3 className="text-sm font-medium text-theme-primary truncate">
                       {tile.name}
                     </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-xs text-theme-secondary mt-1">
                       {tile.description}
                     </p>
                   </div>
                   <div className="flex-shrink-0">
-                    <Icon name="add" size="sm" className="text-gray-400 dark:text-gray-500" />
+                    <Icon name="add" size="sm" className="text-theme-tertiary" />
                   </div>
                 </div>
               </div>
@@ -79,7 +79,7 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-t border-theme-primary">
           <Button
             variant="primary"
             size="sm"
