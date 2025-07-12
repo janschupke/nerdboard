@@ -1,8 +1,8 @@
 
 import type { TileConfig } from '../../types/dashboard';
 import { Icon } from '../ui/Icon';
-import { CryptocurrencyTile } from './tiles/CryptocurrencyTile';
-import { PreciousMetalsTile } from './tiles/PreciousMetalsTile';
+import { CryptocurrencyTile } from './tiles/cryptocurrency/CryptocurrencyTile';
+import { PreciousMetalsTile } from './tiles/precious-metals/PreciousMetalsTile';
 
 interface TileProps {
   tile: TileConfig;

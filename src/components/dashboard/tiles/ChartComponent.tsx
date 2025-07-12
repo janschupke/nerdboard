@@ -1,5 +1,19 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import type { PriceHistory } from '../../../types/cryptocurrency';
+
+// Chart Configuration Constants
+const CHART_CONFIG = {
+  DEFAULT_HEIGHT: 200,
+  FONT_SIZE: 10,
+  STROKE_WIDTH: 2,
+  ACTIVE_DOT_RADIUS: 4,
+  PRICE_DECIMAL_PLACES: 2,
+  PRICE_WHOLE_NUMBER_DECIMAL_PLACES: 0,
+} as const;
+
+interface PriceHistory {
+  timestamp: number;
+  price: number;
+}
 
 interface ChartComponentProps {
   data: PriceHistory[];
@@ -8,9 +22,9 @@ interface ChartComponentProps {
   height?: number;
 }
 
-export function ChartComponent({ data, title, color, height = 200 }: ChartComponentProps) {
+export function ChartComponent({ data, title, color, height = CHART_CONFIG.DEFAULT_HEIGHT }: ChartComponentProps) {
   const formatTooltip = (value: unknown, name: string) => {
-    return [`$${Number(value).toFixed(2)}`, name];
+    return [`$${Number(value).toFixed(CHART_CONFIG.PRICE_DECIMAL_PLACES)}`, name];
   };
 
   const formatXAxis = (tickItem: number) => {
@@ -18,7 +32,7 @@ export function ChartComponent({ data, title, color, height = 200 }: ChartCompon
   };
 
   const formatYAxis = (value: unknown) => {
-    return `$${Number(value).toFixed(0)}`;
+    return `$${Number(value).toFixed(CHART_CONFIG.PRICE_WHOLE_NUMBER_DECIMAL_PLACES)}`;
   };
 
   if (!data || data.length === 0) {
@@ -37,13 +51,13 @@ export function ChartComponent({ data, title, color, height = 200 }: ChartCompon
           <XAxis
             dataKey="timestamp"
             tickFormatter={formatXAxis}
-            tick={{ fontSize: 10 }}
+            tick={{ fontSize: CHART_CONFIG.FONT_SIZE }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             tickFormatter={formatYAxis}
-            tick={{ fontSize: 10 }}
+            tick={{ fontSize: CHART_CONFIG.FONT_SIZE }}
             axisLine={false}
             tickLine={false}
           />
@@ -55,9 +69,9 @@ export function ChartComponent({ data, title, color, height = 200 }: ChartCompon
             type="monotone"
             dataKey="price"
             stroke={color}
-            strokeWidth={2}
+            strokeWidth={CHART_CONFIG.STROKE_WIDTH}
             dot={false}
-            activeDot={{ r: 4, fill: color }}
+            activeDot={{ r: CHART_CONFIG.ACTIVE_DOT_RADIUS, fill: color }}
           />
         </LineChart>
       </ResponsiveContainer>
