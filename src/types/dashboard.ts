@@ -42,4 +42,5 @@ export interface DashboardContextType {
   removeTile: (id: string) => void;
   toggleSidebar: () => void;
   updateTileConfig: (id: string, config: Partial<TileConfig>) => void;
+  moveTile: (from: number, to: number) => void;
 } 

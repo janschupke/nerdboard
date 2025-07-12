@@ -35,6 +35,8 @@ export function Icon({ name, size = 'md', className = '' }: IconProps) {
     error: '⚠',
     success: '✓',
     loading: '⟳',
+    sun: '☀',
+    moon: '🌙',
   };
 
   const icon = iconMap[name] || '?';

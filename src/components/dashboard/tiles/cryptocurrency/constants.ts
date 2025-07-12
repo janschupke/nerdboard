@@ -1,6 +1,6 @@
 // API Configuration
 export const CRYPTO_API_CONFIG = {
-  BASE_URL: 'https://api.coingecko.com/api/v3',
+  BASE_URL: '/api/coingecko/api/v3',
   CACHE_DURATION: 30000, // 30 seconds
   DEFAULT_LIMIT: 10,
   DEFAULT_REFRESH_INTERVAL: 30000, // 30 seconds

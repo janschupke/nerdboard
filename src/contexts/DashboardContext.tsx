@@ -11,7 +11,8 @@ type DashboardAction =
   | { type: 'TOGGLE_SIDEBAR' }
   | { type: 'UPDATE_TILE_CONFIG'; payload: { id: string; config: Partial<TileConfig> } }
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'LOAD_STORED_STATE'; payload: DashboardState };
+  | { type: 'LOAD_STORED_STATE'; payload: DashboardState }
+  | { type: 'MOVE_TILE'; payload: { from: number; to: number } };
 
 const initialState: DashboardState = {
   tiles: [],
@@ -52,6 +53,13 @@ function dashboardReducer(state: DashboardState, action: DashboardAction): Dashb
       };
     case 'LOAD_STORED_STATE':
       return action.payload;
+    case 'MOVE_TILE': {
+      const { from, to } = action.payload;
+      const tiles = [...state.tiles];
+      const [moved] = tiles.splice(from, 1);
+      tiles.splice(to, 0, moved);
+      return { ...state, tiles };
+    }
     default:
       return state;
   }
@@ -89,12 +97,17 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'UPDATE_TILE_CONFIG', payload: { id, config } });
   };
 
+  const moveTile = (from: number, to: number) => {
+    dispatch({ type: 'MOVE_TILE', payload: { from, to } });
+  };
+
   const value: DashboardContextType = {
     state,
     addTile,
     removeTile,
     toggleSidebar,
     updateTileConfig,
+    moveTile,
   };
 
   return (

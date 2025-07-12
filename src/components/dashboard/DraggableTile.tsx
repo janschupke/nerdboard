@@ -1,81 +1,96 @@
-import { useRef, useState } from 'react';
-import { useDragAndDrop } from '../../hooks/useDragAndDrop';
-import type { TileConfig } from '../../types/dashboard';
+import { useRef } from 'react';
+import type { TileConfig, TileSize } from '../../types/dashboard';
 import { Icon } from '../ui/Icon';
+import { useTileResize } from '../../hooks/useTileResize';
+import { useDashboard } from '../../hooks/useDashboard';
+import { Tile } from './Tile';
 
 interface DraggableTileProps {
   tile: TileConfig;
+  index: number;
   children: React.ReactNode;
-  onMove: (tileId: string, newPosition: { x: number; y: number }) => void;
+  onMove: (from: number, to: number) => void;
 }
 
-export function DraggableTile({ tile, children, onMove }: DraggableTileProps) {
+export function DraggableTile({ tile, index, children, onMove }: DraggableTileProps) {
   const tileRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
-  
-  const { dragState, startDrag, updateDrag, endDrag } = useDragAndDrop(onMove);
+  const { updateTileConfig } = useDashboard();
+  const { startResize, updateResize, endResize } = useTileResize((tileId, newSize) => {
+    updateTileConfig(tileId, { size: newSize });
+  });
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.target === tileRef.current) {
-      const rect = tileRef.current.getBoundingClientRect();
-      startDrag(tile.id, {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      });
+  // Drag and drop for reordering
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('application/nerdboard-tile-index', String(index));
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    // setIsDragOver(true); // Removed
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    // setIsDragOver(false); // Removed
+    const fromIndex = Number(e.dataTransfer.getData('application/nerdboard-tile-index'));
+    if (!isNaN(fromIndex) && fromIndex !== index) {
+      onMove(fromIndex, index);
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (dragState.isDragging) {
-      updateDrag({ x: e.clientX, y: e.clientY });
-    }
+  const handleDragLeave = () => {
+    // setIsDragOver(false); // Removed
   };
 
-  const handleMouseUp = () => {
-    if (dragState.isDragging) {
-      endDrag();
-    }
+  // --- Resize logic ---
+  const handleResizeMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    startResize(tile.id, 'both', tile.size);
+    window.addEventListener('mousemove', handleResizeMouseMove);
+    window.addEventListener('mouseup', handleResizeMouseUp);
   };
 
-  const getTileClasses = () => {
-    const baseClasses = 'relative bg-white rounded-lg shadow-md border border-gray-200';
-    const dragClasses = dragState.isDragging ? 'opacity-75 shadow-lg z-50' : '';
-    const hoverClasses = isHovered ? 'shadow-lg' : '';
-    
-    return `${baseClasses} ${dragClasses} ${hoverClasses}`;
+  const handleResizeMouseMove = (e: MouseEvent) => {
+    if (!tileRef.current) return;
+    const rect = tileRef.current.getBoundingClientRect();
+    const deltaX = e.clientX - rect.left;
+    const deltaY = e.clientY - rect.top;
+    // Snap logic: small < 200px, medium < 400px, else large
+    let newSize: TileSize = 'small';
+    if (deltaX > 350 || deltaY > 350) newSize = 'large';
+    else if (deltaX > 180 || deltaY > 180) newSize = 'medium';
+    updateResize(newSize);
+  };
+
+  const handleResizeMouseUp = () => {
+    endResize();
+    window.removeEventListener('mousemove', handleResizeMouseMove);
+    window.removeEventListener('mouseup', handleResizeMouseUp);
   };
 
   return (
-    <div
-      ref={tileRef}
-      className={getTileClasses()}
-      style={{
-        gridColumn: `span ${tile.size === 'large' ? 2 : 1}`,
-        gridRow: `span ${tile.size === 'large' ? 2 : 1}`,
-        cursor: dragState.isDragging ? 'grabbing' : 'grab'
+    <Tile
+      tile={tile}
+      onRemove={undefined}
+      dragHandleProps={{
+        draggable: true,
+        onDragStart: handleDragStart,
+        onDragOver: handleDragOver,
+        onDrop: handleDrop,
+        onDragLeave: handleDragLeave,
       }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      role="button"
-      tabIndex={0}
-      aria-label={`Drag ${tile.type} tile`}
     >
       {children}
-      
       {/* Resize Handle */}
-      <div className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize">
-        <div className="w-full h-full bg-gray-300 rounded-bl-lg opacity-0 hover:opacity-100 transition-opacity" />
-      </div>
-      
-      {/* Drag Handle */}
-      <div className="absolute top-2 right-2 w-6 h-6 cursor-grab active:cursor-grabbing">
-        <div className="w-full h-full flex items-center justify-center text-gray-400 hover:text-gray-600">
-          <Icon name="drag" size="sm" />
+      <div
+        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-20"
+        onMouseDown={handleResizeMouseDown}
+        title="Resize tile"
+      >
+        <div className="w-full h-full bg-gray-300 dark:bg-gray-600 rounded-bl-lg opacity-80 hover:opacity-100 transition-opacity flex items-center justify-center">
+          <Icon name="resize" size="sm" />
         </div>
       </div>
-    </div>
+    </Tile>
   );
 } 
