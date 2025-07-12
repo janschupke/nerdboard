@@ -215,15 +215,15 @@ Update PLANNING.md with the following user-facing feature descriptions:
 [describe features].
 
 Focus on what users will experience, not technical implementation details.
-Use `PLANNING_TEMPLATE.md` as a reference for the `PLANNING.md` file structure.
+Use PLANNING_TEMPLATE.md as a reference for the PLANNING.md file structure.
 ```
 
 ### For Refactoring Planning:
 
 ```
-Read `README.md` and `INIT.md` in the `_PRP` folder. Analyze the entire codebase.
+Read README.md and INIT.md in the _PRP folder. Analyze the entire codebase.
 Afterwards, prepare a refactoring plan that will improve the codebase so that
-it meets the requirements defined in these `md` documents, and output it into `PLANNING.md`.
+it meets the requirements defined in these md documents, and output it into PLANNING.md.
 ```
 
 ## PRP Naming Convention

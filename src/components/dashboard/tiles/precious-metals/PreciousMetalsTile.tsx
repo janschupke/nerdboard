@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { usePreciousMetalsData } from './hooks/usePreciousMetalsData';
 import { ChartComponent } from '../ChartComponent';
 import { PriceDisplay } from '../../../ui/PriceDisplay';
@@ -11,14 +11,27 @@ import {
 } from './constants';
 import type { PreciousMetalsTileProps, ChartPeriod, MetalType } from './types';
 
-export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
+export const PreciousMetalsTile = React.memo<PreciousMetalsTileProps>(({ size, config }) => {
   const { data, loading, error, refetch } = usePreciousMetalsData(config.refreshInterval);
   const [selectedMetal, setSelectedMetal] = useState<MetalType>(
     config.selectedMetal || PRECIOUS_METALS_UI_CONFIG.DEFAULT_METAL,
   );
-  const [chartPeriod, setChartPeriod] = useState<ChartPeriod>(
+  const [chartPeriod] = useState<ChartPeriod>(
     config.chartPeriod || PRECIOUS_METALS_UI_CONFIG.DEFAULT_CHART_PERIOD,
   );
+
+  // Memoize the selected metal data
+  const selectedMetalData = useMemo(() => {
+    if (!data) return null;
+    return data[selectedMetal];
+  }, [data, selectedMetal]);
+
+  // Memoize the chart color based on selected metal
+  const chartColor = useMemo(() => {
+    return selectedMetal === 'gold' 
+      ? PRECIOUS_METALS_CHART_CONFIG.COLORS.GOLD 
+      : PRECIOUS_METALS_CHART_CONFIG.COLORS.SILVER;
+  }, [selectedMetal]);
 
   if (loading) {
     return <LoadingSkeleton tileSize={size} />;
@@ -38,86 +51,64 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
   if (!data) {
     return (
       <div className="p-4 text-center">
-        <p className="text-theme-muted">{PRECIOUS_METALS_ERROR_MESSAGES.NO_DATA_AVAILABLE}</p>
+        <p className="text-theme-muted">No precious metals data available</p>
       </div>
     );
   }
 
-  const selectedMetalData = data[selectedMetal];
-
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex justify-between items-center p-4 border-b border-theme-muted">
-        <h2 className="text-lg font-semibold text-theme-primary">Precious Metals</h2>
-        <div className="flex space-x-2">
-          {PRECIOUS_METALS_UI_CONFIG.AVAILABLE_METALS.map((metal) => (
-            <button
-              key={metal}
-              onClick={() => setSelectedMetal(metal)}
-              className={`px-3 py-1 text-xs rounded capitalize ${
-                selectedMetal === metal
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-surface-secondary text-theme-primary hover:bg-surface-tertiary'
-              }`}
-            >
-              {metal}
-            </button>
-          ))}
-        </div>
+    <div className="space-y-4">
+      {/* Metal Selector */}
+      <div className="flex flex-wrap gap-2">
+        {Object.keys(data).map((metal) => (
+          <button
+            key={metal}
+            onClick={() => setSelectedMetal(metal as MetalType)}
+            className={`px-3 py-1 text-xs rounded-full transition-colors ${
+              selectedMetal === metal
+                ? 'bg-accent-primary text-white'
+                : 'bg-theme-tertiary text-theme-secondary hover:bg-theme-secondary'
+            }`}
+            aria-label={`Select ${metal} for detailed view`}
+            aria-pressed={selectedMetal === metal}
+          >
+            {metal.charAt(0).toUpperCase() + metal.slice(1)}
+          </button>
+        ))}
       </div>
 
-      <div className="flex-1 p-4">
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-theme-secondary mb-1">Current Price</p>
-              <PriceDisplay
-                price={selectedMetalData.price}
-                change={selectedMetalData.change_24h}
-                changePercentage={selectedMetalData.change_percentage_24h}
-              />
+      {/* Selected Metal Details */}
+      {selectedMetalData && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="font-medium text-theme-primary">
+                {selectedMetal.charAt(0).toUpperCase() + selectedMetal.slice(1)}
+              </span>
             </div>
-            <div>
-              <p className="text-sm text-theme-secondary mb-1">24h Change</p>
-              <PriceDisplay
-                price={selectedMetalData.change_24h}
-                changePercentage={selectedMetalData.change_percentage_24h}
-              />
-            </div>
+            <PriceDisplay
+              price={selectedMetalData.price}
+              change={selectedMetalData.change_24h}
+            />
           </div>
 
-          <div className="flex space-x-2">
-            {PRECIOUS_METALS_UI_CONFIG.CHART_PERIODS.map((period) => (
-              <button
-                key={period}
-                onClick={() => setChartPeriod(period)}
-                className={`px-3 py-1 text-xs rounded ${
-                  chartPeriod === period
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-surface-secondary text-theme-primary hover:bg-surface-tertiary'
-                }`}
-              >
-                {period}
-              </button>
-            ))}
+          {/* Chart */}
+          <div className="h-32">
+            <ChartComponent
+              data={[]} // Will be populated with historical data in future implementation
+              title={`${selectedMetal.charAt(0).toUpperCase() + selectedMetal.slice(1)} Price (${chartPeriod})`}
+              color={chartColor}
+              height={
+                size === 'large'
+                  ? PRECIOUS_METALS_UI_CONFIG.CHART_HEIGHTS.LARGE
+                  : PRECIOUS_METALS_UI_CONFIG.CHART_HEIGHTS.MEDIUM
+              }
+            />
           </div>
-
-          <ChartComponent
-            data={[]} // Will be populated with historical data in future implementation
-            title={`${selectedMetal.charAt(0).toUpperCase() + selectedMetal.slice(1)} Price (${chartPeriod})`}
-            color={
-              selectedMetal === 'gold'
-                ? PRECIOUS_METALS_CHART_CONFIG.COLORS.GOLD
-                : PRECIOUS_METALS_CHART_CONFIG.COLORS.SILVER
-            }
-            height={
-              size === 'large'
-                ? PRECIOUS_METALS_UI_CONFIG.CHART_HEIGHTS.LARGE
-                : PRECIOUS_METALS_UI_CONFIG.CHART_HEIGHTS.MEDIUM
-            }
-          />
         </div>
-      </div>
+      )}
     </div>
   );
-}
+});
+
+PreciousMetalsTile.displayName = 'PreciousMetalsTile';

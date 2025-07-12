@@ -28,6 +28,7 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
   return (
     <aside
       role="complementary"
+      aria-label="Tile catalog sidebar"
       className={`h-screen bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-${UI_CONFIG.TRANSITION_DURATION} ease-in-out w-64 flex-shrink-0
         ${isOpen ? 'translate-x-0' : '-translate-x-64'}
       `}
@@ -36,13 +37,22 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
       <div className="flex flex-col h-full w-64">
         {/* Tile Catalog */}
         <div className="flex-1 p-4 overflow-y-auto">
-          <div className="space-y-3">
+          <h2 className="text-lg font-semibold text-theme-primary mb-4" id="tiles-heading">
+            Available Tiles
+          </h2>
+          <div 
+            className="space-y-3"
+            role="listbox"
+            aria-labelledby="tiles-heading"
+            aria-label="Available dashboard tiles"
+          >
             {availableTiles.map((tile) => (
               <div
                 key={tile.type}
-                className="p-4 border border-theme-primary rounded-lg hover:border-accent-primary hover:bg-accent-muted transition-colors cursor-pointer"
+                className="p-4 border border-theme-primary rounded-lg hover:border-accent-primary hover:bg-accent-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2"
                 onClick={() => onTileSelect(tile.type)}
-                role="button"
+                role="option"
+                aria-selected="false"
                 tabIndex={0}
                 data-tile-type={tile.type}
                 draggable={true}
@@ -56,17 +66,19 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
                     onTileSelect(tile.type);
                   }
                 }}
+                aria-label={`Add ${tile.name} tile to dashboard`}
+                title={`Add ${tile.name} tile to dashboard`}
               >
                 <div className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
-                    <Icon name={tile.icon} size="md" className="text-accent-primary" />
+                    <Icon name={tile.icon} size="md" className="text-accent-primary" aria-hidden="true" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-medium text-theme-primary truncate">{tile.name}</h3>
                     <p className="text-xs text-theme-secondary mt-1">{tile.description}</p>
                   </div>
                   <div className="flex-shrink-0">
-                    <Icon name="add" size="sm" className="text-theme-tertiary" />
+                    <Icon name="add" size="sm" className="text-theme-tertiary" aria-hidden="true" />
                   </div>
                 </div>
               </div>
@@ -76,7 +88,13 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
 
         {/* Footer */}
         <div className="p-4 border-t border-theme-primary">
-          <Button variant="primary" size="sm" className="w-full" onClick={onToggle}>
+          <Button 
+            variant="primary" 
+            size="sm" 
+            className="w-full" 
+            onClick={onToggle}
+            aria-label="Close sidebar"
+          >
             Close
           </Button>
         </div>

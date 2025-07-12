@@ -8,11 +8,21 @@ import { TileType } from '../../types/dashboard';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
 
+/**
+ * Main dashboard content component that renders the dashboard layout
+ * including the header, sidebar, and tile grid.
+ * 
+ * @returns {JSX.Element} The dashboard content component
+ */
 function DashboardContent() {
   const { state, addTile, toggleSidebar } = useDashboard();
   const { sidebarOpen } = state;
   const { theme, toggleTheme } = useTheme();
 
+  /**
+   * Handles tile selection from the sidebar
+   * @param {TileType} tileType - The type of tile to add
+   */
   const handleTileSelect = (tileType: TileType) => {
     addTile(tileType);
   };
@@ -59,6 +69,12 @@ function DashboardContent() {
   );
 }
 
+/**
+ * Main Dashboard component that wraps the dashboard content
+ * with error boundaries and context providers.
+ * 
+ * @returns {JSX.Element} The main dashboard component
+ */
 export function Dashboard() {
   return (
     <ErrorBoundary>

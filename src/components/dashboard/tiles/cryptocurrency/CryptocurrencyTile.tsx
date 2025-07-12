@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCryptocurrencyData } from './hooks/useCryptocurrencyData';
 import { ChartComponent } from '../ChartComponent';
 import { PriceDisplay } from '../../../ui/PriceDisplay';
@@ -7,12 +7,22 @@ import { Button } from '../../../ui/Button';
 import { CRYPTO_UI_CONFIG, CRYPTO_CHART_CONFIG, CRYPTO_ERROR_MESSAGES } from './constants';
 import type { CryptocurrencyTileProps, ChartPeriod } from './types';
 
-export function CryptocurrencyTile({ size, config }: CryptocurrencyTileProps) {
+export const CryptocurrencyTile = React.memo<CryptocurrencyTileProps>(({ size, config }) => {
   const { data, loading, error, refetch } = useCryptocurrencyData(config.refreshInterval);
   const [selectedCoin, setSelectedCoin] = useState<string>(config.selectedCoin || 'bitcoin');
-  const [chartPeriod, setChartPeriod] = useState<ChartPeriod>(
+  const [chartPeriod] = useState<ChartPeriod>(
     config.chartPeriod || CRYPTO_UI_CONFIG.DEFAULT_CHART_PERIOD,
   );
+
+  // Memoize the top coins to prevent unnecessary re-renders
+  const topCoins = useMemo(() => {
+    return data.slice(0, CRYPTO_UI_CONFIG.TOP_COINS_DISPLAY_LIMIT);
+  }, [data]);
+
+  // Memoize the selected coin data
+  const selectedCoinData = useMemo(() => {
+    return data.find((coin) => coin.id === selectedCoin);
+  }, [data, selectedCoin]);
 
   if (loading) {
     return <LoadingSkeleton tileSize={size} />;
@@ -29,61 +39,50 @@ export function CryptocurrencyTile({ size, config }: CryptocurrencyTileProps) {
     );
   }
 
-  const topCoins = data.slice(0, CRYPTO_UI_CONFIG.TOP_COINS_DISPLAY_LIMIT);
-  const selectedCoinData = data.find((coin) => coin.id === selectedCoin);
+  if (!data || data.length === 0) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-theme-muted">No cryptocurrency data available</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-full flex flex-col">
-              <div className="flex justify-between items-center p-4 border-b border-theme-muted">
-          <h2 className="text-lg font-semibold text-theme-primary">Cryptocurrency Market</h2>
-          <select
-            value={selectedCoin}
-            onChange={(e) => setSelectedCoin(e.target.value)}
-            className="text-sm border border-theme-muted rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
+    <div className="space-y-4">
+      {/* Coin Selector */}
+      <div className="flex flex-wrap gap-2">
+        {topCoins.map((coin) => (
+          <button
+            key={coin.id}
+            onClick={() => setSelectedCoin(coin.id)}
+            className={`px-3 py-1 text-xs rounded-full transition-colors ${
+              selectedCoin === coin.id
+                ? 'bg-accent-primary text-white'
+                : 'bg-theme-tertiary text-theme-secondary hover:bg-theme-secondary'
+            }`}
+            aria-label={`Select ${coin.name} for detailed view`}
+            aria-pressed={selectedCoin === coin.id}
           >
-          {topCoins.map((coin) => (
-            <option key={coin.id} value={coin.id}>
-              {coin.name}
-            </option>
-          ))}
-        </select>
+            {coin.symbol.toUpperCase()}
+          </button>
+        ))}
       </div>
 
-      <div className="flex-1 p-4">
-        {selectedCoinData && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-theme-secondary mb-1">Current Price</p>
-                <PriceDisplay
-                  price={selectedCoinData.current_price}
-                  changePercentage={selectedCoinData.price_change_percentage_24h}
-                />
-              </div>
-              <div>
-                                  <p className="text-sm text-theme-secondary mb-1">Market Cap</p>
-                <p className="text-lg font-semibold">
-                  ${selectedCoinData.market_cap.toLocaleString()}
-                </p>
-              </div>
+      {/* Selected Coin Details */}
+      {selectedCoinData && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="font-medium text-theme-primary">{selectedCoinData.name}</span>
             </div>
+            <PriceDisplay
+              price={selectedCoinData.current_price}
+              changePercentage={selectedCoinData.price_change_percentage_24h}
+            />
+          </div>
 
-            <div className="flex space-x-2">
-              {CRYPTO_UI_CONFIG.CHART_PERIODS.map((period) => (
-                <button
-                  key={period}
-                  onClick={() => setChartPeriod(period)}
-                  className={`px-3 py-1 text-xs rounded ${
-                    chartPeriod === period
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-surface-secondary text-theme-primary hover:bg-surface-tertiary'
-                  }`}
-                >
-                  {period}
-                </button>
-              ))}
-            </div>
-
+          {/* Chart */}
+          <div className="h-32">
             <ChartComponent
               data={[]} // Will be populated with historical data in future implementation
               title={`${selectedCoinData.name} Price (${chartPeriod})`}
@@ -95,8 +94,10 @@ export function CryptocurrencyTile({ size, config }: CryptocurrencyTileProps) {
               }
             />
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
-}
+});
+
+CryptocurrencyTile.displayName = 'CryptocurrencyTile';

@@ -27,12 +27,43 @@ export class PreciousMetalsApiService {
         },
       };
 
+      // Validate the mock data structure
+      this.validatePreciousMetalsData(mockData);
+
       this.setCachedData(cacheKey, mockData);
       return mockData;
     } catch (error) {
       console.error('Failed to fetch precious metals data:', error);
-      throw error;
+      throw new Error(`Failed to fetch precious metals data: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  }
+
+  private validatePreciousMetalsData(data: unknown): asserts data is PreciousMetalsData {
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid data format: expected object');
+    }
+
+    const metalsData = data as Record<string, unknown>;
+    
+    if (!metalsData.gold || !metalsData.silver) {
+      throw new Error('Invalid data format: missing gold or silver data');
+    }
+
+    const validateMetalData = (metal: unknown, metalName: string) => {
+      if (!metal || typeof metal !== 'object') {
+        throw new Error(`Invalid ${metalName} data format`);
+      }
+
+      const metalData = metal as Record<string, unknown>;
+      if (typeof metalData.price !== 'number' || 
+          typeof metalData.change_24h !== 'number' || 
+          typeof metalData.change_percentage_24h !== 'number') {
+        throw new Error(`Invalid ${metalName} data: missing required fields`);
+      }
+    };
+
+    validateMetalData(metalsData.gold, 'gold');
+    validateMetalData(metalsData.silver, 'silver');
   }
 
   async getPreciousMetalsHistory(metal: 'gold' | 'silver', days: number): Promise<PriceHistory[]> {

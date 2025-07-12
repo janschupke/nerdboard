@@ -10,9 +10,13 @@ export function TileGrid() {
 
   if (tiles.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div 
+        className="flex items-center justify-center h-full"
+        role="main"
+        aria-label="Dashboard grid"
+      >
         <div className="text-center">
-          <div className="text-6xl mb-4">📊</div>
+          <div className="text-6xl mb-4" role="img" aria-label="Dashboard icon">📊</div>
           <h2 className="text-xl font-semibold text-theme-primary mb-2">Welcome to Nerdboard</h2>
           <p className="text-theme-secondary mb-4">Add tiles from the sidebar to get started</p>
           <div className="text-sm text-theme-tertiary">
@@ -52,14 +56,26 @@ export function TileGrid() {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onDragLeave={handleDragLeave}
+      role="grid"
+      aria-label="Dashboard tiles grid"
+      aria-describedby={tiles.length > 0 ? "tiles-description" : undefined}
     >
+      {tiles.length > 0 && (
+        <div id="tiles-description" className="sr-only">
+          Dashboard grid containing {tiles.length} tile{tiles.length !== 1 ? 's' : ''}
+        </div>
+      )}
       {tiles.map((tile, idx) => (
         <DraggableTile key={tile.id} tile={tile} index={idx} onMove={handleTileMove}>
           <Tile tile={tile} onRemove={removeTile} />
         </DraggableTile>
       ))}
       {isDragOver && (
-        <div className="absolute inset-0 bg-accent-muted opacity-30 pointer-events-none z-10 rounded-lg" />
+        <div 
+          className="absolute inset-0 bg-accent-muted opacity-30 pointer-events-none z-10 rounded-lg" 
+          aria-hidden="true"
+          role="presentation"
+        />
       )}
     </div>
   );
