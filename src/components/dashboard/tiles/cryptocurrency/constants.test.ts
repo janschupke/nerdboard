@@ -9,7 +9,7 @@ import {
 describe('Cryptocurrency Tile Constants', () => {
   describe('CRYPTO_API_CONFIG', () => {
     it('should have correct base URL', () => {
-      expect(CRYPTO_API_CONFIG.BASE_URL).toBe('https://api.coingecko.com/api/v3');
+      expect(CRYPTO_API_CONFIG.BASE_URL).toBe('/api/coingecko/api/v3');
     });
 
     it('should have correct cache duration', () => {
