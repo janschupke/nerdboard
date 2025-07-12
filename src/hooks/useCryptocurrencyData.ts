@@ -2,9 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { CoinGeckoApiService } from '../services/coinGeckoApi';
 import type { CryptocurrencyData } from '../types/cryptocurrency';
 
-const apiService = new CoinGeckoApiService();
-
-export function useCryptocurrencyData(refreshInterval: number = 30000) {
+export function useCryptocurrencyData(refreshInterval: number = 30000, service: CoinGeckoApiService = new CoinGeckoApiService()) {
   const [data, setData] = useState<CryptocurrencyData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -13,7 +11,7 @@ export function useCryptocurrencyData(refreshInterval: number = 30000) {
     try {
       setLoading(true);
       setError(null);
-      const result = await apiService.getTopCryptocurrencies(10);
+      const result = await service.getTopCryptocurrencies(10);
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch cryptocurrency data');
@@ -21,7 +19,7 @@ export function useCryptocurrencyData(refreshInterval: number = 30000) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [service]);
 
   useEffect(() => {
     fetchData();

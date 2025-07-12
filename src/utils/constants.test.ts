@@ -50,6 +50,17 @@ describe('Constants', () => {
       expect(UI_CONFIG.FONT_SIZES.LG).toBe(18);
       expect(UI_CONFIG.FONT_SIZES.XL).toBe(20);
     });
+
+    it('should have correct chart heights', () => {
+      expect(UI_CONFIG.CHART_HEIGHTS.LARGE).toBe(300);
+      expect(UI_CONFIG.CHART_HEIGHTS.MEDIUM).toBe(200);
+      expect(UI_CONFIG.CHART_HEIGHTS.SMALL).toBe(150);
+    });
+
+    it('should have correct volatility values', () => {
+      expect(UI_CONFIG.VOLATILITY.GOLD).toBe(50);
+      expect(UI_CONFIG.VOLATILITY.SILVER).toBe(2);
+    });
   });
 
   describe('ERROR_MESSAGES', () => {

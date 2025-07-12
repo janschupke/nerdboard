@@ -19,7 +19,7 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
         return <PreciousMetalsTile id={tile.id} size={tile.size} config={tile.config} />;
       default:
         return (
-          <div className="flex items-center justify-center h-32 text-gray-500">
+          <div className="flex items-center justify-center h-32 text-theme-muted">
             <div className="text-center">
               <Icon name="loading" size="lg" className="animate-spin mb-2" />
               <p className="text-sm">Loading...</p>

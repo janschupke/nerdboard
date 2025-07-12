@@ -3,9 +3,10 @@ import { TileGrid } from './TileGrid';
 import { Sidebar } from './Sidebar';
 import { useDashboard } from '../../hooks/useDashboard';
 import { Icon } from '../ui/Icon';
+import { UI_CONFIG } from '../../utils/constants';
 import { TileType } from '../../types/dashboard';
 import { ErrorBoundary } from '../ErrorBoundary';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../hooks/useTheme';
 
 function DashboardContent() {
   const { state, addTile, toggleSidebar } = useDashboard();
@@ -17,7 +18,7 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-theme-primary transition-all duration-300">
+    <div className={`min-h-screen w-full flex flex-col bg-theme-primary transition-all duration-${UI_CONFIG.TRANSITION_DURATION}`}>
       {/* Header - Full Width */}
       <header className="bg-surface-primary border-b border-theme-primary px-4 py-3 flex items-center justify-between w-full">
         <div className="flex items-center space-x-3">
@@ -48,7 +49,7 @@ function DashboardContent() {
         <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} onTileSelect={handleTileSelect} />
 
         {/* Tile Grid */}
-        <main className="flex-1 overflow-hidden relative transition-all duration-300">
+        <main className={`flex-1 overflow-hidden relative transition-all duration-${UI_CONFIG.TRANSITION_DURATION}`}>
           <div className="h-full overflow-auto">
             <TileGrid />
           </div>

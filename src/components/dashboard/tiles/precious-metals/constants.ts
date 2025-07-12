@@ -4,13 +4,11 @@ export const PRECIOUS_METALS_API_CONFIG = {
   DEFAULT_REFRESH_INTERVAL: 300000, // 5 minutes
 } as const;
 
+import { UI_CONFIG } from '../../../../utils/constants';
+
 // UI Configuration
 export const PRECIOUS_METALS_UI_CONFIG = {
-  CHART_HEIGHTS: {
-    LARGE: 300,
-    MEDIUM: 200,
-    SMALL: 150,
-  },
+  CHART_HEIGHTS: UI_CONFIG.CHART_HEIGHTS,
   CHART_PERIODS: ['7d', '30d', '1y'] as const,
   DEFAULT_CHART_PERIOD: '7d' as const,
   AVAILABLE_METALS: ['gold', 'silver'] as const,
@@ -20,8 +18,8 @@ export const PRECIOUS_METALS_UI_CONFIG = {
 // Chart Configuration
 export const PRECIOUS_METALS_CHART_CONFIG = {
   COLORS: {
-    GOLD: '#FFD700',
-    SILVER: '#C0C0C0',
+    GOLD: 'var(--color-warning-500)',
+    SILVER: 'var(--color-gray-400)',
   },
   STYLES: {
     STROKE_WIDTH: 2,

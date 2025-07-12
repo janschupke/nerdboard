@@ -21,7 +21,7 @@ export function PriceDisplay({
   };
 
   const getChangeColor = () => {
-    if (!change && !changePercentage) return 'text-gray-600';
+    if (!change && !changePercentage) return 'text-theme-muted';
     const value = changePercentage ?? (change ? (change / price) * 100 : 0);
     return value >= 0 ? 'text-success-600' : 'text-error-600';
   };

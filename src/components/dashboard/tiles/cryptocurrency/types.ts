@@ -1,4 +1,4 @@
-import type { TileSize } from '../../../types/dashboard';
+import type { TileSize } from '../../../../types/dashboard';
 
 export interface CryptocurrencyData {
   id: string;

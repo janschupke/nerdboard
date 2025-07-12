@@ -16,13 +16,13 @@ vi.mock('../../hooks/useDashboard', () => ({
 
 // Mock Tile component
 vi.mock('./Tile', () => ({
-  Tile: ({ tile }: { tile: any }) => <div data-testid={`tile-${tile.id}`}>{tile.type} Tile</div>,
+  Tile: ({ tile }: { tile: Record<string, unknown> }) => <div data-testid={`tile-${tile.id as string}`}>{tile.type as string} Tile</div>,
 }));
 
 // Mock DraggableTile component
 vi.mock('./DraggableTile', () => ({
-  DraggableTile: ({ children, tile }: { children: React.ReactNode; tile: any }) => (
-    <div data-testid={`draggable-tile-${tile.id}`}>{children}</div>
+  DraggableTile: ({ children, tile }: { children: React.ReactNode; tile: Record<string, unknown> }) => (
+    <div data-testid={`draggable-tile-${tile.id as string}`}>{children}</div>
   ),
 }));
 

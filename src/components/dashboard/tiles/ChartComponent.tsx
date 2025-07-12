@@ -42,7 +42,7 @@ export function ChartComponent({
 
   if (!data || data.length === 0) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-gray-500">
+      <div className="w-full h-full flex items-center justify-center text-theme-muted">
         <p>No data available</p>
       </div>
     );
@@ -50,7 +50,7 @@ export function ChartComponent({
 
   return (
     <div className="w-full h-full">
-      <h3 className="text-sm font-medium text-gray-700 mb-2">{title}</h3>
+      <h3 className="text-sm font-medium text-theme-primary mb-2">{title}</h3>
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data}>
           <XAxis

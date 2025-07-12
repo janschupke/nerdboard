@@ -44,8 +44,8 @@ describe('Precious Metals Tile Constants', () => {
 
   describe('PRECIOUS_METALS_CHART_CONFIG', () => {
     it('should have correct colors', () => {
-      expect(PRECIOUS_METALS_CHART_CONFIG.COLORS.GOLD).toBe('#FFD700');
-      expect(PRECIOUS_METALS_CHART_CONFIG.COLORS.SILVER).toBe('#C0C0C0');
+      expect(PRECIOUS_METALS_CHART_CONFIG.COLORS.GOLD).toBe('var(--color-warning-500)');
+      expect(PRECIOUS_METALS_CHART_CONFIG.COLORS.SILVER).toBe('var(--color-gray-400)');
     });
 
     it('should have correct styles', () => {

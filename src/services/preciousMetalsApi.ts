@@ -1,3 +1,4 @@
+import { UI_CONFIG } from '../utils/constants';
 import type { PreciousMetalsData } from '../types/preciousMetals';
 import type { PriceHistory } from '../types/cryptocurrency';
 
@@ -46,7 +47,7 @@ export class PreciousMetalsApiService {
       const mockData: PriceHistory[] = [];
 
       const basePrice = metal === 'gold' ? 1950 : 24.75;
-      const volatility = metal === 'gold' ? 50 : 2;
+      const volatility = metal === 'gold' ? UI_CONFIG.VOLATILITY.GOLD : UI_CONFIG.VOLATILITY.SILVER;
 
       for (let i = days; i >= 0; i--) {
         const timestamp = now - i * dayMs;

@@ -47,8 +47,8 @@ describe('Cryptocurrency Tile Constants', () => {
 
   describe('CRYPTO_CHART_CONFIG', () => {
     it('should have correct colors', () => {
-      expect(CRYPTO_CHART_CONFIG.COLORS.PRIMARY).toBe('#3B82F6');
-      expect(CRYPTO_CHART_CONFIG.COLORS.SECONDARY).toBe('#1E40AF');
+      expect(CRYPTO_CHART_CONFIG.COLORS.PRIMARY).toBe('var(--color-primary-500)');
+      expect(CRYPTO_CHART_CONFIG.COLORS.SECONDARY).toBe('var(--color-primary-700)');
     });
 
     it('should have correct styles', () => {

@@ -13,6 +13,6 @@
   }
 
   .read-the-docs {
-    @apply text-gray-500;
+    @apply text-theme-muted;
   }
 }

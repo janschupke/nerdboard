@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { UI_CONFIG } from '../../utils/constants';
 import { tileAnimations } from '../../types/animations';
 
 interface AnimationContainerProps {
@@ -41,7 +42,7 @@ export function AnimationContainer({
       case 'move':
         return 'transition-all duration-250 ease-in-out';
       case 'resize':
-        return 'transition-all duration-200 ease-out';
+        return `transition-all duration-${UI_CONFIG.ANIMATION_DURATION} ease-out`;
       default:
         return '';
     }

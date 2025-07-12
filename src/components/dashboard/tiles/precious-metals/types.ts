@@ -1,4 +1,4 @@
-import type { TileSize } from '../../../types/dashboard';
+import type { TileSize } from '../../../../types/dashboard';
 
 export interface PreciousMetalData {
   price: number;

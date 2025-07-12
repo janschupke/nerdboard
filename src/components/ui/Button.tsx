@@ -1,3 +1,5 @@
+import { UI_CONFIG } from '../../utils/constants';
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'accent' | 'success' | 'error';
   size?: 'sm' | 'md' | 'lg';
@@ -12,7 +14,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const baseClasses =
-    'font-semibold rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+    `font-semibold rounded-lg transition-colors duration-${UI_CONFIG.ANIMATION_DURATION} focus:outline-none focus:ring-2 focus:ring-offset-2`;
 
   const variantClasses = {
     primary: 'bg-primary-500 hover:bg-primary-600 text-white focus:ring-primary-500',

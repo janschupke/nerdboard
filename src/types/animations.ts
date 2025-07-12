@@ -1,3 +1,5 @@
+import { UI_CONFIG } from '../utils/constants';
+
 export interface AnimationConfig {
   duration: number;
   easing: 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear';
@@ -12,8 +14,8 @@ export interface TileAnimationProps {
 }
 
 export const tileAnimations: TileAnimationProps = {
-  enter: { duration: 300, easing: 'ease-out' },
-  exit: { duration: 200, easing: 'ease-in' },
+  enter: { duration: UI_CONFIG.TRANSITION_DURATION, easing: 'ease-out' },
+  exit: { duration: UI_CONFIG.ANIMATION_DURATION, easing: 'ease-in' },
   move: { duration: 250, easing: 'ease-in-out' },
-  resize: { duration: 200, easing: 'ease-out' },
+  resize: { duration: UI_CONFIG.ANIMATION_DURATION, easing: 'ease-out' },
 };

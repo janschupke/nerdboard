@@ -38,7 +38,7 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
   if (!data) {
     return (
       <div className="p-4 text-center">
-        <p className="text-gray-500">{PRECIOUS_METALS_ERROR_MESSAGES.NO_DATA_AVAILABLE}</p>
+        <p className="text-theme-muted">{PRECIOUS_METALS_ERROR_MESSAGES.NO_DATA_AVAILABLE}</p>
       </div>
     );
   }
@@ -47,8 +47,8 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex justify-between items-center p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-800">Precious Metals</h2>
+      <div className="flex justify-between items-center p-4 border-b border-theme-muted">
+        <h2 className="text-lg font-semibold text-theme-primary">Precious Metals</h2>
         <div className="flex space-x-2">
           {PRECIOUS_METALS_UI_CONFIG.AVAILABLE_METALS.map((metal) => (
             <button
@@ -57,7 +57,7 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
               className={`px-3 py-1 text-xs rounded capitalize ${
                 selectedMetal === metal
                   ? 'bg-primary-500 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-surface-secondary text-theme-primary hover:bg-surface-tertiary'
               }`}
             >
               {metal}
@@ -70,7 +70,7 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Current Price</p>
+              <p className="text-sm text-theme-secondary mb-1">Current Price</p>
               <PriceDisplay
                 price={selectedMetalData.price}
                 change={selectedMetalData.change_24h}
@@ -78,7 +78,7 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
               />
             </div>
             <div>
-              <p className="text-sm text-gray-600 mb-1">24h Change</p>
+              <p className="text-sm text-theme-secondary mb-1">24h Change</p>
               <PriceDisplay
                 price={selectedMetalData.change_24h}
                 changePercentage={selectedMetalData.change_percentage_24h}
@@ -94,7 +94,7 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
                 className={`px-3 py-1 text-xs rounded ${
                   chartPeriod === period
                     ? 'bg-primary-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    : 'bg-surface-secondary text-theme-primary hover:bg-surface-tertiary'
                 }`}
               >
                 {period}

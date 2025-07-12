@@ -86,7 +86,7 @@ describe('Sidebar', () => {
 
     const cryptoTile = screen.getByText('Cryptocurrency').closest('[role="button"]');
     const dragEvent = new Event('dragstart') as DragEvent;
-    (dragEvent as any).dataTransfer = { setData: vi.fn(), effectAllowed: '' };
+    (dragEvent as unknown as Record<string, unknown>).dataTransfer = { setData: vi.fn(), effectAllowed: '' };
 
     // Mock the onDragStart handler
     const onDragStart = vi.fn();

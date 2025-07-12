@@ -29,6 +29,46 @@ export const UI_CONFIG = {
     LG: 18,
     XL: 20,
   },
+  CHART_HEIGHTS: {
+    LARGE: 300,
+    MEDIUM: 200,
+    SMALL: 150,
+  },
+  REFRESH_INTERVALS: {
+    FAST: 200,
+    NORMAL: 300,
+    SLOW: 500,
+  },
+  VOLATILITY: {
+    GOLD: 50,
+    SILVER: 2,
+  },
+} as const;
+
+// Theme Classes for consistent styling
+export const THEME_CLASSES = {
+  TEXT: {
+    PRIMARY: 'text-theme-primary',
+    SECONDARY: 'text-theme-secondary',
+    MUTED: 'text-theme-muted',
+    INVERSE: 'text-theme-inverse',
+  },
+  BACKGROUND: {
+    PRIMARY: 'bg-surface-primary',
+    SECONDARY: 'bg-surface-secondary',
+    TERTIARY: 'bg-surface-tertiary',
+    MUTED: 'bg-surface-muted',
+  },
+  BORDER: {
+    PRIMARY: 'border-theme-primary',
+    SECONDARY: 'border-theme-secondary',
+    MUTED: 'border-theme-muted',
+  },
+  INTERACTIVE: {
+    BUTTON_PRIMARY: 'bg-accent-primary text-accent-inverse hover:bg-accent-hover',
+    BUTTON_SECONDARY: 'bg-surface-secondary text-theme-primary hover:bg-surface-tertiary',
+    BUTTON_MUTED: 'bg-surface-muted text-theme-secondary hover:bg-surface-tertiary',
+  },
 } as const;
 
 // Global Error Messages

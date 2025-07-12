@@ -1,3 +1,5 @@
+import { UI_CONFIG } from '../../../../utils/constants';
+
 // API Configuration
 export const CRYPTO_API_CONFIG = {
   BASE_URL: '/api/coingecko/api/v3',
@@ -8,11 +10,7 @@ export const CRYPTO_API_CONFIG = {
 
 // UI Configuration
 export const CRYPTO_UI_CONFIG = {
-  CHART_HEIGHTS: {
-    LARGE: 300,
-    MEDIUM: 200,
-    SMALL: 150,
-  },
+  CHART_HEIGHTS: UI_CONFIG.CHART_HEIGHTS,
   CHART_PERIODS: ['7d', '30d', '1y'] as const,
   DEFAULT_CHART_PERIOD: '7d' as const,
   TOP_COINS_DISPLAY_LIMIT: 10,
@@ -21,8 +19,8 @@ export const CRYPTO_UI_CONFIG = {
 // Chart Configuration
 export const CRYPTO_CHART_CONFIG = {
   COLORS: {
-    PRIMARY: '#3B82F6',
-    SECONDARY: '#1E40AF',
+    PRIMARY: 'var(--color-primary-500)',
+    SECONDARY: 'var(--color-primary-700)',
   },
   STYLES: {
     STROKE_WIDTH: 2,

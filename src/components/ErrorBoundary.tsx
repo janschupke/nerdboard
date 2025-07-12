@@ -41,7 +41,7 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
       return (
         <div className="p-4 text-center">
           <h2 className="text-lg font-semibold text-error-600 mb-2">Something went wrong</h2>
-          <p className="text-gray-600 mb-4">
+          <p className="text-theme-secondary mb-4">
             We're sorry, but there was an error loading this component.
           </p>
           <Button variant="primary" size="sm" onClick={this.resetError}>

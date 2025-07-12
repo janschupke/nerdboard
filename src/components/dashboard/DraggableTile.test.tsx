@@ -30,7 +30,7 @@ vi.mock('../ui/Icon', () => ({
 
 // Mock Tile component
 vi.mock('./Tile', () => ({
-  Tile: ({ children, dragHandleProps }: { children: React.ReactNode; dragHandleProps?: any }) => (
+  Tile: ({ children, dragHandleProps }: { children: React.ReactNode; dragHandleProps?: Record<string, unknown> }) => (
     <div data-testid="tile-wrapper">
       {children}
       {dragHandleProps && (
