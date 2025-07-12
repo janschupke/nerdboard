@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -9,8 +9,8 @@ export default defineConfig({
       '/api/coingecko': {
         target: 'https://api.coingecko.com',
         changeOrigin: true,
-        rewrite: path => path.replace(/^\/api\/coingecko/, ''),
+        rewrite: (path) => path.replace(/^\/api\/coingecko/, ''),
       },
     },
   },
-})
+});

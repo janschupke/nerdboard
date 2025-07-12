@@ -1,4 +1,3 @@
-
 import { useDashboard } from '../../hooks/useDashboard';
 import { Tile } from './Tile';
 import { DraggableTile } from './DraggableTile';
@@ -14,12 +13,8 @@ export function TileGrid() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="text-6xl mb-4">📊</div>
-          <h2 className="text-xl font-semibold text-theme-primary mb-2">
-            Welcome to Nerdboard
-          </h2>
-          <p className="text-theme-secondary mb-4">
-            Add tiles from the sidebar to get started
-          </p>
+          <h2 className="text-xl font-semibold text-theme-primary mb-2">Welcome to Nerdboard</h2>
+          <p className="text-theme-secondary mb-4">Add tiles from the sidebar to get started</p>
           <div className="text-sm text-theme-tertiary">
             Click the menu button to open the sidebar
           </div>
@@ -59,16 +54,8 @@ export function TileGrid() {
       onDragLeave={handleDragLeave}
     >
       {tiles.map((tile, idx) => (
-        <DraggableTile
-          key={tile.id}
-          tile={tile}
-          index={idx}
-          onMove={handleTileMove}
-        >
-          <Tile
-            tile={tile}
-            onRemove={removeTile}
-          />
+        <DraggableTile key={tile.id} tile={tile} index={idx} onMove={handleTileMove}>
+          <Tile tile={tile} onRemove={removeTile} />
         </DraggableTile>
       ))}
       {isDragOver && (
@@ -76,4 +63,4 @@ export function TileGrid() {
       )}
     </div>
   );
-} 
+}

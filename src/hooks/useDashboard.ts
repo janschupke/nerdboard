@@ -8,4 +8,4 @@ export function useDashboard(): DashboardContextType {
     throw new Error('useDashboard must be used within a DashboardProvider');
   }
   return context;
-} 
+}

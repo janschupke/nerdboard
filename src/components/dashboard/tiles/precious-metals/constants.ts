@@ -33,15 +33,15 @@ export const PRECIOUS_METALS_CHART_CONFIG = {
 // Mock Data Configuration
 export const PRECIOUS_METALS_MOCK_CONFIG = {
   GOLD: {
-    BASE_PRICE: 1950.50,
-    CHANGE_24H: 12.30,
+    BASE_PRICE: 1950.5,
+    CHANGE_24H: 12.3,
     CHANGE_PERCENTAGE_24H: 0.63,
     VOLATILITY: 50,
   },
   SILVER: {
     BASE_PRICE: 24.75,
     CHANGE_24H: -0.15,
-    CHANGE_PERCENTAGE_24H: -0.60,
+    CHANGE_PERCENTAGE_24H: -0.6,
     VOLATILITY: 2,
   },
   TIME_CONSTANTS: {
@@ -53,4 +53,4 @@ export const PRECIOUS_METALS_MOCK_CONFIG = {
 export const PRECIOUS_METALS_ERROR_MESSAGES = {
   FETCH_FAILED: 'Failed to load precious metals data',
   NO_DATA_AVAILABLE: 'No data available',
-} as const; 
+} as const;

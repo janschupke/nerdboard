@@ -3,7 +3,7 @@ import type { ResizeState, UseTileResizeReturn } from '../types/dragDrop';
 import type { TileSize } from '../types/dashboard';
 
 export function useTileResize(
-  onTileResize: (tileId: string, newSize: TileSize) => void
+  onTileResize: (tileId: string, newSize: TileSize) => void,
 ): UseTileResizeReturn {
   const [resizeState, setResizeState] = useState<ResizeState>({
     isResizing: false,
@@ -24,7 +24,7 @@ export function useTileResize(
   }, []);
 
   const updateResize = useCallback((newSize: Partial<string>) => {
-    setResizeState(prev => ({
+    setResizeState((prev) => ({
       ...prev,
       currentSize: newSize || prev.currentSize,
     }));
@@ -60,4 +60,4 @@ export function useTileResize(
     endResize,
     cancelResize,
   };
-} 
+}

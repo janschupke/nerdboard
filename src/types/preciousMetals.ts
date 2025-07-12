@@ -14,4 +14,4 @@ export interface PreciousMetalsData {
 export interface PreciousMetalsTileConfig {
   selectedMetals?: ('gold' | 'silver')[];
   chartPeriod?: '7d' | '30d' | '1y';
-} 
+}

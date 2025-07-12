@@ -16,7 +16,7 @@ Object.defineProperty(window, 'localStorage', {
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -34,7 +34,9 @@ const TestComponent = () => {
   return (
     <div>
       <span data-testid="theme">{theme}</span>
-      <button onClick={toggleTheme} data-testid="toggle">Toggle</button>
+      <button onClick={toggleTheme} data-testid="toggle">
+        Toggle
+      </button>
     </div>
   );
 };
@@ -51,7 +53,7 @@ describe('ThemeContext', () => {
     render(
       <ThemeProvider>
         <TestComponent />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     expect(screen.getByTestId('theme')).toHaveTextContent('light');
@@ -59,11 +61,11 @@ describe('ThemeContext', () => {
 
   it('should load theme from localStorage on mount', () => {
     localStorageMock.getItem.mockReturnValue('dark');
-    
+
     render(
       <ThemeProvider>
         <TestComponent />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     expect(localStorageMock.getItem).toHaveBeenCalledWith('theme');
@@ -74,13 +76,13 @@ describe('ThemeContext', () => {
     render(
       <ThemeProvider>
         <TestComponent />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     expect(screen.getByTestId('theme')).toHaveTextContent('light');
-    
+
     fireEvent.click(screen.getByTestId('toggle'));
-    
+
     expect(screen.getByTestId('theme')).toHaveTextContent('dark');
     expect(localStorageMock.setItem).toHaveBeenCalledWith('theme', 'dark');
   });
@@ -89,28 +91,28 @@ describe('ThemeContext', () => {
     render(
       <ThemeProvider>
         <TestComponent />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     fireEvent.click(screen.getByTestId('toggle'));
-    
+
     expect(localStorageMock.setItem).toHaveBeenCalledWith('theme', 'dark');
   });
 
   it('should toggle from dark to light', () => {
     localStorageMock.getItem.mockReturnValue('dark');
-    
+
     render(
       <ThemeProvider>
         <TestComponent />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     expect(screen.getByTestId('theme')).toHaveTextContent('dark');
-    
+
     fireEvent.click(screen.getByTestId('toggle'));
-    
+
     expect(screen.getByTestId('theme')).toHaveTextContent('light');
     expect(localStorageMock.setItem).toHaveBeenCalledWith('theme', 'light');
   });
-}); 
+});

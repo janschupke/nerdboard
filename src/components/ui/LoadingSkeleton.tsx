@@ -6,9 +6,12 @@ interface LoadingSkeletonProps {
 export function LoadingSkeleton({ tileSize = 'medium', className = '' }: LoadingSkeletonProps) {
   const getHeight = () => {
     switch (tileSize) {
-      case 'small': return 'h-32';
-      case 'large': return 'h-64';
-      default: return 'h-48';
+      case 'small':
+        return 'h-32';
+      case 'large':
+        return 'h-64';
+      default:
+        return 'h-48';
     }
   };
 
@@ -17,7 +20,7 @@ export function LoadingSkeleton({ tileSize = 'medium', className = '' }: Loading
       <div className="h-full bg-gray-200 rounded-lg flex flex-col">
         {/* Header skeleton */}
         <div className="h-12 bg-gray-300 rounded-t-lg"></div>
-        
+
         {/* Content skeleton */}
         <div className="flex-1 p-4 space-y-3">
           <div className="h-4 bg-gray-300 rounded w-3/4"></div>
@@ -33,4 +36,4 @@ export function LoadingSkeleton({ tileSize = 'medium', className = '' }: Loading
       </div>
     </div>
   );
-} 
+}

@@ -7,10 +7,7 @@ interface ErrorBoundaryProps {
   fallback?: React.ComponentType<{ error: Error; resetError: () => void }>;
 }
 
-class DashboardErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
@@ -23,9 +20,9 @@ class DashboardErrorBoundary extends React.Component<
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.setState({
       error,
-      errorInfo
+      errorInfo,
     });
-    
+
     // Log error to monitoring service
     console.error('Dashboard Error:', error, errorInfo);
   }
@@ -43,17 +40,11 @@ class DashboardErrorBoundary extends React.Component<
 
       return (
         <div className="p-4 text-center">
-          <h2 className="text-lg font-semibold text-error-600 mb-2">
-            Something went wrong
-          </h2>
+          <h2 className="text-lg font-semibold text-error-600 mb-2">Something went wrong</h2>
           <p className="text-gray-600 mb-4">
             We're sorry, but there was an error loading this component.
           </p>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={this.resetError}
-          >
+          <Button variant="primary" size="sm" onClick={this.resetError}>
             Try Again
           </Button>
         </div>
@@ -64,4 +55,4 @@ class DashboardErrorBoundary extends React.Component<
   }
 }
 
-export { DashboardErrorBoundary as ErrorBoundary }; 
+export { DashboardErrorBoundary as ErrorBoundary };

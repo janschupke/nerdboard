@@ -22,7 +22,12 @@ interface ChartComponentProps {
   height?: number;
 }
 
-export function ChartComponent({ data, title, color, height = CHART_CONFIG.DEFAULT_HEIGHT }: ChartComponentProps) {
+export function ChartComponent({
+  data,
+  title,
+  color,
+  height = CHART_CONFIG.DEFAULT_HEIGHT,
+}: ChartComponentProps) {
   const formatTooltip = (value: unknown, name: string) => {
     return [`$${Number(value).toFixed(CHART_CONFIG.PRICE_DECIMAL_PLACES)}`, name];
   };
@@ -77,4 +82,4 @@ export function ChartComponent({ data, title, color, height = CHART_CONFIG.DEFAU
       </ResponsiveContainer>
     </div>
   );
-} 
+}

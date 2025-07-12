@@ -36,4 +36,4 @@ export const CRYPTO_ERROR_MESSAGES = {
   FETCH_FAILED: 'Failed to load cryptocurrency data',
   API_ERROR: 'API request failed',
   NETWORK_ERROR: 'Network error occurred',
-} as const; 
+} as const;

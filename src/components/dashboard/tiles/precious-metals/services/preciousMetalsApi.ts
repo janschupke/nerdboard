@@ -1,7 +1,4 @@
-import { 
-  PRECIOUS_METALS_API_CONFIG, 
-  PRECIOUS_METALS_MOCK_CONFIG
-} from '../constants';
+import { PRECIOUS_METALS_API_CONFIG, PRECIOUS_METALS_MOCK_CONFIG } from '../constants';
 import type { PreciousMetalsData, PriceHistory, MetalType } from '../types';
 
 export class PreciousMetalsApiService {
@@ -47,19 +44,21 @@ export class PreciousMetalsApiService {
       const now = Date.now();
       const dayMs = PRECIOUS_METALS_MOCK_CONFIG.TIME_CONSTANTS.DAY_MS;
       const mockData: PriceHistory[] = [];
-      
-      const basePrice = metal === 'gold' 
-        ? PRECIOUS_METALS_MOCK_CONFIG.GOLD.BASE_PRICE 
-        : PRECIOUS_METALS_MOCK_CONFIG.SILVER.BASE_PRICE;
-      const volatility = metal === 'gold' 
-        ? PRECIOUS_METALS_MOCK_CONFIG.GOLD.VOLATILITY 
-        : PRECIOUS_METALS_MOCK_CONFIG.SILVER.VOLATILITY;
+
+      const basePrice =
+        metal === 'gold'
+          ? PRECIOUS_METALS_MOCK_CONFIG.GOLD.BASE_PRICE
+          : PRECIOUS_METALS_MOCK_CONFIG.SILVER.BASE_PRICE;
+      const volatility =
+        metal === 'gold'
+          ? PRECIOUS_METALS_MOCK_CONFIG.GOLD.VOLATILITY
+          : PRECIOUS_METALS_MOCK_CONFIG.SILVER.VOLATILITY;
 
       for (let i = days; i >= 0; i--) {
-        const timestamp = now - (i * dayMs);
+        const timestamp = now - i * dayMs;
         const randomChange = (Math.random() - 0.5) * volatility;
         const price = basePrice + randomChange;
-        
+
         mockData.push({
           timestamp,
           price: Math.max(price, 0), // Ensure price is never negative
@@ -85,4 +84,4 @@ export class PreciousMetalsApiService {
   private setCachedData(key: string, data: unknown): void {
     this.cache.set(key, { data, timestamp: Date.now() });
   }
-} 
+}

@@ -5,7 +5,9 @@ import type { CryptocurrencyData } from '../types';
 
 const apiService = new CoinGeckoApiService();
 
-export function useCryptocurrencyData(refreshInterval: number = CRYPTO_API_CONFIG.DEFAULT_REFRESH_INTERVAL) {
+export function useCryptocurrencyData(
+  refreshInterval: number = CRYPTO_API_CONFIG.DEFAULT_REFRESH_INTERVAL,
+) {
   const [data, setData] = useState<CryptocurrencyData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,4 +43,4 @@ export function useCryptocurrencyData(refreshInterval: number = CRYPTO_API_CONFI
     error,
     refetch,
   };
-} 
+}

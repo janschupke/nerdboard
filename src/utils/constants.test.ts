@@ -1,11 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  API_CONFIG, 
-  UI_CONFIG, 
-  ERROR_MESSAGES, 
-  TIME_CONSTANTS, 
-  CACHE_CONFIG 
-} from './constants';
+import { API_CONFIG, UI_CONFIG, ERROR_MESSAGES, TIME_CONSTANTS, CACHE_CONFIG } from './constants';
 
 describe('Constants', () => {
   describe('API_CONFIG', () => {
@@ -86,4 +80,4 @@ describe('Constants', () => {
       expect(CACHE_CONFIG.LONG_TTL).toBe(1800000); // 30 minutes
     });
   });
-}); 
+});

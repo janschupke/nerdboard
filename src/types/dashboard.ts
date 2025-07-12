@@ -11,7 +11,7 @@ export const TileType = {
   PRECIOUS_METALS: 'precious_metals',
 } as const;
 
-export type TileType = typeof TileType[keyof typeof TileType];
+export type TileType = (typeof TileType)[keyof typeof TileType];
 
 export const TileSize = {
   SMALL: 'small',
@@ -19,7 +19,7 @@ export const TileSize = {
   LARGE: 'large',
 } as const;
 
-export type TileSize = typeof TileSize[keyof typeof TileSize];
+export type TileSize = (typeof TileSize)[keyof typeof TileSize];
 
 export interface DashboardState {
   tiles: TileConfig[];
@@ -43,4 +43,4 @@ export interface DashboardContextType {
   toggleSidebar: () => void;
   updateTileConfig: (id: string, config: Partial<TileConfig>) => void;
   moveTile: (from: number, to: number) => void;
-} 
+}

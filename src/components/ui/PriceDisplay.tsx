@@ -6,12 +6,12 @@ interface PriceDisplayProps {
   className?: string;
 }
 
-export function PriceDisplay({ 
-  price, 
-  change, 
-  changePercentage, 
+export function PriceDisplay({
+  price,
+  change,
+  changePercentage,
   currency = '$',
-  className = '' 
+  className = '',
 }: PriceDisplayProps) {
   const formatPrice = (value: number) => {
     return `${currency}${value.toLocaleString(undefined, {
@@ -39,15 +39,14 @@ export function PriceDisplay({
         <div className={`text-sm flex items-center space-x-1 ${getChangeColor()}`}>
           <span>{getChangeIcon()}</span>
           <span>
-            {changePercentage !== undefined 
+            {changePercentage !== undefined
               ? `${changePercentage >= 0 ? '+' : ''}${changePercentage.toFixed(2)}%`
-              : change !== undefined 
+              : change !== undefined
                 ? `${change >= 0 ? '+' : ''}${formatPrice(change)}`
-                : ''
-            }
+                : ''}
           </span>
         </div>
       )}
     </div>
   );
-} 
+}

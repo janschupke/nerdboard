@@ -12,13 +12,13 @@ export class CoinGeckoApiService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false`
+        `${this.baseUrl}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false`,
       );
-      
+
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
       }
-      
+
       const data = await response.json();
       this.setCachedData(cacheKey, data);
       return data;
@@ -35,19 +35,19 @@ export class CoinGeckoApiService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`
+        `${this.baseUrl}/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`,
       );
-      
+
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
       }
-      
+
       const data = await response.json();
       const formattedData = data.prices.map(([timestamp, price]: [number, number]) => ({
         timestamp,
-        price
+        price,
       }));
-      
+
       this.setCachedData(cacheKey, formattedData);
       return formattedData;
     } catch (error) {
@@ -67,4 +67,4 @@ export class CoinGeckoApiService {
   private setCachedData(key: string, data: unknown): void {
     this.cache.set(key, { data, timestamp: Date.now() });
   }
-} 
+}

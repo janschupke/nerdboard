@@ -29,4 +29,4 @@ export interface PreciousMetalsTileProps {
 }
 
 export type ChartPeriod = '7d' | '30d' | '1y';
-export type MetalType = 'gold' | 'silver'; 
+export type MetalType = 'gold' | 'silver';

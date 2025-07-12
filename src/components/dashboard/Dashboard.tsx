@@ -1,4 +1,3 @@
-
 import { DashboardProvider } from '../../contexts/DashboardContext';
 import { TileGrid } from './TileGrid';
 import { Sidebar } from './Sidebar';
@@ -39,20 +38,14 @@ function DashboardContent() {
           >
             {theme === 'dark' ? <Icon name="sun" size="md" /> : <Icon name="moon" size="md" />}
           </button>
-          <span className="text-sm text-theme-secondary">
-            {state.tiles.length} tiles
-          </span>
+          <span className="text-sm text-theme-secondary">{state.tiles.length} tiles</span>
         </div>
       </header>
 
       {/* Main Content Area */}
       <div className="flex-1 flex">
         {/* Sidebar */}
-        <Sidebar
-          isOpen={sidebarOpen}
-          onToggle={toggleSidebar}
-          onTileSelect={handleTileSelect}
-        />
+        <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} onTileSelect={handleTileSelect} />
 
         {/* Tile Grid */}
         <main className="flex-1 overflow-hidden relative transition-all duration-300">
@@ -73,4 +66,4 @@ export function Dashboard() {
       </DashboardProvider>
     </ErrorBoundary>
   );
-} 
+}

@@ -3,17 +3,21 @@
 ## Feature Overview
 
 ### Feature Name
+
 Data Integration - Cryptocurrency and Precious Metals Tiles
 
 ### Brief Description
+
 Implement cryptocurrency and precious metals tiles with real-time data fetching from CoinGecko API and other public data sources, including historical chart visualization using Recharts library.
 
 ### User Value
+
 Users can view real-time cryptocurrency market data and precious metals prices with historical charts, providing valuable financial information directly on their dashboard.
 
 ## Functional Requirements
 
 ### Cryptocurrency Tile
+
 - [ ] Display top 10 cryptocurrencies by market cap
 - [ ] Show current price, 24h change percentage, and market cap
 - [ ] Real-time data from CoinGecko API (free tier)
@@ -22,6 +26,7 @@ Users can view real-time cryptocurrency market data and precious metals prices w
 - [ ] Error handling for API failures with fallback data
 
 ### Precious Metals Tile
+
 - [ ] Display gold and silver spot prices
 - [ ] Historical price charts for both metals
 - [ ] Data from public APIs or reliable financial sources
@@ -30,6 +35,7 @@ Users can view real-time cryptocurrency market data and precious metals prices w
 - [ ] Graceful error handling with cached data
 
 ### Chart Visualization
+
 - [ ] Line charts for historical price data
 - [ ] Responsive chart sizing within tiles
 - [ ] Interactive tooltips on chart hover
@@ -38,6 +44,7 @@ Users can view real-time cryptocurrency market data and precious metals prices w
 - [ ] Accessibility support for screen readers
 
 ### Data Management
+
 - [ ] Centralized API service layer
 - [ ] Request caching to minimize API calls
 - [ ] Rate limiting for API requests
@@ -48,13 +55,14 @@ Users can view real-time cryptocurrency market data and precious metals prices w
 ## Technical Requirements
 
 ### API Integration
+
 ```typescript
 // src/services/api.ts
 interface ApiService {
   // Cryptocurrency API
   getCryptocurrencyData(): Promise<CryptocurrencyData[]>;
   getCryptocurrencyHistory(coinId: string, days: number): Promise<PriceHistory[]>;
-  
+
   // Precious Metals API
   getPreciousMetalsData(): Promise<PreciousMetalsData>;
   getPreciousMetalsHistory(metal: 'gold' | 'silver', days: number): Promise<PriceHistory[]>;
@@ -91,6 +99,7 @@ interface PriceHistory {
 ```
 
 ### Tile Components
+
 ```typescript
 // src/components/dashboard/tiles/CryptocurrencyTile.tsx
 interface CryptocurrencyTileProps {
@@ -114,13 +123,14 @@ interface PreciousMetalsTileProps {
 ```
 
 ### Data Fetching Hooks
+
 ```typescript
 // src/hooks/useCryptocurrencyData.ts
 export function useCryptocurrencyData(refreshInterval: number = 30000) {
   const [data, setData] = useState<CryptocurrencyData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Implementation with caching and error handling
 }
 
@@ -129,7 +139,7 @@ export function usePreciousMetalsData(refreshInterval: number = 300000) {
   const [data, setData] = useState<PreciousMetalsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Implementation with caching and error handling
 }
 ```
@@ -137,6 +147,7 @@ export function usePreciousMetalsData(refreshInterval: number = 300000) {
 ## UI/UX Considerations
 
 ### User Interface
+
 - **Tile Layout**: Clean card design with data tables and charts
 - **Data Display**: Clear price formatting with currency symbols
 - **Chart Integration**: Responsive charts that fit tile boundaries
@@ -144,12 +155,14 @@ export function usePreciousMetalsData(refreshInterval: number = 300000) {
 - **Error States**: User-friendly error messages with retry options
 
 ### User Experience
+
 - **Data Refresh**: Smooth updates without jarring layout changes
 - **Chart Interaction**: Hover tooltips and responsive interactions
 - **Error Recovery**: Automatic retry mechanisms for failed requests
 - **Performance**: Fast data loading with cached responses
 
 ### Accessibility Requirements
+
 - **Screen Reader Support**: Proper ARIA labels for charts and data
 - **Keyboard Navigation**: Full keyboard accessibility for chart interactions
 - **Color Contrast**: WCAG AA compliance for all text and chart elements
@@ -158,6 +171,7 @@ export function usePreciousMetalsData(refreshInterval: number = 300000) {
 ## Implementation Details
 
 ### File Structure
+
 ```
 src/
 ├── components/
@@ -189,6 +203,7 @@ src/
 ```
 
 ### API Service Implementation
+
 ```typescript
 // src/services/coinGeckoApi.ts
 export class CoinGeckoApiService {
@@ -203,13 +218,13 @@ export class CoinGeckoApiService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false`
+        `${this.baseUrl}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false`,
       );
-      
+
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
       }
-      
+
       const data = await response.json();
       this.setCachedData(cacheKey, data);
       return data;
@@ -226,19 +241,19 @@ export class CoinGeckoApiService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`
+        `${this.baseUrl}/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`,
       );
-      
+
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
       }
-      
+
       const data = await response.json();
       const formattedData = data.prices.map(([timestamp, price]: [number, number]) => ({
         timestamp,
-        price
+        price,
       }));
-      
+
       this.setCachedData(cacheKey, formattedData);
       return formattedData;
     } catch (error) {
@@ -262,6 +277,7 @@ export class CoinGeckoApiService {
 ```
 
 ### Chart Component Implementation
+
 ```typescript
 // src/components/dashboard/tiles/ChartComponent.tsx
 import React from 'react';
@@ -326,6 +342,7 @@ const ChartComponent: React.FC<ChartComponentProps> = ({
 ```
 
 ### Cryptocurrency Tile Implementation
+
 ```typescript
 // src/components/dashboard/tiles/CryptocurrencyTile.tsx
 import React from 'react';
@@ -363,7 +380,7 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
     return (
       <div className="p-4 text-center">
         <p className="text-red-600">Failed to load cryptocurrency data</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm"
         >
@@ -392,14 +409,14 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
           ))}
         </select>
       </div>
-      
+
       <div className="flex-1 p-4">
         {selectedCoinData && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-600">Current Price</p>
-                <PriceDisplay 
+                <PriceDisplay
                   price={selectedCoinData.current_price}
                   change={selectedCoinData.price_change_percentage_24h}
                 />
@@ -411,7 +428,7 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
                 </p>
               </div>
             </div>
-            
+
             <ChartComponent
               data={[]} // Will be populated with historical data
               title={`${selectedCoinData.name} Price (${chartPeriod})`}
@@ -429,17 +446,20 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
 ## Testing Requirements
 
 ### Unit Testing
+
 - **Coverage Target**: >80% for all new components and services
 - **Component Tests**: CryptocurrencyTile, PreciousMetalsTile, ChartComponent
 - **Service Tests**: CoinGeckoApiService, data fetching hooks
 - **Utility Tests**: Formatters, cache utilities
 
 ### Integration Testing
+
 - **API Integration Tests**: Test API calls and error handling
 - **Chart Rendering Tests**: Verify chart components render correctly
 - **Data Flow Tests**: Test data fetching and state management
 
 ### Performance Testing
+
 - **API Performance**: <500ms for API responses
 - **Chart Rendering**: <200ms for chart component rendering
 - **Memory Usage**: <30MB for dashboard with data tiles
@@ -448,12 +468,14 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
 ## Performance Considerations
 
 ### Performance Benchmarks
+
 - **Data Fetch Time**: <500ms for cryptocurrency data, <1s for precious metals
 - **Chart Render Time**: <200ms for chart component rendering
 - **Cache Hit Rate**: >80% for cached API responses
 - **Memory Usage**: <30MB for dashboard with 5 data tiles
 
 ### Optimization Strategies
+
 - **API Caching**: Implement request caching to minimize API calls
 - **Chart Optimization**: Lazy load chart components and optimize re-renders
 - **Data Compression**: Compress cached data to reduce localStorage usage
@@ -462,6 +484,7 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
 ## Risk Assessment
 
 ### Technical Risks
+
 - **Risk**: CoinGecko API rate limits exceeded
   - **Impact**: Medium
   - **Mitigation**: Implement aggressive caching and fallback data sources
@@ -475,6 +498,7 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
   - **Mitigation**: Implement code splitting and tree shaking
 
 ### User Experience Risks
+
 - **Risk**: Slow data loading frustrates users
   - **Impact**: Medium
   - **Mitigation**: Implement skeleton loaders and progressive loading
@@ -486,11 +510,13 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
 ## Success Metrics
 
 ### User Experience Metrics
+
 - **Data Load Time**: <1 second for initial data loading
 - **Chart Interaction**: <100ms response time for chart interactions
 - **Error Recovery**: >95% successful data refresh after errors
 
 ### Technical Metrics
+
 - **API Reliability**: >99% successful API calls
 - **Cache Efficiency**: >80% cache hit rate
 - **Performance**: Charts render in <200ms
@@ -498,36 +524,42 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
 ## Implementation Checklist
 
 ### Phase 1: API Services
+
 - [ ] Implement CoinGecko API service with caching
 - [ ] Create precious metals API service
 - [ ] Add error handling and retry mechanisms
 - [ ] Implement rate limiting for API requests
 
 ### Phase 2: Data Hooks
+
 - [ ] Create useCryptocurrencyData hook
 - [ ] Create usePreciousMetalsData hook
 - [ ] Implement data caching and refresh logic
 - [ ] Add error state management
 
 ### Phase 3: Chart Components
+
 - [ ] Install and configure Recharts library
 - [ ] Create reusable ChartComponent
 - [ ] Implement responsive chart sizing
 - [ ] Add accessibility features for charts
 
 ### Phase 4: Tile Components
+
 - [ ] Implement CryptocurrencyTile component
 - [ ] Implement PreciousMetalsTile component
 - [ ] Add loading and error states
 - [ ] Create data table components
 
 ### Phase 5: Data Integration
+
 - [ ] Connect tiles to API services
 - [ ] Implement real-time data refresh
 - [ ] Add historical data fetching
 - [ ] Test data flow and error handling
 
 ### Phase 6: Polish
+
 - [ ] Add smooth animations for data updates
 - [ ] Implement chart interactions and tooltips
 - [ ] Add keyboard navigation for charts
@@ -536,10 +568,12 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
 ## Dependencies
 
 ### New Dependencies
+
 - **Recharts**: React charting library for data visualization
 - **date-fns**: Date utility library for chart formatting
 
 ### Existing Dependencies
+
 - React 19 with TypeScript
 - Tailwind CSS for styling
 - Existing dashboard foundation components
@@ -547,11 +581,13 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
 ## Documentation Requirements
 
 ### Code Documentation
+
 - **API Documentation**: Document all API service methods and error handling
 - **Component Documentation**: JSDoc comments for all tile components
 - **Hook Documentation**: Documentation for data fetching hooks
 
 ### README Updates
+
 - Update project README with data integration features
 - Document API usage and rate limits
 - Add troubleshooting guide for API issues
@@ -559,11 +595,13 @@ const CryptocurrencyTile: React.FC<CryptocurrencyTileProps> = ({
 ## Post-Implementation
 
 ### Monitoring
+
 - **API Monitoring**: Track API response times and error rates
 - **Performance Monitoring**: Monitor chart rendering performance
 - **Error Tracking**: Monitor data fetching failures and user impact
 
 ### Maintenance
+
 - **API Updates**: Monitor for API changes and updates
 - **Chart Library**: Keep Recharts library updated
-- **Performance Optimization**: Continuously optimize data fetching and caching 
+- **Performance Optimization**: Continuously optimize data fetching and caching

@@ -16,9 +16,7 @@ interface PreciousMetalsTileProps {
 export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
   const { data, loading, error, refetch } = usePreciousMetalsData();
   const [selectedMetal, setSelectedMetal] = useState<'gold' | 'silver'>('gold');
-  const [chartPeriod, setChartPeriod] = useState<'7d' | '30d' | '1y'>(
-    config.chartPeriod || '7d'
-  );
+  const [chartPeriod, setChartPeriod] = useState<'7d' | '30d' | '1y'>(config.chartPeriod || '7d');
 
   if (loading) {
     return <LoadingSkeleton tileSize={size} />;
@@ -28,11 +26,7 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
     return (
       <div className="p-4 text-center">
         <p className="text-error-600 mb-2">Failed to load precious metals data</p>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={refetch}
-        >
+        <Button variant="primary" size="sm" onClick={refetch}>
           Retry
         </Button>
       </div>
@@ -69,13 +63,13 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
           ))}
         </div>
       </div>
-      
+
       <div className="flex-1 p-4">
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-600 mb-1">Current Price</p>
-              <PriceDisplay 
+              <PriceDisplay
                 price={selectedMetalData.price}
                 change={selectedMetalData.change_24h}
                 changePercentage={selectedMetalData.change_percentage_24h}
@@ -83,13 +77,13 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">24h Change</p>
-              <PriceDisplay 
+              <PriceDisplay
                 price={selectedMetalData.change_24h}
                 changePercentage={selectedMetalData.change_percentage_24h}
               />
             </div>
           </div>
-          
+
           <div className="flex space-x-2">
             {(['7d', '30d', '1y'] as const).map((period) => (
               <button
@@ -105,7 +99,7 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
               </button>
             ))}
           </div>
-          
+
           <ChartComponent
             data={[]} // Will be populated with historical data in future implementation
             title={`${selectedMetal.charAt(0).toUpperCase() + selectedMetal.slice(1)} Price (${chartPeriod})`}
@@ -116,4 +110,4 @@ export function PreciousMetalsTile({ size, config }: PreciousMetalsTileProps) {
       </div>
     </div>
   );
-} 
+}

@@ -139,7 +139,7 @@ describe('useDashboard', () => {
       result.current.addTile(TileType.CRYPTOCURRENCY);
     });
 
-    const tileIds = result.current.state.tiles.map(tile => tile.id);
+    const tileIds = result.current.state.tiles.map((tile) => tile.id);
     expect(tileIds[0]).not.toBe(tileIds[1]);
   });
 
@@ -211,4 +211,4 @@ describe('useDashboard', () => {
     expect(result.current.state.tiles[0].id).toBe('saved-tile-1');
     expect(result.current.state.sidebarOpen).toBe(false);
   });
-}); 
+});

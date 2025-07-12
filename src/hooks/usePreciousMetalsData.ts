@@ -40,4 +40,4 @@ export function usePreciousMetalsData(refreshInterval: number = 300000) {
     error,
     refetch,
   };
-} 
+}

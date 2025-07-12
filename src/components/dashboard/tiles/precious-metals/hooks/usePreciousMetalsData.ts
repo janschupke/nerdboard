@@ -5,7 +5,9 @@ import type { PreciousMetalsData } from '../types';
 
 const apiService = new PreciousMetalsApiService();
 
-export function usePreciousMetalsData(refreshInterval: number = PRECIOUS_METALS_API_CONFIG.DEFAULT_REFRESH_INTERVAL) {
+export function usePreciousMetalsData(
+  refreshInterval: number = PRECIOUS_METALS_API_CONFIG.DEFAULT_REFRESH_INTERVAL,
+) {
   const [data, setData] = useState<PreciousMetalsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,4 +43,4 @@ export function usePreciousMetalsData(refreshInterval: number = PRECIOUS_METALS_
     error,
     refetch,
   };
-} 
+}

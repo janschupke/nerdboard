@@ -5,7 +5,7 @@ import { Button } from './Button';
 describe('Button', () => {
   it('renders with default props', () => {
     render(<Button>Click me</Button>);
-    
+
     const button = screen.getByRole('button');
     expect(button).toBeInTheDocument();
     expect(button).toHaveTextContent('Click me');
@@ -42,14 +42,14 @@ describe('Button', () => {
   it('handles click events', () => {
     const handleClick = vi.fn();
     render(<Button onClick={handleClick}>Click me</Button>);
-    
+
     fireEvent.click(screen.getByRole('button'));
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
   it('applies custom className', () => {
     render(<Button className="custom-class">Button</Button>);
-    
+
     expect(screen.getByRole('button')).toHaveClass('custom-class');
   });
 
@@ -57,9 +57,9 @@ describe('Button', () => {
     render(
       <Button variant="primary" size="lg" className="custom-class">
         Button
-      </Button>
+      </Button>,
     );
-    
+
     const button = screen.getByRole('button');
     expect(button).toHaveClass('bg-primary-500');
     expect(button).toHaveClass('px-6', 'py-3', 'text-lg');
@@ -68,38 +68,42 @@ describe('Button', () => {
 
   it('applies disabled state', () => {
     render(<Button disabled>Disabled</Button>);
-    
+
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
   });
 
   it('does not trigger click when disabled', () => {
     const handleClick = vi.fn();
-    render(<Button disabled onClick={handleClick}>Disabled</Button>);
-    
+    render(
+      <Button disabled onClick={handleClick}>
+        Disabled
+      </Button>,
+    );
+
     fireEvent.click(screen.getByRole('button'));
     expect(handleClick).not.toHaveBeenCalled();
   });
 
   it('applies focus styles', () => {
     render(<Button>Focusable</Button>);
-    
+
     const button = screen.getByRole('button');
     fireEvent.focus(button);
-    
+
     expect(button).toHaveClass('focus:outline-none', 'focus:ring-2');
   });
 
   it('applies hover styles', () => {
     render(<Button variant="primary">Hoverable</Button>);
-    
+
     const button = screen.getByRole('button');
     expect(button).toHaveClass('hover:bg-primary-600');
   });
 
   it('applies correct base classes', () => {
     render(<Button>Base</Button>);
-    
+
     const button = screen.getByRole('button');
     expect(button).toHaveClass(
       'font-semibold',
@@ -108,14 +112,18 @@ describe('Button', () => {
       'duration-200',
       'focus:outline-none',
       'focus:ring-2',
-      'focus:ring-offset-2'
+      'focus:ring-offset-2',
     );
   });
 
   it('forwards additional props', () => {
-    render(<Button data-testid="test-button" aria-label="Test">Test</Button>);
-    
+    render(
+      <Button data-testid="test-button" aria-label="Test">
+        Test
+      </Button>,
+    );
+
     const button = screen.getByTestId('test-button');
     expect(button).toHaveAttribute('aria-label', 'Test');
   });
-}); 
+});

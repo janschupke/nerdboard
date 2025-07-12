@@ -17,7 +17,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Check if the dark class is already set by the inline script
     const isDark = document.documentElement.classList.contains('dark');
     const stored = localStorage.getItem('theme') as Theme | null;
-    
+
     if (stored) {
       setThemeState(stored);
       // Only update the class if it doesn't match the stored theme
@@ -58,4 +58,4 @@ export function useTheme() {
   const ctx = useContext(ThemeContext);
   if (!ctx) throw new Error('useTheme must be used within ThemeProvider');
   return ctx;
-} 
+}

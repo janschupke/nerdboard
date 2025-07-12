@@ -17,4 +17,4 @@ export interface PriceHistory {
 export interface CryptocurrencyTileConfig {
   selectedCoins?: string[];
   chartPeriod?: '7d' | '30d' | '1y';
-} 
+}

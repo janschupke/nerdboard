@@ -1,5 +1,3 @@
-
-
 interface IconProps {
   name: string;
   size?: 'sm' | 'md' | 'lg';
@@ -18,12 +16,12 @@ export function Icon({ name, size = 'md', className = '' }: IconProps) {
     bitcoin: '₿',
     ethereum: 'Ξ',
     crypto: '💎',
-    
+
     // Precious metals icons
     gold: '🥇',
     silver: '🥈',
     metals: '🏆',
-    
+
     // UI icons
     close: '✕',
     add: '+',
@@ -47,4 +45,4 @@ export function Icon({ name, size = 'md', className = '' }: IconProps) {
       {icon}
     </span>
   );
-} 
+}

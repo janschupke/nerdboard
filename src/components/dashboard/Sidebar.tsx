@@ -1,4 +1,3 @@
-
 import { TileType } from '../../types/dashboard';
 import { Button } from '../ui/Button';
 import { Icon } from '../ui/Icon';
@@ -46,7 +45,7 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
                 tabIndex={0}
                 data-tile-type={tile.type}
                 draggable={true}
-                onDragStart={e => {
+                onDragStart={(e) => {
                   e.dataTransfer.setData('application/nerdboard-tile-type', tile.type);
                   e.dataTransfer.effectAllowed = 'copy';
                 }}
@@ -62,12 +61,8 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
                     <Icon name={tile.icon} size="md" className="text-accent-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-theme-primary truncate">
-                      {tile.name}
-                    </h3>
-                    <p className="text-xs text-theme-secondary mt-1">
-                      {tile.description}
-                    </p>
+                    <h3 className="text-sm font-medium text-theme-primary truncate">{tile.name}</h3>
+                    <p className="text-xs text-theme-secondary mt-1">{tile.description}</p>
                   </div>
                   <div className="flex-shrink-0">
                     <Icon name="add" size="sm" className="text-theme-tertiary" />
@@ -80,16 +75,11 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
 
         {/* Footer */}
         <div className="p-4 border-t border-theme-primary">
-          <Button
-            variant="primary"
-            size="sm"
-            className="w-full"
-            onClick={onToggle}
-          >
+          <Button variant="primary" size="sm" className="w-full" onClick={onToggle}>
             Close
           </Button>
         </div>
       </div>
     </aside>
   );
-} 
+}

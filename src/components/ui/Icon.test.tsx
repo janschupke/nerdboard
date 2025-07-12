@@ -5,7 +5,7 @@ import { Icon } from './Icon';
 describe('Icon', () => {
   it('renders with default props', () => {
     render(<Icon name="crypto" />);
-    
+
     const icon = screen.getByRole('img', { hidden: true });
     expect(icon).toBeInTheDocument();
     expect(icon).toHaveAttribute('aria-label', 'crypto');
@@ -13,7 +13,7 @@ describe('Icon', () => {
 
   it('renders with custom className', () => {
     render(<Icon name="crypto" className="custom-class" />);
-    
+
     const icon = screen.getByRole('img', { hidden: true });
     expect(icon).toHaveClass('custom-class');
   });
@@ -98,15 +98,15 @@ describe('Icon', () => {
 
   it('applies correct base classes', () => {
     render(<Icon name="crypto" />);
-    
+
     const icon = screen.getByRole('img', { hidden: true });
     expect(icon).toHaveClass('flex', 'items-center', 'justify-center');
   });
 
   it('combines size and custom classes', () => {
     render(<Icon name="crypto" size="md" className="text-blue-500" />);
-    
+
     const icon = screen.getByRole('img', { hidden: true });
     expect(icon).toHaveClass('w-6', 'h-6', 'text-blue-500');
   });
-}); 
+});

@@ -7,10 +7,10 @@ interface AnimationContainerProps {
   onAnimationComplete?: () => void;
 }
 
-export function AnimationContainer({ 
-  children, 
-  animation, 
-  onAnimationComplete 
+export function AnimationContainer({
+  children,
+  animation,
+  onAnimationComplete,
 }: AnimationContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const config = tileAnimations[animation];
@@ -53,10 +53,10 @@ export function AnimationContainer({
       className={getAnimationClasses()}
       style={{
         transitionDuration: `${config.duration}ms`,
-        transitionTimingFunction: config.easing
+        transitionTimingFunction: config.easing,
       }}
     >
       {children}
     </div>
   );
-} 
+}

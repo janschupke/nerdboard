@@ -30,7 +30,7 @@ function dashboardReducer(state: DashboardState, action: DashboardAction): Dashb
     case 'REMOVE_TILE':
       return {
         ...state,
-        tiles: state.tiles.filter(tile => tile.id !== action.payload),
+        tiles: state.tiles.filter((tile) => tile.id !== action.payload),
       };
     case 'TOGGLE_SIDEBAR':
       return {
@@ -40,10 +40,8 @@ function dashboardReducer(state: DashboardState, action: DashboardAction): Dashb
     case 'UPDATE_TILE_CONFIG':
       return {
         ...state,
-        tiles: state.tiles.map(tile =>
-          tile.id === action.payload.id
-            ? { ...tile, ...action.payload.config }
-            : tile
+        tiles: state.tiles.map((tile) =>
+          tile.id === action.payload.id ? { ...tile, ...action.payload.config } : tile,
         ),
       };
     case 'SET_LOADING':
@@ -66,7 +64,10 @@ function dashboardReducer(state: DashboardState, action: DashboardAction): Dashb
 }
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
-  const [storedState, setStoredState] = useLocalStorage<DashboardState>('dashboard-state', initialState);
+  const [storedState, setStoredState] = useLocalStorage<DashboardState>(
+    'dashboard-state',
+    initialState,
+  );
   const [state, dispatch] = useReducer(dashboardReducer, storedState);
 
   // Save state to localStorage whenever it changes
@@ -110,12 +111,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     moveTile,
   };
 
-  return (
-    <DashboardContext.Provider value={value}>
-      {children}
-    </DashboardContext.Provider>
-  );
+  return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }
 
 // Export context for use in hooks
-export { DashboardContext }; 
+export { DashboardContext };

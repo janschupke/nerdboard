@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  PRECIOUS_METALS_API_CONFIG, 
-  PRECIOUS_METALS_UI_CONFIG, 
-  PRECIOUS_METALS_CHART_CONFIG, 
+import {
+  PRECIOUS_METALS_API_CONFIG,
+  PRECIOUS_METALS_UI_CONFIG,
+  PRECIOUS_METALS_CHART_CONFIG,
   PRECIOUS_METALS_MOCK_CONFIG,
-  PRECIOUS_METALS_ERROR_MESSAGES 
+  PRECIOUS_METALS_ERROR_MESSAGES,
 } from './constants';
 
 describe('Precious Metals Tile Constants', () => {
@@ -57,8 +57,8 @@ describe('Precious Metals Tile Constants', () => {
 
   describe('PRECIOUS_METALS_MOCK_CONFIG', () => {
     it('should have correct gold configuration', () => {
-      expect(PRECIOUS_METALS_MOCK_CONFIG.GOLD.BASE_PRICE).toBe(1950.50);
-      expect(PRECIOUS_METALS_MOCK_CONFIG.GOLD.CHANGE_24H).toBe(12.30);
+      expect(PRECIOUS_METALS_MOCK_CONFIG.GOLD.BASE_PRICE).toBe(1950.5);
+      expect(PRECIOUS_METALS_MOCK_CONFIG.GOLD.CHANGE_24H).toBe(12.3);
       expect(PRECIOUS_METALS_MOCK_CONFIG.GOLD.CHANGE_PERCENTAGE_24H).toBe(0.63);
       expect(PRECIOUS_METALS_MOCK_CONFIG.GOLD.VOLATILITY).toBe(50);
     });
@@ -66,7 +66,7 @@ describe('Precious Metals Tile Constants', () => {
     it('should have correct silver configuration', () => {
       expect(PRECIOUS_METALS_MOCK_CONFIG.SILVER.BASE_PRICE).toBe(24.75);
       expect(PRECIOUS_METALS_MOCK_CONFIG.SILVER.CHANGE_24H).toBe(-0.15);
-      expect(PRECIOUS_METALS_MOCK_CONFIG.SILVER.CHANGE_PERCENTAGE_24H).toBe(-0.60);
+      expect(PRECIOUS_METALS_MOCK_CONFIG.SILVER.CHANGE_PERCENTAGE_24H).toBe(-0.6);
       expect(PRECIOUS_METALS_MOCK_CONFIG.SILVER.VOLATILITY).toBe(2);
     });
 
@@ -77,8 +77,10 @@ describe('Precious Metals Tile Constants', () => {
 
   describe('PRECIOUS_METALS_ERROR_MESSAGES', () => {
     it('should have correct error messages', () => {
-      expect(PRECIOUS_METALS_ERROR_MESSAGES.FETCH_FAILED).toBe('Failed to load precious metals data');
+      expect(PRECIOUS_METALS_ERROR_MESSAGES.FETCH_FAILED).toBe(
+        'Failed to load precious metals data',
+      );
       expect(PRECIOUS_METALS_ERROR_MESSAGES.NO_DATA_AVAILABLE).toBe('No data available');
     });
   });
-}); 
+});

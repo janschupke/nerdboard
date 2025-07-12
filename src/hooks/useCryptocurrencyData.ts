@@ -40,4 +40,4 @@ export function useCryptocurrencyData(refreshInterval: number = 30000) {
     error,
     refetch,
   };
-} 
+}

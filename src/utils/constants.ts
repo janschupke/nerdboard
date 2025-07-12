@@ -55,4 +55,4 @@ export const CACHE_CONFIG = {
   DEFAULT_TTL: 300000, // 5 minutes
   SHORT_TTL: 30000, // 30 seconds
   LONG_TTL: 1800000, // 30 minutes
-} as const; 
+} as const;

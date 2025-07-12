@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  CRYPTO_API_CONFIG, 
-  CRYPTO_UI_CONFIG, 
-  CRYPTO_CHART_CONFIG, 
-  CRYPTO_ERROR_MESSAGES 
+import {
+  CRYPTO_API_CONFIG,
+  CRYPTO_UI_CONFIG,
+  CRYPTO_CHART_CONFIG,
+  CRYPTO_ERROR_MESSAGES,
 } from './constants';
 
 describe('Cryptocurrency Tile Constants', () => {
@@ -65,4 +65,4 @@ describe('Cryptocurrency Tile Constants', () => {
       expect(CRYPTO_ERROR_MESSAGES.NETWORK_ERROR).toBe('Network error occurred');
     });
   });
-}); 
+});

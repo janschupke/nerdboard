@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import type { DragState, UseDragAndDropReturn } from '../types/dragDrop';
 
 export function useDragAndDrop(
-  onTileMove: (tileId: string, newPosition: { x: number; y: number }) => void
+  onTileMove: (tileId: string, newPosition: { x: number; y: number }) => void,
 ): UseDragAndDropReturn {
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
@@ -23,7 +23,7 @@ export function useDragAndDrop(
   }, []);
 
   const updateDrag = useCallback((position: { x: number; y: number }) => {
-    setDragState(prev => ({
+    setDragState((prev) => ({
       ...prev,
       currentPosition: position,
     }));
@@ -59,4 +59,4 @@ export function useDragAndDrop(
     endDrag,
     cancelDrag,
   };
-} 
+}

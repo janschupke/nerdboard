@@ -1,7 +1,9 @@
 # Nerdboard Refactoring Summary
 
 ## Overview
+
 This refactoring focused on three main areas:
+
 1. **Self-contained tile architecture** - Making tiles independent units with their own API, logic, and UI
 2. **Magic number extraction** - Moving hardcoded values to constants
 3. **Unit testing infrastructure** - Adding comprehensive testing setup
@@ -9,6 +11,7 @@ This refactoring focused on three main areas:
 ## 1. Self-Contained Tile Architecture
 
 ### Before
+
 ```
 src/
 ├── components/dashboard/tiles/
@@ -27,6 +30,7 @@ src/
 ```
 
 ### After
+
 ```
 src/
 ├── components/dashboard/tiles/
@@ -54,6 +58,7 @@ src/
 ```
 
 ### Benefits
+
 - **Separation of concerns**: Each tile is completely self-contained
 - **Maintainability**: Changes to one tile don't affect others
 - **Reusability**: Tiles can be easily moved or reused
@@ -63,6 +68,7 @@ src/
 ## 2. Magic Number Extraction
 
 ### Global Constants (`src/utils/constants.ts`)
+
 ```typescript
 export const API_CONFIG = {
   DEFAULT_TIMEOUT: 10000,
@@ -83,6 +89,7 @@ export const UI_CONFIG = {
 ### Tile-Specific Constants
 
 #### Cryptocurrency (`src/components/dashboard/tiles/cryptocurrency/constants.ts`)
+
 ```typescript
 export const CRYPTO_API_CONFIG = {
   BASE_URL: 'https://api.coingecko.com/api/v3',
@@ -100,6 +107,7 @@ export const CRYPTO_UI_CONFIG = {
 ```
 
 #### Precious Metals (`src/components/dashboard/tiles/precious-metals/constants.ts`)
+
 ```typescript
 export const PRECIOUS_METALS_API_CONFIG = {
   CACHE_DURATION: 300000, // 5 minutes
@@ -108,21 +116,22 @@ export const PRECIOUS_METALS_API_CONFIG = {
 
 export const PRECIOUS_METALS_MOCK_CONFIG = {
   GOLD: {
-    BASE_PRICE: 1950.50,
-    CHANGE_24H: 12.30,
+    BASE_PRICE: 1950.5,
+    CHANGE_24H: 12.3,
     CHANGE_PERCENTAGE_24H: 0.63,
     VOLATILITY: 50,
   },
   SILVER: {
     BASE_PRICE: 24.75,
     CHANGE_24H: -0.15,
-    CHANGE_PERCENTAGE_24H: -0.60,
+    CHANGE_PERCENTAGE_24H: -0.6,
     VOLATILITY: 2,
   },
 } as const;
 ```
 
 ### Benefits
+
 - **Maintainability**: All magic numbers are centralized and documented
 - **Consistency**: Same values used across the application
 - **Flexibility**: Easy to change values in one place
@@ -131,12 +140,14 @@ export const PRECIOUS_METALS_MOCK_CONFIG = {
 ## 3. Unit Testing Infrastructure
 
 ### Testing Setup
+
 - **Vitest**: Fast unit testing framework
 - **React Testing Library**: Component testing utilities
 - **Jest DOM**: DOM testing utilities
 - **JS DOM**: Browser environment simulation
 
 ### Test Structure
+
 ```
 src/
 ├── utils/__tests__/
@@ -151,12 +162,14 @@ src/
 ```
 
 ### Test Coverage
+
 - **Constants validation**: Ensuring all magic numbers are properly extracted
 - **Configuration testing**: Verifying API and UI configurations
 - **Error message testing**: Validating error handling constants
 - **Type safety**: Ensuring constants are properly typed
 
 ### Benefits
+
 - **Quality assurance**: Automated testing prevents regressions
 - **Documentation**: Tests serve as living documentation
 - **Refactoring safety**: Tests ensure changes don't break functionality
@@ -165,17 +178,20 @@ src/
 ## 4. Key Improvements
 
 ### Code Organization
+
 - **Modular structure**: Each tile is a complete module
 - **Clear boundaries**: Well-defined interfaces between components
 - **Reduced coupling**: Tiles don't depend on each other
 - **Enhanced readability**: Self-documenting code structure
 
 ### Performance
+
 - **Lazy loading**: Tiles can be loaded independently
 - **Caching**: Proper cache configuration per tile
 - **Optimized rendering**: Tile-specific optimizations
 
 ### Developer Experience
+
 - **Type safety**: Comprehensive TypeScript types
 - **IntelliSense**: Better IDE support with proper exports
 - **Debugging**: Easier to isolate and debug issues
@@ -184,6 +200,7 @@ src/
 ## 5. Migration Guide
 
 ### For Existing Tiles
+
 1. Create tile-specific directory structure
 2. Move tile-specific code to new location
 3. Extract constants to tile-specific constants file
@@ -191,6 +208,7 @@ src/
 5. Add unit tests for tile-specific constants
 
 ### For New Tiles
+
 1. Create new tile directory following the pattern
 2. Implement tile-specific constants, types, services, and hooks
 3. Create tile component with proper imports
@@ -200,6 +218,7 @@ src/
 ## 6. Future Enhancements
 
 ### Planned Improvements
+
 - **Shared utilities**: Common tile functionality extraction
 - **Plugin system**: Dynamic tile loading
 - **Configuration UI**: Visual tile configuration
@@ -207,6 +226,7 @@ src/
 - **Advanced testing**: Integration and E2E tests
 
 ### Scalability Considerations
+
 - **Micro-frontend architecture**: Independent tile deployment
 - **State management**: Tile-specific state isolation
 - **API versioning**: Backward compatibility
@@ -228,9 +248,10 @@ npm run test
 ## 8. Conclusion
 
 This refactoring significantly improves the codebase's:
+
 - **Maintainability**: Self-contained modules with clear boundaries
 - **Testability**: Comprehensive unit testing infrastructure
 - **Scalability**: Modular architecture for easy expansion
 - **Developer Experience**: Better organization and type safety
 
-The new architecture provides a solid foundation for future development while maintaining backward compatibility and improving overall code quality. 
+The new architecture provides a solid foundation for future development while maintaining backward compatibility and improving overall code quality.

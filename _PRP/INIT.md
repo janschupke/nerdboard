@@ -22,6 +22,7 @@
 **Nerdboard** is an online dashboard application that displays various market and world information tiles. The application provides users with real-time or near-real-time data visualization in a clean, modern interface.
 
 ### Core Features
+
 - **Information Tiles**: Display market data, world news, and other relevant information
 - **Responsive Design**: Works across desktop, tablet, and mobile devices
 - **Real-time Updates**: Data refreshes automatically

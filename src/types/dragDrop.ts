@@ -28,4 +28,4 @@ export interface UseTileResizeReturn {
   updateResize: (newSize: Partial<string>) => void;
   endResize: () => void;
   cancelResize: () => void;
-} 
+}

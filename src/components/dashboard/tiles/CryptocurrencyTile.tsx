@@ -16,9 +16,7 @@ interface CryptocurrencyTileProps {
 export function CryptocurrencyTile({ size, config }: CryptocurrencyTileProps) {
   const { data, loading, error, refetch } = useCryptocurrencyData();
   const [selectedCoin, setSelectedCoin] = useState<string>('bitcoin');
-  const [chartPeriod, setChartPeriod] = useState<'7d' | '30d' | '1y'>(
-    config.chartPeriod || '7d'
-  );
+  const [chartPeriod, setChartPeriod] = useState<'7d' | '30d' | '1y'>(config.chartPeriod || '7d');
 
   if (loading) {
     return <LoadingSkeleton tileSize={size} />;
@@ -28,11 +26,7 @@ export function CryptocurrencyTile({ size, config }: CryptocurrencyTileProps) {
     return (
       <div className="p-4 text-center">
         <p className="text-error-600 mb-2">Failed to load cryptocurrency data</p>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={refetch}
-        >
+        <Button variant="primary" size="sm" onClick={refetch}>
           Retry
         </Button>
       </div>
@@ -40,7 +34,7 @@ export function CryptocurrencyTile({ size, config }: CryptocurrencyTileProps) {
   }
 
   const topCoins = data.slice(0, 10);
-  const selectedCoinData = data.find(coin => coin.id === selectedCoin);
+  const selectedCoinData = data.find((coin) => coin.id === selectedCoin);
 
   return (
     <div className="h-full flex flex-col">
@@ -51,21 +45,21 @@ export function CryptocurrencyTile({ size, config }: CryptocurrencyTileProps) {
           onChange={(e) => setSelectedCoin(e.target.value)}
           className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
-          {topCoins.map(coin => (
+          {topCoins.map((coin) => (
             <option key={coin.id} value={coin.id}>
               {coin.name}
             </option>
           ))}
         </select>
       </div>
-      
+
       <div className="flex-1 p-4">
         {selectedCoinData && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Current Price</p>
-                <PriceDisplay 
+                <PriceDisplay
                   price={selectedCoinData.current_price}
                   changePercentage={selectedCoinData.price_change_percentage_24h}
                 />
@@ -77,7 +71,7 @@ export function CryptocurrencyTile({ size, config }: CryptocurrencyTileProps) {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex space-x-2">
               {(['7d', '30d', '1y'] as const).map((period) => (
                 <button
@@ -93,7 +87,7 @@ export function CryptocurrencyTile({ size, config }: CryptocurrencyTileProps) {
                 </button>
               ))}
             </div>
-            
+
             <ChartComponent
               data={[]} // Will be populated with historical data in future implementation
               title={`${selectedCoinData.name} Price (${chartPeriod})`}
@@ -105,4 +99,4 @@ export function CryptocurrencyTile({ size, config }: CryptocurrencyTileProps) {
       </div>
     </div>
   );
-} 
+}

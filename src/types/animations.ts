@@ -15,5 +15,5 @@ export const tileAnimations: TileAnimationProps = {
   enter: { duration: 300, easing: 'ease-out' },
   exit: { duration: 200, easing: 'ease-in' },
   move: { duration: 250, easing: 'ease-in-out' },
-  resize: { duration: 200, easing: 'ease-out' }
-}; 
+  resize: { duration: 200, easing: 'ease-out' },
+};

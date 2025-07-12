@@ -11,7 +11,7 @@ class ApiService {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.DEFAULT_TIMEOUT);
-      
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
           'Content-Type': 'application/json',
@@ -19,7 +19,7 @@ class ApiService {
         signal: controller.signal,
         ...options,
       });
-      
+
       clearTimeout(timeoutId);
 
       if (!response.ok) {
@@ -51,7 +51,7 @@ class ApiService {
     const params = new URLSearchParams();
     if (category) params.append('category', category);
     params.append('limit', limit.toString());
-    
+
     return this.request<NewsItem[]>(`/api/news?${params.toString()}`);
   }
 
@@ -65,4 +65,4 @@ class ApiService {
 }
 
 export const apiService = new ApiService();
-export default apiService; 
+export default apiService;

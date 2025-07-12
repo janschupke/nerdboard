@@ -15,14 +15,14 @@ export class PreciousMetalsApiService {
       // In a real implementation, this would fetch from a public API
       const mockData: PreciousMetalsData = {
         gold: {
-          price: 1950.50,
-          change_24h: 12.30,
+          price: 1950.5,
+          change_24h: 12.3,
           change_percentage_24h: 0.63,
         },
         silver: {
           price: 24.75,
           change_24h: -0.15,
-          change_percentage_24h: -0.60,
+          change_percentage_24h: -0.6,
         },
       };
 
@@ -44,15 +44,15 @@ export class PreciousMetalsApiService {
       const now = Date.now();
       const dayMs = 24 * 60 * 60 * 1000;
       const mockData: PriceHistory[] = [];
-      
+
       const basePrice = metal === 'gold' ? 1950 : 24.75;
       const volatility = metal === 'gold' ? 50 : 2;
 
       for (let i = days; i >= 0; i--) {
-        const timestamp = now - (i * dayMs);
+        const timestamp = now - i * dayMs;
         const randomChange = (Math.random() - 0.5) * volatility;
         const price = basePrice + randomChange;
-        
+
         mockData.push({
           timestamp,
           price: Math.max(price, 0), // Ensure price is never negative
@@ -78,4 +78,4 @@ export class PreciousMetalsApiService {
   private setCachedData(key: string, data: unknown): void {
     this.cache.set(key, { data, timestamp: Date.now() });
   }
-} 
+}

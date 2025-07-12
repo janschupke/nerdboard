@@ -1,4 +1,3 @@
-
 import type { TileConfig } from '../../types/dashboard';
 import { Icon } from '../ui/Icon';
 import { CryptocurrencyTile } from './tiles/cryptocurrency/CryptocurrencyTile';
@@ -31,7 +30,8 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
   };
 
   const getTileClasses = () => {
-    const baseClasses = 'relative bg-surface-primary rounded-lg shadow-md border border-theme-primary overflow-hidden';
+    const baseClasses =
+      'relative bg-surface-primary rounded-lg shadow-md border border-theme-primary overflow-hidden';
     return baseClasses;
   };
 
@@ -95,9 +95,7 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
       </div>
 
       {/* Tile Content */}
-      <div className="flex-1 p-4">
-        {children || renderTileContent()}
-      </div>
+      <div className="flex-1 p-4">{children || renderTileContent()}</div>
     </div>
   );
-} 
+}

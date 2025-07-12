@@ -37,4 +37,4 @@ export interface CryptocurrencyTileProps {
   config: CryptocurrencyTileConfig;
 }
 
-export type ChartPeriod = '7d' | '30d' | '1y'; 
+export type ChartPeriod = '7d' | '30d' | '1y';

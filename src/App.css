@@ -3,15 +3,15 @@
   .logo {
     @apply h-24 p-6 transition-all duration-300;
   }
-  
+
   .logo:hover {
     @apply drop-shadow-lg;
   }
-  
+
   .card {
     @apply p-8;
   }
-  
+
   .read-the-docs {
     @apply text-gray-500;
   }

@@ -60,42 +60,42 @@ describe('DraggableTile', () => {
 
   it('renders tile with children', () => {
     render(<DraggableTile {...mockProps} />);
-    
+
     expect(screen.getByTestId('tile-content')).toBeInTheDocument();
     expect(screen.getByTestId('tile-wrapper')).toBeInTheDocument();
   });
 
   it('renders resize handle', () => {
     render(<DraggableTile {...mockProps} />);
-    
+
     expect(screen.getByTestId('icon-resize')).toBeInTheDocument();
   });
 
   it('applies theme classes to resize handle', () => {
     render(<DraggableTile {...mockProps} />);
-    
+
     const resizeHandle = screen.getByTestId('icon-resize').closest('div');
     expect(resizeHandle).toHaveClass('bg-theme-secondary');
   });
 
   it('sets up drag handle props', () => {
     render(<DraggableTile {...mockProps} />);
-    
+
     const dragHandle = screen.getByTestId('drag-handle');
     expect(dragHandle).toHaveAttribute('draggable', 'true');
   });
 
   it('renders with correct positioning', () => {
     render(<DraggableTile {...mockProps} />);
-    
+
     const resizeHandle = screen.getByTitle('Resize tile');
     expect(resizeHandle).toHaveClass('absolute', 'bottom-0', 'right-0');
   });
 
   it('applies correct z-index to resize handle', () => {
     render(<DraggableTile {...mockProps} />);
-    
+
     const resizeHandle = screen.getByTitle('Resize tile');
     expect(resizeHandle).toHaveClass('z-20');
   });
-}); 
+});
