@@ -63,7 +63,7 @@ function DashboardContent() {
         <Sidebar onToggle={toggleCollapse} />
 
         {/* Scrollable Dashboard Content */}
-        <main className="flex-1 overflow-auto relative">
+        <main className="flex-1 overflow-auto relative scrollbar-hide">
           <TileGrid />
         </main>
       </div>

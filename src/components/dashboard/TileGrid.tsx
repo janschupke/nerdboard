@@ -340,7 +340,7 @@ export function TileGrid() {
 
   return (
     <div
-      className="h-full p-4 relative overflow-y-auto"
+      className="h-full p-4 relative overflow-y-auto scrollbar-hide"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onDragLeave={handleDragLeave}

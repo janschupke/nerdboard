@@ -126,12 +126,18 @@ export function Sidebar({ onToggle }: SidebarProps) {
         className={`h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out flex-shrink-0 ${state.layout.isCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}
       >
         <div className={`flex flex-col h-full transition-all duration-300 ${state.layout.isCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}>
-          {/* Tile Catalog */}
+          {/* Fixed Header */}
           {!state.layout.isCollapsed && (
-            <div className="flex-1 p-4 overflow-y-auto">
-              <h2 className="text-lg font-semibold text-theme-primary mb-4" id="tiles-heading">
+            <div className="flex-shrink-0 p-4 border-b border-theme-primary">
+              <h2 className="text-lg font-semibold text-theme-primary" id="tiles-heading">
                 Available Tiles ({availableTiles.length})
               </h2>
+            </div>
+          )}
+          
+          {/* Scrollable Content */}
+          {!state.layout.isCollapsed && (
+            <div className="flex-1 p-4 overflow-y-auto scrollbar-hide">
               <div
                 className="space-y-3"
                 role="listbox"
