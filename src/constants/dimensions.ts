@@ -1,45 +1,98 @@
-export const DIMENSIONS = {
-  spacing: {
-    xs: '0.25rem',
-    sm: '0.5rem',
-    md: '1rem',
-    lg: '1.5rem',
-    xl: '2rem',
-    '2xl': '3rem',
-  },
-  borderRadius: {
-    sm: '0.25rem',
-    md: '0.375rem',
-    lg: '0.5rem',
-    xl: '0.75rem',
-    full: '9999px',
-  },
-  tileSizes: {
-    small: { width: 200, height: 150 },
-    medium: { width: 300, height: 200 },
-    large: { width: 400, height: 250 },
-  },
-  sidebar: {
-    width: '250px',
-    collapsedWidth: '60px',
-  },
-  header: {
-    height: '60px',
-  },
+// Grid configuration
+export const GRID_CONFIG = {
+  columns: 8,
+  rows: 12,
+  gap: '1rem',
 } as const;
 
-export type Dimensions = typeof DIMENSIONS;
-
-// Shared tile size config for dashboard tiles
-export const tileSizeConfig = {
+// Tile size configuration
+export const TILE_SIZE_CONFIG = {
   small: { colSpan: 2, rowSpan: 1 },
   medium: { colSpan: 2, rowSpan: 1 },
   large: { colSpan: 4, rowSpan: 1 },
-};
+} as const;
 
-export type TileSizeKey = keyof typeof tileSizeConfig;
+export type TileSizeKey = keyof typeof TILE_SIZE_CONFIG;
 
+// Helper functions
 export function getTileSpan(size: string | undefined): { colSpan: number; rowSpan: number } {
-  if (!size || !(size in tileSizeConfig)) return tileSizeConfig.medium;
-  return tileSizeConfig[size as TileSizeKey];
+  if (!size || !(size in TILE_SIZE_CONFIG)) return TILE_SIZE_CONFIG.medium;
+  return TILE_SIZE_CONFIG[size as TileSizeKey];
+}
+
+export function calculateGridPosition(
+  clientX: number,
+  clientY: number,
+  rect: DOMRect,
+  tileSize: 'small' | 'medium' | 'large' = 'medium'
+): { x: number; y: number } {
+  const { colSpan, rowSpan } = getTileSpan(tileSize);
+  const gridCellWidth = rect.width / GRID_CONFIG.columns;
+  const gridCellHeight = rect.height / GRID_CONFIG.rows;
+  
+  const rawX = (clientX - rect.left) / gridCellWidth;
+  const rawY = (clientY - rect.top) / gridCellHeight;
+  
+  // For new tiles, snap to tile-sized grid positions
+  const x = Math.floor(rawX / colSpan) * colSpan;
+  const y = Math.floor(rawY / rowSpan) * rowSpan;
+  
+  return { x, y };
+}
+
+export function calculateExistingTilePosition(
+  clientX: number,
+  clientY: number,
+  rect: DOMRect
+): { x: number; y: number } {
+  const gridCellWidth = rect.width / GRID_CONFIG.columns;
+  const gridCellHeight = rect.height / GRID_CONFIG.rows;
+  
+  const rawX = (clientX - rect.left) / gridCellWidth;
+  const rawY = (clientY - rect.top) / gridCellHeight;
+  
+  // For existing tiles, use single-column increments
+  const x = Math.floor(rawX);
+  const y = Math.floor(rawY);
+  
+  return { x, y };
+}
+
+export function calculateDropZoneStyle(
+  position: { x: number; y: number },
+  tileSize: 'small' | 'medium' | 'large' = 'medium'
+): React.CSSProperties {
+  const { colSpan } = getTileSpan(tileSize);
+  
+  return {
+    left: `${position.x * (100 / GRID_CONFIG.columns)}%`,
+    top: `${position.y * (100 / GRID_CONFIG.rows)}%`,
+    width: `${(100 / GRID_CONFIG.columns) * colSpan}%`,
+    height: `${100 / GRID_CONFIG.rows}%`,
+  };
+}
+
+export function isPositionValid(
+  position: { x: number; y: number },
+  tileSize: 'small' | 'medium' | 'large' = 'medium'
+): boolean {
+  const { colSpan, rowSpan } = getTileSpan(tileSize);
+  
+  return (
+    position.x >= 0 &&
+    position.x <= GRID_CONFIG.columns - colSpan &&
+    position.y >= 0 &&
+    position.y <= GRID_CONFIG.rows - rowSpan
+  );
+}
+
+export function getGridTemplateStyle(): React.CSSProperties {
+  return {
+    display: 'grid',
+    gridTemplateColumns: `repeat(${GRID_CONFIG.columns}, 1fr)`,
+    gridTemplateRows: `repeat(${GRID_CONFIG.rows}, 1fr)`,
+    gap: GRID_CONFIG.gap,
+    minHeight: '100%',
+    height: 'auto',
+  };
 }

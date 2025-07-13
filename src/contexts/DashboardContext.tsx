@@ -2,6 +2,7 @@ import React, { createContext, useReducer, useCallback, useMemo } from 'react';
 import type { DashboardTile, TileType } from '../types/dashboard';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Toast } from '../components/ui/Toast';
+import { getTileSpan } from '../constants/dimensions';
 
 interface DashboardState {
   layout: {
@@ -152,19 +153,20 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
         return;
       }
 
-      // Find first available position
-      const grid = Array(4).fill(null).map(() => Array(6).fill(false));
+      // Find first available position using unified tile size system
+      const GRID_ROWS = 12;
+      const GRID_COLUMNS = 8;
+      const grid = Array(GRID_ROWS).fill(null).map(() => Array(GRID_COLUMNS).fill(false));
       
       // Mark occupied positions
       state.layout.tiles.forEach((tile) => {
         if (tile.position) {
           const { x, y } = tile.position;
           const size = typeof tile.size === 'string' ? tile.size : 'medium';
-          const spanX = size === 'large' ? 3 : 2;
-          const spanY = size === 'large' ? 3 : 2;
+          const { colSpan, rowSpan } = getTileSpan(size);
           
-          for (let i = y; i < Math.min(y + spanY, 4); i++) {
-            for (let j = x; j < Math.min(x + spanX, 6); j++) {
+          for (let i = y; i < Math.min(y + rowSpan, GRID_ROWS); i++) {
+            for (let j = x; j < Math.min(x + colSpan, GRID_COLUMNS); j++) {
               if (grid[i] && grid[i][j] !== undefined) {
                 grid[i][j] = true;
               }
@@ -173,17 +175,16 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
         }
       });
       
-      // Find first available position
+      // Find first available position for medium tile
+      const { colSpan, rowSpan } = getTileSpan('medium');
       let newPosition = { x: 0, y: 0 };
-      const spanX = 2; // Default medium size
-      const spanY = 2;
       
-      outer: for (let y = 0; y <= 4 - spanY; y++) {
-        for (let x = 0; x <= 6 - spanX; x++) {
+      outer: for (let y = 0; y <= GRID_ROWS - rowSpan; y++) {
+        for (let x = 0; x <= GRID_COLUMNS - colSpan; x++) {
           let canPlace = true;
-          for (let i = y; i < y + spanY; i++) {
-            for (let j = x; j < x + spanX; j++) {
-              if (grid[i][j]) {
+          for (let i = y; i < y + rowSpan; i++) {
+            for (let j = x; j < x + colSpan; j++) {
+              if (grid[i] && grid[i][j]) {
                 canPlace = false;
                 break;
               }
@@ -217,22 +218,23 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       const updatedTiles = state.layout.tiles.filter(tile => tile.id !== id);
       if (updatedTiles.length > 0) {
         // Reposition all remaining tiles to fill gaps
-        const grid = Array(12).fill(null).map(() => Array(8).fill(false));
+        const GRID_ROWS = 12;
+        const GRID_COLUMNS = 8;
+        const grid = Array(GRID_ROWS).fill(null).map(() => Array(GRID_COLUMNS).fill(false));
         const repositionedTiles: DashboardTile[] = [];
         
         updatedTiles.forEach((tile) => {
           const size = typeof tile.size === 'string' ? tile.size : 'medium';
-          const spanX = size === 'large' ? 2 : 1;
-          const spanY = size === 'large' ? 1 : 1;
+          const { colSpan, rowSpan } = getTileSpan(size);
           
           // Find first available position
           let newPosition = { x: 0, y: 0 };
-          outer: for (let y = 0; y <= 12 - spanY; y++) {
-            for (let x = 0; x <= 8 - spanX; x++) {
+          outer: for (let y = 0; y <= GRID_ROWS - rowSpan; y++) {
+            for (let x = 0; x <= GRID_COLUMNS - colSpan; x++) {
               let canPlace = true;
-              for (let i = y; i < y + spanY; i++) {
-                for (let j = x; j < x + spanX; j++) {
-                  if (grid[i][j]) {
+              for (let i = y; i < y + rowSpan; i++) {
+                for (let j = x; j < x + colSpan; j++) {
+                  if (grid[i] && grid[i][j]) {
                     canPlace = false;
                     break;
                   }
@@ -247,8 +249,8 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
           }
           
           // Mark position as occupied
-          for (let i = newPosition.y; i < newPosition.y + spanY; i++) {
-            for (let j = newPosition.x; j < newPosition.x + spanX; j++) {
+          for (let i = newPosition.y; i < newPosition.y + rowSpan; i++) {
+            for (let j = newPosition.x; j < newPosition.x + colSpan; j++) {
               if (grid[i] && grid[i][j] !== undefined) {
                 grid[i][j] = true;
               }
