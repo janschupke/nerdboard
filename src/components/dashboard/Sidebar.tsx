@@ -117,12 +117,20 @@ export function Sidebar({ onToggle }: SidebarProps) {
   const {
     selectedIndex,
     isSidebarCollapsed,
+    setIsSidebarCollapsed,
   } = useKeyboardNavigation<TileType>(
     itemIds,
     handleTileToggle,
     handleSidebarToggle,
     getInitialCollapsed()
   );
+
+  // Handle toggle button clicks
+  const handleToggleButtonClick = useCallback(() => {
+    const newCollapsedState = !isSidebarCollapsed;
+    setIsSidebarCollapsed(newCollapsedState);
+    handleSidebarToggle(newCollapsedState);
+  }, [isSidebarCollapsed, setIsSidebarCollapsed, handleSidebarToggle]);
 
   // Load sidebar collapse state on mount
   useEffect(() => {
@@ -184,56 +192,58 @@ export function Sidebar({ onToggle }: SidebarProps) {
       <aside
         role="complementary"
         aria-label="Tile catalog sidebar"
-        className={`h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out flex-shrink-0 ${isSidebarCollapsed ? 'w-0' : 'w-64'}`}
+        className={`h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out flex-shrink-0 ${isSidebarCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}
       >
-        <div className="flex flex-col h-full w-64">
+        <div className={`flex flex-col h-full transition-all duration-300 ${isSidebarCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}>
           {/* Tile Catalog */}
-          <div className="flex-1 p-4 overflow-y-auto">
-            <h2 className="text-lg font-semibold text-theme-primary mb-4" id="tiles-heading">
-              Available Tiles ({availableTiles.length})
-            </h2>
-            {storageError && (
-              <div className="mb-4 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-                {storageError}
-                <button
-                  onClick={() => setStorageError(null)}
-                  className="ml-2 text-red-500 hover:text-red-700"
-                  aria-label="Dismiss error"
-                >
-                  ×
-                </button>
+          {!isSidebarCollapsed && (
+            <div className="flex-1 p-4 overflow-y-auto">
+              <h2 className="text-lg font-semibold text-theme-primary mb-4" id="tiles-heading">
+                Available Tiles ({availableTiles.length})
+              </h2>
+              {storageError && (
+                <div className="mb-4 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                  {storageError}
+                  <button
+                    onClick={() => setStorageError(null)}
+                    className="ml-2 text-red-500 hover:text-red-700"
+                    aria-label="Dismiss error"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              <div
+                className="space-y-3"
+                role="listbox"
+                aria-labelledby="tiles-heading"
+                aria-label="Available dashboard tiles"
+              >
+                {availableTiles.map((tile, idx) => (
+                  <SidebarItem
+                    key={tile.type}
+                    tileType={tile.type}
+                    name={tile.name}
+                    icon={tile.icon}
+                    isActive={isTileActive(tile.type)}
+                    isSelected={selectedIndex === idx}
+                    onClick={() => handleTileToggle(tile.type)}
+                  />
+                ))}
               </div>
-            )}
-            <div
-              className="space-y-3"
-              role="listbox"
-              aria-labelledby="tiles-heading"
-              aria-label="Available dashboard tiles"
-            >
-              {availableTiles.map((tile, idx) => (
-                <SidebarItem
-                  key={tile.type}
-                  tileType={tile.type}
-                  name={tile.name}
-                  icon={tile.icon}
-                  isActive={isTileActive(tile.type)}
-                  isSelected={selectedIndex === idx}
-                  onClick={() => handleTileToggle(tile.type)}
-                />
-              ))}
             </div>
-          </div>
+          )}
 
-          {/* Footer */}
-          <div className="p-4 border-t border-theme-primary">
+          {/* Footer - Always visible */}
+          <div className={`${isSidebarCollapsed ? 'absolute bottom-4 left-0 right-0' : 'p-4 border-t border-theme-primary'}`}>
             <Button
               variant="primary"
               size="sm"
               className="w-full"
-              onClick={() => handleSidebarToggle(!isSidebarCollapsed)}
+              onClick={handleToggleButtonClick}
               aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              {isSidebarCollapsed ? 'Expand' : 'Close'}
+              {isSidebarCollapsed ? 'Expand' : 'Collapse'}
             </Button>
           </div>
         </div>

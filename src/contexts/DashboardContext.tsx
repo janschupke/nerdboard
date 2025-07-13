@@ -54,14 +54,16 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
           tiles: [...state.layout.tiles, action.payload],
         },
       };
-    case 'REMOVE_TILE':
+    case 'REMOVE_TILE': {
+      const newTiles = state.layout.tiles.filter((tile: DashboardTile) => tile.id !== action.payload);
       return {
         ...state,
         layout: {
           ...state.layout,
-          tiles: state.layout.tiles.filter((tile: DashboardTile) => tile.id !== action.payload),
+          tiles: newTiles,
         },
       };
+    }
     case 'UPDATE_TILE':
       return {
         ...state,
@@ -292,15 +294,20 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
     async (tileTypeOrId: string | TileType) => {
       // Accept either a tile id or a tile type
       let tileId = tileTypeOrId;
-      if (typeof tileTypeOrId !== 'string') {
-        // Find the first tile with this type
-        const found = state.layout.tiles.find((tile) => tile.type === tileTypeOrId);
-        if (found) tileId = found.id;
-        else return;
+      if (typeof tileTypeOrId === 'string') {
+        // Check if this is already a tile ID (starts with 'tile-')
+        if (!tileTypeOrId.startsWith('tile-')) {
+          // This is a tile type, find the tile by type
+          const found = state.layout.tiles.find((tile) => tile.type === tileTypeOrId);
+          if (found) {
+            tileId = found.id;
+          } else {
+            return;
+          }
+        }
       }
+      
       dispatch({ type: 'REMOVE_TILE', payload: tileId });
-      // Optionally, add a small delay for smooth UX
-      await new Promise((resolve) => setTimeout(resolve, 100));
     },
     [state.layout.tiles],
   );
