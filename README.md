@@ -24,6 +24,7 @@ A modern dashboard application built with React 19, TypeScript, and Vite that di
 - **Enhanced Refresh Controls**: Countdown timer and manual refresh for all tiles
 - **Accessibility**: WCAG 2.1 AA compliance with full keyboard navigation
 - **Error Handling**: Comprehensive error boundaries and recovery mechanisms
+- **API Logging System**: All API warnings and errors are logged to a user-accessible log view, not the browser console, with real-time removal and automatic cleanup.
 - **Performance**: Optimized components with React.memo and useMemo
 - **Theme Support**: Light and dark theme with custom Tailwind configuration
 - **Local Storage**: Automatic persistence of dashboard configuration
@@ -185,6 +186,7 @@ The application is built with accessibility in mind:
 - **Focus Management**: Clear focus indicators and logical tab order
 - **Color Contrast**: WCAG AA compliance for all text and interactive elements
 - **Error Recovery**: Graceful error handling with user-friendly messages
+- **API Logging System**: All API warnings and errors are captured in a dedicated log view, not the browser console, for easier troubleshooting and user transparency.
 
 ## Performance
 

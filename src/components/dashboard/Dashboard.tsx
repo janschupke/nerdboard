@@ -6,6 +6,9 @@ import { Icon } from '../ui/Icon';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
 import { useContext } from 'react';
+import { LogButton } from './LogButton';
+import { LogView } from './LogView';
+import { useLogManager } from '../../hooks/useLogManager';
 
 /**
  * Main dashboard content component that renders the dashboard layout
@@ -22,6 +25,7 @@ function DashboardContent() {
   const { state, toggleCollapse, refreshAllTiles, isRefreshing } = dashboardContext;
   const { tiles = [] } = state?.layout || {};
   const { theme, toggleTheme } = useTheme();
+  const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
 
   return (
     <div className="h-screen w-full flex flex-col bg-theme-primary overflow-hidden">
@@ -38,6 +42,7 @@ function DashboardContent() {
           <h1 className="text-xl font-semibold text-theme-primary">Dashboard</h1>
         </div>
         <div className="flex items-center space-x-2">
+          <LogButton isOpen={isLogViewOpen} onToggle={toggleLogView} />
           <button
             onClick={refreshAllTiles}
             disabled={isRefreshing}
@@ -67,6 +72,9 @@ function DashboardContent() {
           <TileGrid />
         </main>
       </div>
+
+      {/* Log View Overlay */}
+      <LogView isOpen={isLogViewOpen} onClose={closeLogView} />
     </div>
   );
 }

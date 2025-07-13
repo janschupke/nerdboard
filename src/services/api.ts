@@ -1,6 +1,8 @@
 // API service for the Nerdboard dashboard application
 
 import type { ApiResponse } from '../types';
+import { interceptAPIError } from './apiErrorInterceptor';
+import type { APIError } from './apiErrorInterceptor';
 
 export class ApiService {
   private baseUrl: string;
@@ -32,6 +34,12 @@ export class ApiService {
       });
 
       if (!response.ok) {
+        const errorInfo: APIError = {
+          apiCall: url,
+          reason: `HTTP error! status: ${response.status}`,
+          details: { status: response.status, url },
+        };
+        interceptAPIError(errorInfo);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -42,6 +50,12 @@ export class ApiService {
         loading: false,
       };
     } catch (error) {
+      const errorInfo: APIError = {
+        apiCall: url,
+        reason: error instanceof Error ? error.message : 'Unknown error',
+        details: { error },
+      };
+      interceptAPIError(errorInfo);
       return {
         data: null,
         error: error instanceof Error ? error : new Error('Unknown error'),

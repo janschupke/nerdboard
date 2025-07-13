@@ -3,6 +3,7 @@ import { Dashboard } from './components/dashboard/Dashboard';
 import { clearExpiredData } from './utils/localStorage';
 import { smartStorage } from './utils/enhancedLocalStorage';
 import { offlineSupport } from './utils/offlineSupport';
+import { LogProvider } from './contexts/LogContext';
 
 function App() {
   useEffect(() => {
@@ -20,7 +21,11 @@ function App() {
     };
   }, []);
 
-  return <Dashboard />;
+  return (
+    <LogProvider>
+      <Dashboard />
+    </LogProvider>
+  );
 }
 
 export default App;

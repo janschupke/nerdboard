@@ -1,4 +1,6 @@
 import type { AppError } from '../types/errors';
+import { interceptAPIError } from '../services/apiErrorInterceptor';
+import type { APIError } from '../services/apiErrorInterceptor';
 
 /**
  * Centralized error handler for managing application errors
@@ -23,6 +25,17 @@ export class ErrorHandler {
 
     this.errors.push(appError);
     this.notifyListeners(appError);
+
+    // Log to API log system if type is 'api'
+    if (appError.type === 'api') {
+      const apiCall = typeof appError.context?.apiCall === 'string' ? appError.context.apiCall : 'unknown';
+      const apiError: APIError = {
+        apiCall,
+        reason: appError.message,
+        details: appError.context,
+      };
+      interceptAPIError(apiError);
+    }
 
     // Log to console in development
     if (import.meta.env.DEV) {
@@ -109,6 +122,14 @@ export function withRetry<T>(
         resolve(result);
       } catch (error) {
         attempts++;
+
+        // Log API error if present
+        const apiError: APIError = {
+          apiCall: 'withRetry',
+          reason: error instanceof Error ? error.message : 'Unknown error',
+          details: { error },
+        };
+        interceptAPIError(apiError);
 
         if (attempts >= maxRetries) {
           reject(error);

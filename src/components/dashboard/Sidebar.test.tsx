@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '../../test/utils/testWrapper';
 import { Sidebar } from './Sidebar';
 import { DashboardProvider } from '../../contexts/DashboardContext';
 import { sidebarStorage } from '../../utils/sidebarStorage';
 import { Dashboard } from './Dashboard';
-import { ThemeProvider } from '../../contexts/ThemeContext';
 
 // Mock the storage service
 vi.mock('../../utils/sidebarStorage', () => ({
@@ -41,11 +40,7 @@ const renderSidebar = (onToggle = vi.fn()) => {
 };
 
 const renderDashboard = () => {
-  return render(
-    <ThemeProvider>
-      <Dashboard />
-    </ThemeProvider>
-  );
+  return render(<Dashboard />);
 };
 
 describe('Sidebar', () => {

@@ -43,6 +43,15 @@ export function Icon({ name, size = 'md', className = '' }: IconProps) {
     clock: '🕐',
     database: '💾',
     'alert-circle': '⚠',
+
+    // Log view icons
+    'clipboard-list': '📋',
+    'exclamation-triangle': '⚠',
+    'exclamation-circle': '⚠',
+    'check-circle': '✓',
+    'information-circle': 'ℹ',
+    trash: '🗑',
+    x: '✕',
   };
 
   const icon = iconMap[name] || '?';

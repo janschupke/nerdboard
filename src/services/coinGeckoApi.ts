@@ -1,5 +1,7 @@
 import type { CryptocurrencyData, PriceHistory } from '../types/cryptocurrency';
 import { API_CONFIG } from '../utils/constants';
+import { interceptAPIError, interceptAPIWarning } from './apiErrorInterceptor';
+import type { APIError } from './apiErrorInterceptor';
 
 export class CoinGeckoApiService {
   private baseUrl = '/api/coingecko/api/v3';
@@ -36,6 +38,12 @@ export class CoinGeckoApiService {
               continue;
             }
           }
+          const errorInfo: APIError = {
+            apiCall: url,
+            reason: `API request failed: ${response.status} ${response.statusText}`,
+            details: { status: response.status, url },
+          };
+          interceptAPIError(errorInfo);
           throw new Error(`API request failed: ${response.status} ${response.statusText}`);
         }
 
@@ -52,6 +60,14 @@ export class CoinGeckoApiService {
       }
     }
 
+    if (lastError) {
+      const errorInfo: APIError = {
+        apiCall: url,
+        reason: lastError.message,
+        details: { error: lastError },
+      };
+      interceptAPIError(errorInfo);
+    }
     throw lastError || new Error('Request failed after all retries');
   }
 
@@ -68,12 +84,24 @@ export class CoinGeckoApiService {
       const data = await response.json();
 
       if (!Array.isArray(data)) {
+        const warningInfo: APIError = {
+          apiCall: 'getTopCryptocurrencies',
+          reason: 'Invalid response format from API',
+          details: { data },
+        };
+        interceptAPIWarning(warningInfo);
         throw new Error('Invalid response format from API');
       }
 
       this.setCachedData(cacheKey, data);
       return data;
     } catch (error) {
+      const errorInfo: APIError = {
+        apiCall: 'getTopCryptocurrencies',
+        reason: error instanceof Error ? error.message : 'Unknown error',
+        details: { error },
+      };
+      interceptAPIError(errorInfo);
       throw new Error(
         `Failed to fetch cryptocurrency data: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
@@ -93,6 +121,12 @@ export class CoinGeckoApiService {
       const data = await response.json();
 
       if (!data.prices || !Array.isArray(data.prices)) {
+        const warningInfo: APIError = {
+          apiCall: 'getPriceHistory',
+          reason: 'Invalid price history response format',
+          details: { data },
+        };
+        interceptAPIWarning(warningInfo);
         throw new Error('Invalid price history response format');
       }
 
@@ -104,6 +138,12 @@ export class CoinGeckoApiService {
       this.setCachedData(cacheKey, formattedData);
       return formattedData;
     } catch (error) {
+      const errorInfo: APIError = {
+        apiCall: 'getPriceHistory',
+        reason: error instanceof Error ? error.message : 'Unknown error',
+        details: { error },
+      };
+      interceptAPIError(errorInfo);
       throw new Error(
         `Failed to fetch price history for ${coinId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
