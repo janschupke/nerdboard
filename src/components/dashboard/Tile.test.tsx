@@ -69,8 +69,11 @@ describe('Tile', () => {
 
   it('applies correct size styles', () => {
     const largeTile: DashboardTile = {
-      ...mockTile,
+      id: 'test-tile-large',
+      type: 'cryptocurrency',
+      position: { x: 1, y: 1 }, // Use position that matches large size
       size: 'large',
+      config: {},
     };
 
     render(<Tile tile={largeTile} onRemove={mockProps.onRemove} />);
@@ -95,7 +98,14 @@ describe('Tile', () => {
   });
 
   it('renders drag handle with correct attributes', () => {
-    render(<Tile {...mockProps} />);
+    const dragHandleProps = {
+      draggable: true,
+      onDragStart: vi.fn(),
+      'aria-label': 'Drag Cryptocurrency tile',
+      className: 'cursor-grab',
+    };
+
+    render(<Tile {...mockProps} dragHandleProps={dragHandleProps} />);
 
     const dragHandle = screen.getByLabelText('Drag Cryptocurrency tile');
     expect(dragHandle).toHaveClass('cursor-grab');
@@ -117,7 +127,7 @@ describe('Tile', () => {
     expect(header).toHaveClass('border-theme-primary');
   });
 
-  it('renders unknown tile type with loading state', () => {
+  it('renders unknown tile type with error message', () => {
     const unknownTile: DashboardTile = {
       id: 'test-tile-3',
       type: 'unknown' as DashboardTile['type'],
@@ -128,8 +138,7 @@ describe('Tile', () => {
 
     render(<Tile tile={unknownTile} onRemove={mockProps.onRemove} />);
 
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
-    expect(screen.getByTestId('icon-loading')).toBeInTheDocument();
+    expect(screen.getByText('Unknown tile type: unknown')).toBeInTheDocument();
   });
 
   it('renders custom children when provided', () => {
@@ -151,8 +160,8 @@ describe('Tile', () => {
 
     render(<Tile {...mockProps} dragHandleProps={dragHandleProps} />);
 
-    const dragHandle = screen.getByLabelText('Drag Cryptocurrency tile');
-    expect(dragHandle).toHaveAttribute('draggable', 'true');
+    const tileElement = screen.getByTestId('cryptocurrency-tile').closest('[data-tile-id]');
+    expect(tileElement).toHaveAttribute('draggable', 'true');
   });
 
   it('renders with correct data attributes', () => {

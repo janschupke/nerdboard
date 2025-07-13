@@ -15,12 +15,40 @@ interface TileProps {
   tile: DashboardTile;
   onRemove?: (id: string) => void;
   children?: React.ReactNode;
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
+  loading?: boolean;
+  error?: Error | null;
+  className?: string;
 }
 
-export function Tile({ tile, onRemove, children }: TileProps) {
+export function Tile({ tile, onRemove, children, dragHandleProps, loading, error, className }: TileProps) {
   const renderTileContent = () => {
     const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
     const config = tile.config || {};
+
+    // Show loading state if loading prop is true
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center h-full text-theme-secondary">
+          <div className="flex items-center space-x-2">
+            <Icon name="loading" size="sm" className="animate-spin" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      );
+    }
+
+    // Show error state if error prop is provided
+    if (error) {
+      return (
+        <div className="flex items-center justify-center h-full text-theme-secondary">
+          <div className="text-center">
+            <p className="text-sm">Failed to load data</p>
+            <p className="text-xs text-theme-tertiary mt-1">{error.message}</p>
+          </div>
+        </div>
+      );
+    }
 
     switch (tile.type) {
       case TileType.CRYPTOCURRENCY:
@@ -94,10 +122,22 @@ export function Tile({ tile, onRemove, children }: TileProps) {
   };
 
   const getTileStyles = () => {
-    return {
-      gridColumn: tile.position ? `span ${tile.position.x + 1}` : undefined,
-      gridRow: tile.position ? `span ${tile.position.y + 1}` : undefined,
+    const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
+    const sizeStyles = {
+      small: { gridColumn: 'span 1', gridRow: 'span 1' },
+      medium: { gridColumn: 'span 1', gridRow: 'span 1' },
+      large: { gridColumn: 'span 2', gridRow: 'span 2' },
     };
+    
+    // Use position if available, otherwise use size-based styles
+    if (tile.position) {
+      return {
+        gridColumn: `span ${tile.position.x + 1}`,
+        gridRow: `span ${tile.position.y + 1}`,
+      };
+    }
+    
+    return sizeStyles[size] || sizeStyles.medium;
   };
 
   const getTileTitle = () => {
@@ -138,15 +178,16 @@ export function Tile({ tile, onRemove, children }: TileProps) {
 
   return (
     <div
-      className={getTileClasses()}
+      className={`${getTileClasses()} ${className || ''}`}
       style={getTileStyles()}
       data-tile-id={tile.id}
       data-tile-type={tile.type}
       role="gridcell"
       aria-label={`${getTileTitle()} tile`}
+      {...dragHandleProps}
     >
       {/* Tile Header */}
-      <div className="flex items-center justify-between p-3 border-b border-theme-primary">
+      <div className="flex items-center justify-between p-3 border-b border-theme-primary bg-surface-secondary">
         <div className="flex items-center space-x-2">
           <Icon name={getTileIcon()} size="sm" className="text-accent-primary" aria-hidden="true" />
           <h3 className="text-sm font-medium text-theme-primary truncate">{getTileTitle()}</h3>

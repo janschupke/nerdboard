@@ -122,7 +122,7 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       lastRefreshTime:
         storedState.lastRefreshTime instanceof Date ? storedState.lastRefreshTime : null,
     };
-  }, [storedState]);
+  }, [storedState, defaultState]);
 
   const [state, dispatch] = useReducer(dashboardReducer, validatedState);
   const [toast, setToast] = React.useState<{ message: string; visible: boolean }>({
@@ -135,11 +135,11 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
     setStoredState(state);
   }, [state, setStoredState]);
 
-  const showToast = (message: string) => {
+  const showToast = useCallback((message: string) => {
     setToast({ message, visible: true });
-  };
+  }, []);
 
-  const hideToast = () => setToast({ ...toast, visible: false });
+  const hideToast = useCallback(() => setToast({ ...toast, visible: false }), [toast]);
 
   const addTile = useCallback(
     (tileType: TileType) => {

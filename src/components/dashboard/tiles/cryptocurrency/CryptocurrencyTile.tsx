@@ -8,7 +8,7 @@ import { CRYPTO_UI_CONFIG, CRYPTO_CHART_CONFIG } from './constants';
 import type { CryptocurrencyTileProps, ChartPeriod } from './types';
 
 export const CryptocurrencyTile = React.memo<CryptocurrencyTileProps>(({ size, config }) => {
-  const { data, loading, error, lastUpdated, isCached, refetch } = useCryptocurrencyData({
+  const { data, loading, error, refetch } = useCryptocurrencyData({
     refreshInterval: config.refreshInterval,
   });
   const [selectedCoin, setSelectedCoin] = useState<string>(config.selectedCoin || 'bitcoin');
@@ -26,6 +26,33 @@ export const CryptocurrencyTile = React.memo<CryptocurrencyTileProps>(({ size, c
     return data.find((coin) => coin.id === selectedCoin);
   }, [data, selectedCoin]);
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full text-theme-secondary">
+        <div className="flex items-center space-x-2">
+          <span className="animate-spin">⏳</span>
+          <span>Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-theme-secondary space-y-4">
+        <div className="text-center">
+          <p className="text-sm">Failed to load cryptocurrency data</p>
+          <p className="text-xs text-theme-tertiary mt-1">Unable to load data</p>
+        </div>
+        <Button variant="primary" size="sm" onClick={refetch}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <Tile
       tile={{
@@ -35,10 +62,6 @@ export const CryptocurrencyTile = React.memo<CryptocurrencyTileProps>(({ size, c
         config: config as Record<string, unknown>,
         position: { x: 0, y: 0 },
       }}
-      loading={loading}
-      error={error}
-      lastUpdated={lastUpdated || undefined}
-      isCached={isCached}
       className="h-full"
     >
       {/* Render content when data is available */}
