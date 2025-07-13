@@ -8,18 +8,12 @@ import {
   FEDERAL_FUNDS_ERROR_MESSAGES,
   TIME_RANGE_CONFIG,
 } from './constants';
-import type { FederalFundsRateTileProps, HistoricalRateData } from './types';
+import type { FederalFundsRateTileProps } from './types';
 
 export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(({ size, config }) => {
   const { data, loading, error, timeRange, setTimeRange, refetch } = useFederalFundsRateData(
     config.refreshInterval,
   );
-
-  // Helper to create a deep content hash for historical data
-  function historicalDataContentHash(historicalData: HistoricalRateData[] | undefined): string {
-    if (!historicalData || historicalData.length === 0) return '';
-    return historicalData.map((item) => `${item.date.getTime()}:${item.rate}`).join('|');
-  }
 
   // Memoize chart data to prevent unnecessary re-renders
   const chartData = useMemo(() => {
@@ -29,7 +23,7 @@ export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(({ siz
       timestamp: item.date.getTime(),
       price: item.rate,
     }));
-  }, [historicalDataContentHash(data?.historicalData)]);
+  }, [data?.historicalData]);
 
   // Memoize the current rate change
   const rateChange = useMemo(() => {
@@ -39,7 +33,7 @@ export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(({ siz
     const previous = data.historicalData[data.historicalData.length - 2].rate;
 
     return current - previous;
-  }, [historicalDataContentHash(data?.historicalData)]);
+  }, [data?.historicalData]);
 
   if (loading) {
     const tileSize = typeof size === 'string' ? size : 'medium';

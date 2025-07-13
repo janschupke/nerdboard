@@ -87,16 +87,16 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
   }
 };
 
-export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ children }) => {
-  const defaultState: DashboardState = {
-    layout: {
-      tiles: [],
-      isCollapsed: false,
-    },
-    isRefreshing: false,
-    lastRefreshTime: null,
-  };
+const defaultState: DashboardState = {
+  layout: {
+    tiles: [],
+    isCollapsed: false,
+  },
+  isRefreshing: false,
+  lastRefreshTime: null,
+};
 
+export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ children }) => {
   const [storedState, setStoredState] = useLocalStorage<DashboardState>(
     'dashboard-state',
     defaultState,
@@ -122,7 +122,7 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       lastRefreshTime:
         storedState.lastRefreshTime instanceof Date ? storedState.lastRefreshTime : null,
     };
-  }, [storedState, defaultState]);
+  }, [storedState]);
 
   const [state, dispatch] = useReducer(dashboardReducer, validatedState);
   const [toast, setToast] = React.useState<{ message: string; visible: boolean }>({

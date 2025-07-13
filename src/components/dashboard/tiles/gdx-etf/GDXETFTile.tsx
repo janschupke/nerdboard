@@ -11,19 +11,13 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
   const { data, priceHistory, loading, error, selectedPeriod, refetch, changePeriod } =
     useGDXETFData(config.refreshInterval);
 
-  // Helper to create a deep content hash for priceHistory
-  function priceHistoryContentHash(arr: typeof priceHistory): string {
-    if (!arr || arr.length === 0) return '';
-    return arr.map((item) => `${item.timestamp}:${item.price}`).join('|');
-  }
-
   // Memoize chart data to prevent unnecessary re-renders
   const chartData = useMemo(() => {
     return priceHistory.map((item) => ({
       timestamp: item.timestamp,
       price: item.price,
     }));
-  }, [priceHistoryContentHash(priceHistory)]);
+  }, [priceHistory]);
 
   // Memoize the trading status display
   const tradingStatusDisplay = useMemo(() => {
@@ -37,7 +31,7 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
     };
 
     return statusMap[data.tradingStatus];
-  }, [data?.tradingStatus]);
+  }, [data]);
 
   if (loading) {
     const tileSize = typeof size === 'string' ? size : 'medium';
