@@ -2,7 +2,7 @@ import { UI_CONFIG } from '../../../../utils/constants';
 
 // API Configuration
 export const FEDERAL_FUNDS_API_CONFIG = {
-  FRED_BASE_URL: 'https://api.stlouisfed.org/fred/series/observations',
+  FRED_BASE_URL: '/api/fred/fred/series/observations',
   SERIES_ID: 'FEDFUNDS',
   API_KEY: import.meta.env.VITE_FRED_API_KEY || '',
   CACHE_DURATION: 86400000, // 24 hours

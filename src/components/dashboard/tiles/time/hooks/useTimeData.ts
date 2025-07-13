@@ -29,7 +29,6 @@ export const useTimeData = (
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch time data';
       setError(errorMessage);
-      console.error('Error fetching time data:', err);
     } finally {
       setLoading(false);
     }

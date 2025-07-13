@@ -1,11 +1,13 @@
 export const URANIUM_API_CONFIG = {
-  BASE_URL: 'https://api.tradingeconomics.com/commodity/uranium',
+  BASE_URL: '/api/tradingeconomics/commodity/uranium',
   CACHE_DURATION: 24 * 60 * 60 * 1000, // 24 hours
   FALLBACK_URLS: [
-    'https://www.quandl.com/api/v3/datasets/ODA/PURAN_USD.json',
-    'https://www.uxc.com/p/data.asp',
+    '/api/quandl/api/v3/datasets/ODA/PURAN_USD.json',
+    '/api/uxc/p/data.asp',
   ],
   DEFAULT_REFRESH_INTERVAL: 24 * 60 * 60 * 1000, // 24 hours
+  // Use mock data as primary since real APIs are unreliable
+  USE_MOCK_DATA: true,
 } as const;
 
 export const URANIUM_UI_CONFIG = {

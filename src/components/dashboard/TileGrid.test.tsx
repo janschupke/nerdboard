@@ -29,7 +29,7 @@ describe('TileGrid', () => {
       </DashboardProvider>
     );
 
-    expect(screen.getByText('Welcome to Nerdboard')).toBeInTheDocument();
+    expect(screen.getByText('Welcome to Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Add tiles from the sidebar to get started')).toBeInTheDocument();
     expect(screen.getByText('Click the menu button to open the sidebar')).toBeInTheDocument();
   });
@@ -41,7 +41,7 @@ describe('TileGrid', () => {
       </DashboardProvider>
     );
 
-    const container = screen.getByText('Welcome to Nerdboard').closest('div');
+    const container = screen.getByText('Welcome to Dashboard').closest('div');
     expect(container).toHaveClass('flex', 'items-center', 'justify-center', 'h-full');
   });
 
@@ -52,7 +52,7 @@ describe('TileGrid', () => {
       </DashboardProvider>
     );
 
-    const heading = screen.getByText('Welcome to Nerdboard');
+    const heading = screen.getByText('Welcome to Dashboard');
     expect(heading).toHaveClass('text-theme-primary');
 
     const paragraph = screen.getByText('Add tiles from the sidebar to get started');
@@ -66,7 +66,7 @@ describe('TileGrid', () => {
       </DashboardProvider>
     );
 
-    const mainContainer = screen.getByText('Welcome to Nerdboard').closest('div')?.parentElement;
+    const mainContainer = screen.getByText('Welcome to Dashboard').closest('div')?.parentElement;
     expect(mainContainer).toHaveClass('flex', 'items-center', 'justify-center', 'h-full');
   });
 });

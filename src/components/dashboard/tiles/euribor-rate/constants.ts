@@ -3,8 +3,8 @@ import type { EuriborRateConfig, EuriborRateErrorMessages } from './types';
 
 // API Configuration
 export const EURIBOR_RATE_CONFIG: EuriborRateConfig = {
-  EMMI_API_BASE: 'https://www.emmi-benchmarks.eu/api',
-  ECB_API_BASE: 'https://api.data.ecb.europa.eu/service/data/EXR',
+  EMMI_API_BASE: '/api/emmi/api',
+  ECB_API_BASE: '/api/ecb/service/data/EXR',
   CACHE_DURATION: 86400000, // 24 hours
   DEFAULT_REFRESH_INTERVAL: 86400000, // 24 hours
   DEFAULT_TIME_RANGE: '1Y',

@@ -1,4 +1,5 @@
 import type { DashboardTile } from '../../types/dashboard';
+import { TileType, TileSize } from '../../types/dashboard';
 import { Icon } from '../ui/Icon';
 import { CryptocurrencyTile } from './tiles/cryptocurrency/CryptocurrencyTile';
 import { PreciousMetalsTile } from './tiles/precious-metals/PreciousMetalsTile';
@@ -18,33 +19,33 @@ interface TileProps {
 
 export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
   const renderTileContent = () => {
-    const size = typeof tile.size === 'string' ? tile.size : 'medium';
+    const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
     const config = tile.config || {};
     
     switch (tile.type) {
-      case 'cryptocurrency':
+      case TileType.CRYPTOCURRENCY:
         return <CryptocurrencyTile id={tile.id} size={size} config={config} />;
-      case 'precious_metals':
+      case TileType.PRECIOUS_METALS:
         return <PreciousMetalsTile id={tile.id} size={size} config={config} />;
-      case 'federal_funds_rate':
+      case TileType.FEDERAL_FUNDS_RATE:
         return <FederalFundsRateTile id={tile.id} size={size} config={config} />;
-      case 'euribor_rate':
+      case TileType.EURIBOR_RATE:
         return <EuriborRateTile />;
-      case 'weather_helsinki':
+      case TileType.WEATHER_HELSINKI:
         return <WeatherTile size={size} config={{ city: 'helsinki', country: 'Finland', refreshInterval: 300000 }} />;
-      case 'weather_prague':
+      case TileType.WEATHER_PRAGUE:
         return <WeatherTile size={size} config={{ city: 'prague', country: 'Czech Republic', refreshInterval: 300000 }} />;
-      case 'weather_taipei':
+      case TileType.WEATHER_TAIPEI:
         return <WeatherTile size={size} config={{ city: 'taipei', country: 'Taiwan', refreshInterval: 300000 }} />;
-      case 'gdx_etf':
+      case TileType.GDX_ETF:
         return <GDXETFTile id={tile.id} size={size} config={config} />;
-      case 'time_helsinki':
+      case TileType.TIME_HELSINKI:
         return <TimeTile id={tile.id} size={size} config={{ city: 'helsinki', showBusinessHours: true }} />;
-      case 'time_prague':
+      case TileType.TIME_PRAGUE:
         return <TimeTile id={tile.id} size={size} config={{ city: 'prague', showBusinessHours: true }} />;
-      case 'time_taipei':
+      case TileType.TIME_TAIPEI:
         return <TimeTile id={tile.id} size={size} config={{ city: 'taipei', showBusinessHours: true }} />;
-      case 'uranium':
+      case TileType.URANIUM:
         return <UraniumTile id={tile.id} size={size} config={config} />;
       default:
         return (
@@ -76,38 +77,38 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
 
   const getTileTitle = () => {
     const titles = {
-      cryptocurrency: 'Cryptocurrency',
-      precious_metals: 'Precious Metals',
-      federal_funds_rate: 'Federal Funds Rate',
-      euribor_rate: 'Euribor Rate',
-      weather_helsinki: 'Helsinki Weather',
-      weather_prague: 'Prague Weather',
-      weather_taipei: 'Taipei Weather',
-      gdx_etf: 'GDX ETF',
-      time_helsinki: 'Helsinki Time',
-      time_prague: 'Prague Time',
-      time_taipei: 'Taipei Time',
-      uranium: 'Uranium Price',
+      [TileType.CRYPTOCURRENCY]: 'Cryptocurrency',
+      [TileType.PRECIOUS_METALS]: 'Precious Metals',
+      [TileType.FEDERAL_FUNDS_RATE]: 'Federal Funds Rate',
+      [TileType.EURIBOR_RATE]: 'Euribor Rate',
+      [TileType.WEATHER_HELSINKI]: 'Helsinki Weather',
+      [TileType.WEATHER_PRAGUE]: 'Prague Weather',
+      [TileType.WEATHER_TAIPEI]: 'Taipei Weather',
+      [TileType.GDX_ETF]: 'GDX ETF',
+      [TileType.TIME_HELSINKI]: 'Helsinki Time',
+      [TileType.TIME_PRAGUE]: 'Prague Time',
+      [TileType.TIME_TAIPEI]: 'Taipei Time',
+      [TileType.URANIUM]: 'Uranium Price',
     };
-    return titles[tile.type as keyof typeof titles] || 'Tile';
+    return titles[tile.type] || 'Tile';
   };
 
   const getTileIcon = () => {
     const icons = {
-      cryptocurrency: 'crypto',
-      precious_metals: 'metals',
-      federal_funds_rate: 'chart',
-      euribor_rate: 'chart',
-      weather_helsinki: 'weather',
-      weather_prague: 'weather',
-      weather_taipei: 'weather',
-      gdx_etf: 'chart',
-      time_helsinki: 'clock',
-      time_prague: 'clock',
-      time_taipei: 'clock',
-      uranium: 'chart',
+      [TileType.CRYPTOCURRENCY]: 'crypto',
+      [TileType.PRECIOUS_METALS]: 'metals',
+      [TileType.FEDERAL_FUNDS_RATE]: 'chart',
+      [TileType.EURIBOR_RATE]: 'chart',
+      [TileType.WEATHER_HELSINKI]: 'weather',
+      [TileType.WEATHER_PRAGUE]: 'weather',
+      [TileType.WEATHER_TAIPEI]: 'weather',
+      [TileType.GDX_ETF]: 'chart',
+      [TileType.TIME_HELSINKI]: 'clock',
+      [TileType.TIME_PRAGUE]: 'clock',
+      [TileType.TIME_TAIPEI]: 'clock',
+      [TileType.URANIUM]: 'chart',
     };
-    return icons[tile.type as keyof typeof icons] || 'settings';
+    return icons[tile.type] || 'settings';
   };
 
   const handleRemoveKeyDown = (e: React.KeyboardEvent) => {

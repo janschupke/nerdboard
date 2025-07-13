@@ -96,7 +96,6 @@ export const useWeatherData = (
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : WEATHER_ERROR_MESSAGES.FETCH_FAILED;
       setError(errorMessage);
-      console.error('Weather data fetch failed:', err);
     } finally {
       setLoading(false);
     }

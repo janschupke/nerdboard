@@ -87,26 +87,83 @@ src/
 
 ## API Integration
 
-### Cryptocurrency Data
+The application uses a comprehensive API proxy system to handle CORS issues and ensure reliable data fetching:
 
-- **Source**: CoinGecko API
+### API Proxy System
+
+- **Local Development**: Uses Vite proxy configuration for seamless development
+- **Production (Vercel)**: Uses serverless functions as API proxies
+- **CORS-Free**: No CORS errors in any environment
+- **Automatic Deployment**: Works with Vercel's automatic deployment
+
+### Available APIs
+
+| Service | Purpose | Used By |
+|---------|---------|---------|
+| **CoinGecko** | Cryptocurrency data | Cryptocurrency tile |
+| **TradingEconomics** | Commodity prices | Uranium tile |
+| **Yahoo Finance** | Stock/ETF data | GDX ETF tile |
+| **FRED** | Economic indicators | Federal Funds Rate tile |
+| **ECB/EMMI** | European rates | Euribor Rate tile |
+| **OpenWeatherMap** | Weather data | Weather tiles |
+| **Alpha Vantage** | Financial data | GDX ETF tile (fallback) |
+| **IEX Cloud** | Market data | GDX ETF tile (fallback) |
+
+### Data Sources
+
+#### Cryptocurrency Data
+- **Source**: CoinGecko API via proxy
 - **Features**: Real-time price data, market cap, 24h changes
 - **Caching**: 30-second cache with automatic refresh
 - **Error Handling**: Retry logic with timeout handling
 
-### Precious Metals Data
-
+#### Precious Metals Data
 - **Source**: Mock data (ready for real API integration)
 - **Features**: Gold and silver price tracking
 - **Caching**: 5-minute cache with validation
 - **Error Handling**: Comprehensive data validation
 
-### Federal Funds Rate Data
-
-- **Source**: FRED API (Federal Reserve Economic Data) with fallback
+#### Federal Funds Rate Data
+- **Source**: FRED API via proxy with fallback
 - **Features**: Real-time Federal Funds rate monitoring with historical trends
 - **Caching**: 24-hour cache with automatic refresh
 - **Error Handling**: Graceful fallback to mock data with user-friendly messages
+
+#### Uranium Data
+- **Source**: TradingEconomics API via proxy
+- **Features**: Real-time uranium price tracking
+- **Fallbacks**: Quandl and UXC APIs
+- **Error Handling**: Multiple fallback sources with mock data
+
+#### GDX ETF Data
+- **Source**: Yahoo Finance API via proxy
+- **Features**: Real-time ETF price and volume data
+- **Fallbacks**: Alpha Vantage and IEX Cloud APIs
+- **Error Handling**: Multiple data sources with historical charts
+
+#### Weather Data
+- **Source**: OpenWeatherMap API via proxy
+- **Features**: Current weather and forecasts for multiple cities
+- **Fallbacks**: WeatherAPI and AccuWeather
+- **Error Handling**: Graceful degradation with mock data
+
+### API Proxy Configuration
+
+The application includes serverless functions in the `api/` directory that act as CORS proxies:
+
+```bash
+api/
+├── coingecko.ts           # CoinGecko API proxy
+├── tradingeconomics.ts    # TradingEconomics API proxy
+├── yahoo-finance.ts       # Yahoo Finance API proxy
+├── fred.ts               # FRED API proxy
+├── emmi.ts               # EMMI API proxy
+├── ecb.ts                # ECB API proxy
+├── openweathermap.ts     # OpenWeatherMap API proxy
+└── ...                   # Additional API proxies
+```
+
+For detailed API proxy documentation, see [api/README.md](api/README.md).
 
 ## Accessibility
 

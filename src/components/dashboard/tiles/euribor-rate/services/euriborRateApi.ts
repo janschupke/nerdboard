@@ -10,6 +10,13 @@ export class EuriborRateApiService {
     const cached = this.getCachedData(cacheKey);
     if (cached) return cached as EuriborRateData;
 
+    // Use mock data as primary since real APIs are unreliable
+    const mockData = this.getMockData(timeRange);
+    this.setCachedData(cacheKey, mockData);
+    return mockData;
+
+    // Commented out real API calls due to reliability issues
+    /*
     try {
       // Try EMMI API first
       const data = await this.fetchFromEmmiApi(timeRange);
@@ -31,6 +38,7 @@ export class EuriborRateApiService {
         return mockData;
       }
     }
+    */
   }
 
   private async fetchFromEmmiApi(timeRange: TimeRange): Promise<EuriborRateData> {

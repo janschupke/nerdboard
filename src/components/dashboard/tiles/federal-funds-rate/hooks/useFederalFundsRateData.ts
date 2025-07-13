@@ -21,7 +21,6 @@ export function useFederalFundsRateData(
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : FEDERAL_FUNDS_ERROR_MESSAGES.FETCH_FAILED);
-      console.error('Error fetching Federal Funds rate data:', err);
     } finally {
       setLoading(false);
     }

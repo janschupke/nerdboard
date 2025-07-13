@@ -20,7 +20,6 @@ export function usePreciousMetalsData(
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : PRECIOUS_METALS_ERROR_MESSAGES.FETCH_FAILED);
-      console.error('Error fetching precious metals data:', err);
     } finally {
       setLoading(false);
     }

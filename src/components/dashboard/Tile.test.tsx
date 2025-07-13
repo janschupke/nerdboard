@@ -54,7 +54,7 @@ describe('Tile', () => {
   it('renders precious metals tile correctly', () => {
     const metalsTile: DashboardTile = {
       id: 'test-tile-2',
-      type: 'precious_metals',
+      type: 'precious-metals',
       position: { x: 1, y: 0 },
       size: 'large',
       config: {},

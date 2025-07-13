@@ -21,7 +21,7 @@ export function TileGrid() {
             <div className="text-6xl mb-4" role="img" aria-label="Dashboard icon">
               📊
             </div>
-            <h2 className="text-xl font-semibold text-theme-primary mb-2">Welcome to Nerdboard</h2>
+            <h2 className="text-xl font-semibold text-theme-primary mb-2">Welcome to Dashboard</h2>
             <p className="text-theme-secondary mb-4">Add tiles from the sidebar to get started</p>
             <div className="text-sm text-theme-tertiary">
               Click the menu button to open the sidebar

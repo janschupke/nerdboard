@@ -32,7 +32,6 @@ export function usePreciousMetalsData(
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to fetch precious metals data';
       setError(errorMessage);
-      console.error('Error fetching precious metals data:', err);
 
       // Increment retry count for potential retry logic
       setRetryCount((prev) => prev + 1);

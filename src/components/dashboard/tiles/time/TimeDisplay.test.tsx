@@ -109,7 +109,7 @@ describe('TimeDisplay', () => {
     const mockFormatTime = vi.fn().mockReturnValue('09:15:30');
     mockTimezoneService.getInstance.mockReturnValue({
       formatTime: mockFormatTime,
-    } as any);
+    } as unknown as TimezoneService);
 
     const differentTimeData: TimeData = {
       ...mockTimeData,
@@ -131,7 +131,7 @@ describe('TimeDisplay', () => {
     const mockFormatTime = vi.fn().mockReturnValue('14:30:25');
     mockTimezoneService.getInstance.mockReturnValue({
       formatTime: mockFormatTime,
-    } as any);
+    } as unknown as TimezoneService);
 
     render(<TimeDisplay {...defaultProps} />);
     

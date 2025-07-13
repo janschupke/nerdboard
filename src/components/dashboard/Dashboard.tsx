@@ -44,7 +44,7 @@ function DashboardContent() {
           >
             <Icon name="menu" size="md" />
           </button>
-          <h1 className="text-xl font-semibold text-theme-primary">Nerdboard</h1>
+          <h1 className="text-xl font-semibold text-theme-primary">Dashboard</h1>
         </div>
         <div className="flex items-center space-x-2">
           <button

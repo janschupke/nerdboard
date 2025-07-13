@@ -108,7 +108,7 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
             {availableTiles.map((tile) => (
               <div
                 key={tile.type}
-                className="p-4 border border-theme-primary rounded-lg hover:border-accent-primary hover:bg-accent-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2"
+                className="p-3 border border-theme-primary rounded-lg hover:border-accent-primary hover:bg-accent-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2"
                 onClick={() => onTileSelect(tile.type)}
                 role="button"
                 aria-selected="false"
@@ -128,18 +128,17 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
                 aria-label={`Add ${tile.name} tile to dashboard`}
                 title={`Add ${tile.name} tile to dashboard`}
               >
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
                   <div className="flex-shrink-0">
                     <Icon
                       name={tile.icon}
-                      size="md"
+                      size="sm"
                       className="text-accent-primary"
                       aria-hidden="true"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-medium text-theme-primary truncate">{tile.name}</h3>
-                    <p className="text-xs text-theme-secondary mt-1">{tile.description}</p>
                   </div>
                   <div className="flex-shrink-0">
                     <Icon name="add" size="sm" className="text-theme-tertiary" aria-hidden="true" />

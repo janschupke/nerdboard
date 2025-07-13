@@ -2,7 +2,7 @@ import type { CryptocurrencyData, PriceHistory } from '../types/cryptocurrency';
 import { API_CONFIG } from '../utils/constants';
 
 export class CoinGeckoApiService {
-  private baseUrl = 'https://api.coingecko.com/api/v3';
+  private baseUrl = '/api/coingecko/api/v3';
   private cache = new Map<string, { data: unknown; timestamp: number }>();
   private readonly CACHE_DURATION = 30000; // 30 seconds
 
@@ -74,7 +74,6 @@ export class CoinGeckoApiService {
       this.setCachedData(cacheKey, data);
       return data;
     } catch (error) {
-      console.error('Failed to fetch cryptocurrency data:', error);
       throw new Error(
         `Failed to fetch cryptocurrency data: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
@@ -105,7 +104,6 @@ export class CoinGeckoApiService {
       this.setCachedData(cacheKey, formattedData);
       return formattedData;
     } catch (error) {
-      console.error('Failed to fetch price history:', error);
       throw new Error(
         `Failed to fetch price history for ${coinId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );

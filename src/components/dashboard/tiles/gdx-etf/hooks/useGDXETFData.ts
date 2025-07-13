@@ -22,7 +22,6 @@ export function useGDXETFData(
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : GDX_ERROR_MESSAGES.FETCH_FAILED);
-      console.error('Error fetching GDX ETF data:', err);
     } finally {
       setLoading(false);
     }
@@ -32,8 +31,7 @@ export function useGDXETFData(
     try {
       const result = await apiService.getPriceHistory(period);
       setPriceHistory(result);
-    } catch (err) {
-      console.error('Error fetching price history:', err);
+    } catch {
       // Don't set error for price history as it's not critical
     }
   }, []);

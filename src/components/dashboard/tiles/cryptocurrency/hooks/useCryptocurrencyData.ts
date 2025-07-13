@@ -20,7 +20,6 @@ export function useCryptocurrencyData(
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : CRYPTO_ERROR_MESSAGES.FETCH_FAILED);
-      console.error('Error fetching cryptocurrency data:', err);
     } finally {
       setLoading(false);
     }

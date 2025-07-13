@@ -23,20 +23,23 @@ const mockUraniumData: UraniumPriceData = {
 
 export const uraniumApi = {
   async getUraniumData(timeRange: UraniumTimeRange): Promise<UraniumPriceData> {
+    // Use mock data as primary since real APIs are unreliable
+    if (URANIUM_API_CONFIG.USE_MOCK_DATA) {
+      return this.getMockData(timeRange);
+    }
+
     try {
       // Try primary API first
       const data = await this.fetchFromPrimaryApi(timeRange);
       return data;
     } catch (error) {
-      console.warn('Primary API failed, trying fallback:', error);
-      
+      console.warn('Primary uranium API failed, trying fallbacks:', error);
       try {
         // Try fallback APIs
         const data = await this.fetchFromFallbackApis(timeRange);
         return data;
       } catch (fallbackError) {
-        console.warn('Fallback APIs failed, using mock data:', fallbackError);
-        
+        console.warn('All uranium APIs failed, using mock data:', fallbackError);
         // Return mock data as final fallback
         return this.getMockData(timeRange);
       }
@@ -93,8 +96,7 @@ export const uraniumApi = {
             marketStatus: data.marketStatus,
           };
         }
-      } catch (error) {
-        console.warn(`Fallback API ${fallbackUrl} failed:`, error);
+      } catch {
         continue;
       }
     }

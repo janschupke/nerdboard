@@ -1,6 +1,6 @@
 import React, { createContext } from 'react';
 import type { DashboardTile, DashboardLayout, DashboardContextType } from '../types/dashboard';
-import { TileType } from '../types/dashboard';
+import { TileType, TileSize } from '../types/dashboard';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Toast } from '../components/ui/Toast';
 
@@ -76,26 +76,20 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   };
   const hideToast = () => setToast({ ...toast, visible: false });
 
-  const addTile = (tileOrType: DashboardTile | string) => {
-    let normalizedType: DashboardTile['type'];
+  const addTile = (tileOrType: DashboardTile | TileType) => {
+    let normalizedType: TileType;
     if (typeof tileOrType === 'string') {
-      // Handle enum values like TileType.CRYPTOCURRENCY
-      const possibleType = tileOrType in TileType ? TileType[tileOrType as keyof typeof TileType] : tileOrType;
-      // Only allow valid types
-      normalizedType = ['cryptocurrency', 'precious-metals', 'precious_metals', 'chart'].includes(possibleType)
-        ? (possibleType as DashboardTile['type'])
-        : 'cryptocurrency';
+      // Validate that the tile type is valid
+      const validTypes = Object.values(TileType);
+      normalizedType = validTypes.includes(tileOrType as TileType) 
+        ? (tileOrType as TileType) 
+        : TileType.CRYPTOCURRENCY;
     } else {
       normalizedType = tileOrType.type;
     }
     
     // Prevent duplicate tiles of the same type
-    // Check both the normalized type and the original type to handle enum vs string comparison
-    const hasDuplicate = state.tiles.some((tile) => {
-      return tile.type === normalizedType || 
-             tile.type === tileOrType || 
-             (typeof tileOrType === 'string' && tile.type === TileType[tileOrType as keyof typeof TileType]);
-    });
+    const hasDuplicate = state.tiles.some((tile) => tile.type === normalizedType);
     
     if (hasDuplicate) {
       showToast('This tile is already on your dashboard.');
@@ -108,7 +102,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
             id: `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             type: normalizedType,
             position: { x: 0, y: 0 },
-            size: 'medium',
+            size: TileSize.MEDIUM,
             config: {},
           }
         : tileOrType;

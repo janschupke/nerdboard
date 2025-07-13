@@ -15,16 +15,13 @@ export class FederalFundsRateApiService {
       const data = await this.fetchFromFredApi();
       this.setCachedData(cacheKey, data);
       return data;
-    } catch (error) {
-      console.warn('FRED API failed, trying web scraping fallback:', error);
-      
+    } catch {
       try {
         // Fallback to web scraping
         const data = await this.scrapeFederalFundsRateData(timeRange);
         this.setCachedData(cacheKey, data);
         return data;
-      } catch (scrapingError) {
-        console.error('Both FRED API and web scraping failed:', scrapingError);
+      } catch {
         throw new Error(FEDERAL_FUNDS_ERROR_MESSAGES.FETCH_FAILED);
       }
     }

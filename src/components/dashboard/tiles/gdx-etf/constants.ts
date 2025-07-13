@@ -2,9 +2,9 @@ import { UI_CONFIG } from '../../../../utils/constants';
 
 // API Configuration
 export const GDX_API_CONFIG = {
-  ALPHA_VANTAGE_BASE_URL: 'https://www.alphavantage.co/query',
-  YAHOO_FINANCE_BASE_URL: 'https://query1.finance.yahoo.com/v8/finance/chart',
-  IEX_CLOUD_BASE_URL: 'https://cloud.iexapis.com/stable/stock',
+  ALPHA_VANTAGE_BASE_URL: '/api/alpha-vantage/query',
+  YAHOO_FINANCE_BASE_URL: '/api/yahoo-finance/v8/finance/chart',
+  IEX_CLOUD_BASE_URL: '/api/iex-cloud/stable/stock',
   CACHE_DURATION: 60000, // 1 minute
   DEFAULT_REFRESH_INTERVAL: 60000, // 1 minute during market hours
   SYMBOL: 'GDX',
