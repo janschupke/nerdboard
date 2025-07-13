@@ -10,7 +10,7 @@ import { WeatherTile } from './tiles/weather/WeatherTile';
 import { GDXETFTile } from './tiles/gdx-etf/GDXETFTile';
 import { TimeTile } from './tiles/time/TimeTile';
 import { UraniumTile } from './tiles/uranium/UraniumTile';
-import { getTileSpan } from '../../constants/dimensions';
+import { getTileSpan } from '../../constants/gridSystem';
 
 interface TileProps {
   tile: DashboardTile;

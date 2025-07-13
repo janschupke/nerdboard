@@ -2,7 +2,7 @@ import React, { createContext, useReducer, useCallback, useMemo } from 'react';
 import type { DashboardTile, TileType } from '../types/dashboard';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Toast } from '../components/ui/Toast';
-import { getTileSpan } from '../constants/dimensions';
+import { getTileSpan } from '../constants/gridSystem';
 
 interface DashboardState {
   layout: {

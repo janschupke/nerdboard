@@ -10,7 +10,7 @@ import {
   calculateDropZoneStyle,
   getGridTemplateStyle,
   getTileSpan,
-} from '../../constants/dimensions';
+} from '../../constants/gridSystem';
 
 export function TileGrid() {
   const dashboardContext = useContext(DashboardContext);

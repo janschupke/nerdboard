@@ -8,7 +8,7 @@ import {
   calculateDropZoneStyle,
   isPositionValid,
   getGridTemplateStyle,
-} from './dimensions';
+} from './gridSystem';
 
 describe('Grid Configuration', () => {
   it('has correct grid dimensions', () => {
