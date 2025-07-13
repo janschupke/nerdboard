@@ -368,6 +368,7 @@ export function TileGrid() {
       ))}
       {/* Fade-out effect at the bottom */}
       <div className="pointer-events-none absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-surface-primary to-transparent z-20" />
+      
     </div>
   );
 }

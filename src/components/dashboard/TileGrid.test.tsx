@@ -6,12 +6,18 @@ import React from 'react';
 import { TileType } from '../../types/dashboard';
 import { renderHook, act } from '@testing-library/react';
 import { useDashboard } from '../../hooks/useDashboard';
+import { TestProviders } from '../../test/utils/TestProviders';
 
 // Mock Tile component
 vi.mock('./Tile', () => ({
   Tile: ({ tile, children }: { tile: Record<string, unknown>; children?: React.ReactNode }) => (
     <div data-testid={`tile-${tile.type as string}-${tile.id as string}`}>{children}</div>
   ),
+}));
+
+// Mock LogView component
+vi.mock('./LogView', () => ({
+  LogView: () => null,
 }));
 
 // Mock DraggableTile component
@@ -111,10 +117,12 @@ describe('TileGrid', () => {
 
   function setup() {
     render(
-      <DashboardProvider>
-        <TestDashboardActions />
-        <TileGrid />
-      </DashboardProvider>,
+      <TestProviders>
+        <DashboardProvider>
+          <TestDashboardActions />
+          <TileGrid />
+        </DashboardProvider>
+      </TestProviders>,
     );
   }
 

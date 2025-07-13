@@ -7,8 +7,8 @@ import { ErrorBoundary } from '../ErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
 import { useContext } from 'react';
 import { LogButton } from './LogButton';
-import { LogView } from './LogView';
 import { useLogManager } from '../../hooks/useLogManager';
+import { LogView } from './LogView';
 
 /**
  * Main dashboard content component that renders the dashboard layout
@@ -70,8 +70,6 @@ function DashboardContent() {
         {/* Scrollable Dashboard Content */}
         <main className="flex-1 overflow-auto relative scrollbar-hide">
           <TileGrid />
-          
-          {/* Log View Overlay - positioned within the tile grid area */}
           <LogView isOpen={isLogViewOpen} onClose={closeLogView} />
         </main>
       </div>
