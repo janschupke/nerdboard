@@ -1,19 +1,16 @@
 
 import { TileType } from '../../types/dashboard';
-import { Button } from '../ui/Button';
 import { SidebarItem } from './SidebarItem';
 import { useDashboard } from '../../hooks/useDashboard';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { useEffect, useMemo, useCallback, useState } from 'react';
-import { sidebarStorage } from '../../utils/sidebarStorage';
+import { useEffect, useMemo, useCallback } from 'react';
 
 interface SidebarProps {
   onToggle: () => void;
 }
 
 export function Sidebar({ onToggle }: SidebarProps) {
-  const { isTileActive, addTile, removeTile, isInitialized } = useDashboard();
-  const [storageError, setStorageError] = useState<string | null>(null);
+  const { isTileActive, addTile, removeTile, state } = useDashboard();
 
   const availableTiles = useMemo(() => [
     {
@@ -92,20 +89,6 @@ export function Sidebar({ onToggle }: SidebarProps) {
 
   const itemIds = useMemo(() => availableTiles.map(tile => tile.type), [availableTiles]);
 
-  // Persist collapse state in localStorage
-  const getInitialCollapsed = () => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('sidebar-collapsed');
-      return stored === 'true' ? true : false;
-    }
-    return false;
-  };
-
-  const handleSidebarToggle = useCallback((collapse: boolean) => {
-    localStorage.setItem('sidebar-collapsed', collapse ? 'true' : 'false');
-    onToggle();
-  }, [onToggle]);
-
   const handleTileToggle = useCallback(async (tileType: TileType) => {
     if (isTileActive(tileType)) {
       await removeTile(tileType);
@@ -116,64 +99,12 @@ export function Sidebar({ onToggle }: SidebarProps) {
 
   const {
     selectedIndex,
-    isSidebarCollapsed,
-    setIsSidebarCollapsed,
   } = useKeyboardNavigation<TileType>(
     itemIds,
     handleTileToggle,
-    handleSidebarToggle,
-    getInitialCollapsed()
+    onToggle,
+    state.layout.isCollapsed
   );
-
-  // Handle toggle button clicks
-  const handleToggleButtonClick = useCallback(() => {
-    const newCollapsedState = !isSidebarCollapsed;
-    setIsSidebarCollapsed(newCollapsedState);
-    handleSidebarToggle(newCollapsedState);
-  }, [isSidebarCollapsed, setIsSidebarCollapsed, handleSidebarToggle]);
-
-  // Load sidebar collapse state on mount
-  useEffect(() => {
-    const loadCollapseState = async () => {
-      if (!isInitialized) return;
-      
-      try {
-        const savedState = await sidebarStorage.loadSidebarState();
-        if (savedState && savedState.isCollapsed !== isSidebarCollapsed) {
-          // Trigger sidebar toggle if state doesn't match
-          handleSidebarToggle(savedState.isCollapsed);
-        }
-      } catch (error) {
-        console.error('Failed to load sidebar collapse state:', error);
-        setStorageError('Failed to load sidebar preferences');
-      }
-    };
-
-    loadCollapseState();
-  }, [isInitialized, isSidebarCollapsed, handleSidebarToggle]);
-
-  // Save sidebar collapse state when it changes
-  useEffect(() => {
-    const saveCollapseState = async () => {
-      if (!isInitialized) return;
-      
-      try {
-        const currentState = await sidebarStorage.loadSidebarState();
-        if (currentState) {
-          await sidebarStorage.saveSidebarState({
-            ...currentState,
-            isCollapsed: isSidebarCollapsed,
-            lastUpdated: Date.now(),
-          });
-        }
-      } catch (error) {
-        console.error('Failed to save sidebar collapse state:', error);
-        setStorageError('Failed to save sidebar preferences');
-      }
-    };
-
-    saveCollapseState();
-  }, [isSidebarCollapsed, isInitialized]);
 
   // Announce selection changes to screen readers
   useEffect(() => {
@@ -192,27 +123,15 @@ export function Sidebar({ onToggle }: SidebarProps) {
       <aside
         role="complementary"
         aria-label="Tile catalog sidebar"
-        className={`h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out flex-shrink-0 ${isSidebarCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}
+        className={`h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out flex-shrink-0 ${state.layout.isCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}
       >
-        <div className={`flex flex-col h-full transition-all duration-300 ${isSidebarCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}>
+        <div className={`flex flex-col h-full transition-all duration-300 ${state.layout.isCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}>
           {/* Tile Catalog */}
-          {!isSidebarCollapsed && (
+          {!state.layout.isCollapsed && (
             <div className="flex-1 p-4 overflow-y-auto">
               <h2 className="text-lg font-semibold text-theme-primary mb-4" id="tiles-heading">
                 Available Tiles ({availableTiles.length})
               </h2>
-              {storageError && (
-                <div className="mb-4 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-                  {storageError}
-                  <button
-                    onClick={() => setStorageError(null)}
-                    className="ml-2 text-red-500 hover:text-red-700"
-                    aria-label="Dismiss error"
-                  >
-                    ×
-                  </button>
-                </div>
-              )}
               <div
                 className="space-y-3"
                 role="listbox"
@@ -233,19 +152,6 @@ export function Sidebar({ onToggle }: SidebarProps) {
               </div>
             </div>
           )}
-
-          {/* Footer - Always visible */}
-          <div className={`${isSidebarCollapsed ? 'absolute bottom-4 left-0 right-0' : 'p-4 border-t border-theme-primary'}`}>
-            <Button
-              variant="primary"
-              size="sm"
-              className="w-full"
-              onClick={handleToggleButtonClick}
-              aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              {isSidebarCollapsed ? 'Expand' : 'Collapse'}
-            </Button>
-          </div>
         </div>
       </aside>
       {/* Live region for screen reader announcements */}

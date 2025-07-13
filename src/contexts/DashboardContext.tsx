@@ -5,6 +5,70 @@ import { Toast } from '../components/ui/Toast';
 import { getTileSpan } from '../constants/gridSystem';
 import { sidebarStorage } from '../utils/sidebarStorage';
 
+// Helper function to rearrange tiles after removal
+const rearrangeTiles = (tiles: DashboardTile[]): DashboardTile[] => {
+  if (tiles.length === 0) return tiles;
+
+  // Sort tiles by creation time to maintain order
+  const sortedTiles = [...tiles].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+
+  const GRID_ROWS = 12;
+  const GRID_COLUMNS = 8;
+  const grid = Array(GRID_ROWS)
+    .fill(null)
+    .map(() => Array(GRID_COLUMNS).fill(false));
+
+  const rearrangedTiles: DashboardTile[] = [];
+
+  for (const tile of sortedTiles) {
+    const size = typeof tile.size === 'string' ? tile.size : 'medium';
+    const { colSpan, rowSpan } = getTileSpan(size);
+
+    // Find first available position for this tile
+    let newPosition = { x: 0, y: 0 };
+    let found = false;
+
+    outer: for (let y = 0; y <= GRID_ROWS - rowSpan; y++) {
+      for (let x = 0; x <= GRID_COLUMNS - colSpan; x++) {
+        let canPlace = true;
+        for (let i = y; i < y + rowSpan; i++) {
+          for (let j = x; j < x + colSpan; j++) {
+            if (grid[i] && grid[i][j]) {
+              canPlace = false;
+              break;
+            }
+          }
+          if (!canPlace) break;
+        }
+        if (canPlace) {
+          newPosition = { x, y };
+          found = true;
+          break outer;
+        }
+      }
+    }
+
+    if (found) {
+      // Mark the position as occupied
+      for (let i = newPosition.y; i < newPosition.y + rowSpan; i++) {
+        for (let j = newPosition.x; j < newPosition.x + colSpan; j++) {
+          if (grid[i] && grid[i][j] !== undefined) {
+            grid[i][j] = true;
+          }
+        }
+      }
+
+      // Add tile with new position
+      rearrangedTiles.push({
+        ...tile,
+        position: newPosition,
+      });
+    }
+  }
+
+  return rearrangedTiles;
+};
+
 interface DashboardState {
   layout: {
     tiles: DashboardTile[];
@@ -56,11 +120,12 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
       };
     case 'REMOVE_TILE': {
       const newTiles = state.layout.tiles.filter((tile: DashboardTile) => tile.id !== action.payload);
+      const rearrangedTiles = rearrangeTiles(newTiles);
       return {
         ...state,
         layout: {
           ...state.layout,
-          tiles: newTiles,
+          tiles: rearrangedTiles,
         },
       };
     }
@@ -178,9 +243,9 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
     const initializeSidebarState = async () => {
       try {
         const savedSidebarState = await sidebarStorage.loadSidebarState();
-        if (savedSidebarState) {
-          // Note: We don't restore tiles here as they're managed by the dashboard state
-          // The sidebar will use this information for visual state
+        if (savedSidebarState && savedSidebarState.isCollapsed !== state.layout.isCollapsed) {
+          // Restore the saved collapse state by dispatching toggle if needed
+          dispatch({ type: 'TOGGLE_COLLAPSE' });
         }
       } catch (error) {
         console.error('Failed to initialize sidebar state:', error);
@@ -190,7 +255,8 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
     };
 
     initializeSidebarState();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount to prevent infinite loops
 
   // Save state to localStorage whenever it changes
   React.useEffect(() => {

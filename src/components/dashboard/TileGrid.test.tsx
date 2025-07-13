@@ -4,6 +4,8 @@ import { TileGrid } from './TileGrid';
 import { DashboardProvider, DashboardContext } from '../../contexts/DashboardContext';
 import React from 'react';
 import { TileType } from '../../types/dashboard';
+import { renderHook, act } from '@testing-library/react';
+import { useDashboard } from '../../hooks/useDashboard';
 
 // Mock Tile component
 vi.mock('./Tile', () => ({
@@ -446,6 +448,204 @@ describe('TileGrid', () => {
       tileElements = screen.getAllByTestId(/^tile-/);
       const afterOrder = tileElements.map(el => el.getAttribute('data-testid'));
       expect(afterOrder).toEqual(initialOrder);
+    });
+  });
+
+  describe('Tile Removal and Rearrangement', () => {
+    it('should rearrange remaining tiles when a tile is removed', () => {
+      const { result } = renderHook(() => useDashboard(), {
+        wrapper: DashboardProvider,
+      });
+
+      // Add multiple tiles
+      act(() => {
+        result.current.addTile('cryptocurrency');
+        result.current.addTile('precious-metals');
+        result.current.addTile('weather_helsinki');
+      });
+
+      // Get initial positions
+      const initialTiles = result.current.state.layout.tiles;
+      expect(initialTiles).toHaveLength(3);
+
+      // Remove the middle tile
+      act(() => {
+        result.current.removeTile('precious-metals');
+      });
+
+      // Check that tiles are rearranged
+      const remainingTiles = result.current.state.layout.tiles;
+      expect(remainingTiles).toHaveLength(2);
+
+      // Verify that remaining tiles are repositioned to fill gaps
+      const cryptocurrencyTile = remainingTiles.find(t => t.type === 'cryptocurrency');
+      const weatherTile = remainingTiles.find(t => t.type === 'weather_helsinki');
+
+      expect(cryptocurrencyTile?.position).toEqual({ x: 0, y: 0 });
+      expect(weatherTile?.position).toEqual({ x: 2, y: 0 }); // Should be positioned to the right of the first tile
+    });
+
+    it('should maintain tile order after removal and rearrangement', () => {
+      const { result } = renderHook(() => useDashboard(), {
+        wrapper: DashboardProvider,
+      });
+
+      // Add tiles in specific order
+      act(() => {
+        result.current.addTile('cryptocurrency');
+        result.current.addTile('precious-metals');
+        result.current.addTile('weather_helsinki');
+        result.current.addTile('time_helsinki');
+      });
+
+      const initialTiles = result.current.state.layout.tiles;
+      expect(initialTiles).toHaveLength(4);
+
+      // Remove the first tile
+      act(() => {
+        result.current.removeTile('cryptocurrency');
+      });
+
+      const remainingTiles = result.current.state.layout.tiles;
+      expect(remainingTiles).toHaveLength(3);
+
+      // Verify order is maintained (by creation time)
+      const tileTypes = remainingTiles.map(t => t.type);
+      expect(tileTypes).toEqual(['precious-metals', 'weather_helsinki', 'time_helsinki']);
+    });
+
+    it('should position tiles in first available positions after removal', () => {
+      const { result } = renderHook(() => useDashboard(), {
+        wrapper: DashboardProvider,
+      });
+
+      // Add tiles to create gaps
+      act(() => {
+        result.current.addTile('cryptocurrency');
+        result.current.addTile('precious-metals');
+        result.current.addTile('weather_helsinki');
+      });
+
+      // Remove the first tile to create a gap at (0,0)
+      act(() => {
+        result.current.removeTile('cryptocurrency');
+      });
+
+      const remainingTiles = result.current.state.layout.tiles;
+      
+      // The first remaining tile should be positioned at (0,0)
+      const firstTile = remainingTiles[0];
+      expect(firstTile.position).toEqual({ x: 0, y: 0 });
+
+      // The second tile should be positioned at (2,0) - to the right of the first tile
+      const secondTile = remainingTiles[1];
+      expect(secondTile.position).toEqual({ x: 2, y: 0 });
+    });
+
+    it('should handle multiple tile removals with proper rearrangement', () => {
+      const { result } = renderHook(() => useDashboard(), {
+        wrapper: DashboardProvider,
+      });
+
+      // Add multiple tiles
+      act(() => {
+        result.current.addTile('cryptocurrency');
+        result.current.addTile('precious-metals');
+        result.current.addTile('weather_helsinki');
+        result.current.addTile('time_helsinki');
+        result.current.addTile('federal_funds_rate');
+      });
+
+      expect(result.current.state.layout.tiles).toHaveLength(5);
+
+      // Remove multiple tiles
+      act(() => {
+        result.current.removeTile('cryptocurrency');
+        result.current.removeTile('weather_helsinki');
+      });
+
+      const remainingTiles = result.current.state.layout.tiles;
+      expect(remainingTiles).toHaveLength(3);
+
+      // Verify tiles are compactly arranged in row-major order
+      const positions = remainingTiles.map(t => t.position);
+      expect(positions).toEqual([
+        { x: 0, y: 0 }, // first tile
+        { x: 2, y: 0 }, // second tile
+        { x: 4, y: 0 }, // third tile
+      ]);
+    });
+
+    it('should preserve tile properties during rearrangement', () => {
+      const { result } = renderHook(() => useDashboard(), {
+        wrapper: DashboardProvider,
+      });
+
+      // Add tiles
+      act(() => {
+        result.current.addTile('cryptocurrency');
+        result.current.addTile('precious-metals');
+        result.current.addTile('weather_helsinki');
+      });
+
+      const initialTiles = result.current.state.layout.tiles;
+      const initialCryptoTile = initialTiles.find(t => t.type === 'cryptocurrency');
+      const initialWeatherTile = initialTiles.find(t => t.type === 'weather_helsinki');
+
+      // Remove middle tile
+      act(() => {
+        result.current.removeTile('precious-metals');
+      });
+
+      const remainingTiles = result.current.state.layout.tiles;
+      const rearrangedCryptoTile = remainingTiles.find(t => t.type === 'cryptocurrency');
+      const rearrangedWeatherTile = remainingTiles.find(t => t.type === 'weather_helsinki');
+
+      // Verify tile properties are preserved
+      expect(rearrangedCryptoTile?.id).toBe(initialCryptoTile?.id);
+      expect(rearrangedCryptoTile?.type).toBe(initialCryptoTile?.type);
+      expect(rearrangedCryptoTile?.size).toBe(initialCryptoTile?.size);
+      expect(rearrangedCryptoTile?.createdAt).toBe(initialCryptoTile?.createdAt);
+
+      // Verify that at least one tile's position changed due to rearrangement
+      // (the weather tile should have moved from its original position)
+      expect(rearrangedWeatherTile?.position).not.toEqual(initialWeatherTile?.position);
+    });
+
+    it('should handle removal of tiles with different sizes', () => {
+      const { result } = renderHook(() => useDashboard(), {
+        wrapper: DashboardProvider,
+      });
+
+      // Add tiles with different sizes (this would require updating tile sizes)
+      act(() => {
+        result.current.addTile('cryptocurrency');
+        result.current.addTile('precious-metals');
+        result.current.addTile('weather_helsinki');
+      });
+
+      // Update a tile to have a different size
+      act(() => {
+        const cryptoId = result.current.state.layout.tiles.find(t => t.type === 'cryptocurrency')?.id;
+        if (cryptoId) {
+          result.current.updateTile(cryptoId, { size: 'large' });
+        }
+      });
+
+      // Remove the large tile
+      act(() => {
+        result.current.removeTile('cryptocurrency');
+      });
+
+      const remainingTiles = result.current.state.layout.tiles;
+      expect(remainingTiles).toHaveLength(2);
+
+      // Verify remaining tiles are properly positioned
+      const positions = remainingTiles.map(t => t.position);
+      expect(positions).toEqual([
+        { x: 0, y: 0 }, // first remaining tile
+        { x: 2, y: 0 }, // second remaining tile
+      ]);
     });
   });
 });

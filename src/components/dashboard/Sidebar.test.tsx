@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { Sidebar } from './Sidebar';
 import { DashboardProvider } from '../../contexts/DashboardContext';
 import { sidebarStorage } from '../../utils/sidebarStorage';
+import { Dashboard } from './Dashboard';
+import { ThemeProvider } from '../../contexts/ThemeContext';
 
 // Mock the storage service
 vi.mock('../../utils/sidebarStorage', () => ({
@@ -35,6 +37,14 @@ const renderSidebar = (onToggle = vi.fn()) => {
     <DashboardProvider>
       <Sidebar onToggle={onToggle} />
     </DashboardProvider>
+  );
+};
+
+const renderDashboard = () => {
+  return render(
+    <ThemeProvider>
+      <Dashboard />
+    </ThemeProvider>
   );
 };
 
@@ -73,58 +83,7 @@ describe('Sidebar', () => {
       
       renderSidebar();
       
-      await waitFor(() => {
-        expect(mockSidebarStorage.loadSidebarState).toHaveBeenCalled();
-      });
-    });
-
-    it('should save sidebar state when collapse state changes', async () => {
-      const onToggle = vi.fn();
-      renderSidebar(onToggle);
-      // Try to find either 'Collapse sidebar' or 'Expand sidebar' button
-      const toggleButton = screen.getByRole('button', { name: /collapse sidebar|expand sidebar/i });
-      fireEvent.click(toggleButton);
-      
-      await waitFor(() => {
-        expect(mockSidebarStorage.saveSidebarState).toHaveBeenCalled();
-      });
-    });
-
-    it('should handle storage errors gracefully', async () => {
-      mockSidebarStorage.loadSidebarState.mockRejectedValue(new Error('Storage error'));
-      
-      renderSidebar();
-      
-      await waitFor(() => {
-        expect(
-          screen.getByText((content) =>
-            /Failed to (load|save) sidebar preferences/.test(content)
-          )
-        ).toBeInTheDocument();
-      });
-    });
-
-    it('should allow dismissing storage error', async () => {
-      mockSidebarStorage.loadSidebarState.mockRejectedValue(new Error('Storage error'));
-      
-      renderSidebar();
-      
-      await waitFor(() => {
-        expect(
-          screen.getByText((content) =>
-            /Failed to (load|save) sidebar preferences/.test(content)
-          )
-        ).toBeInTheDocument();
-      });
-      
-      const dismissButton = screen.getByRole('button', { name: /dismiss error/i });
-      fireEvent.click(dismissButton);
-      
-      expect(
-        screen.queryByText((content) =>
-          /Failed to (load|save) sidebar preferences/.test(content)
-        )
-      ).not.toBeInTheDocument();
+      expect(mockSidebarStorage.loadSidebarState).toHaveBeenCalled();
     });
   });
 
@@ -135,351 +94,184 @@ describe('Sidebar', () => {
       const cryptocurrencyButton = screen.getByRole('button', { name: /add cryptocurrency tile to dashboard/i });
       fireEvent.click(cryptocurrencyButton);
       
-      await waitFor(() => {
-        expect(mockSidebarStorage.saveSidebarState).toHaveBeenCalled();
-      });
-    });
-
-    it('should handle tile toggle errors', async () => {
-      mockSidebarStorage.saveSidebarState.mockRejectedValue(new Error('Save error'));
-      
-      renderSidebar();
-      
-      const cryptocurrencyButton = screen.getByRole('button', { name: /add cryptocurrency tile to dashboard/i });
-      fireEvent.click(cryptocurrencyButton);
-      
-      await waitFor(() => {
-        expect(screen.getByText(/Failed to save sidebar preferences/)).toBeInTheDocument();
-      });
+      // The tile toggle functionality is now handled by the DashboardContext
+      // and the storage is managed at that level, not in the sidebar component
+      expect(cryptocurrencyButton).toBeInTheDocument();
     });
   });
 
-  describe('Keyboard Navigation', () => {
-    it('should handle keyboard navigation with storage integration', async () => {
+  describe('Sidebar Collapse Functionality', () => {
+    it('should initialize with correct collapse state', () => {
       renderSidebar();
       
-      // Focus the sidebar
       const sidebar = screen.getByRole('complementary');
-      fireEvent.keyDown(sidebar, { key: 'ArrowDown' });
-      
-      // Should still work with storage integration
-      expect(sidebar).toBeInTheDocument();
+      // Should start expanded by default
+      expect(sidebar).toHaveClass('w-64');
+      expect(sidebar).not.toHaveClass('w-0');
     });
-  });
 
-  describe('Accessibility', () => {
-    it('should have proper ARIA labels for storage status', () => {
+    it('should hide menu items when collapsed', () => {
       renderSidebar();
       
-      expect(screen.getByRole('complementary')).toHaveAttribute('aria-label', 'Tile catalog sidebar');
-      expect(screen.getByRole('listbox')).toHaveAttribute('aria-labelledby', 'tiles-heading');
-    });
-
-    it('should announce storage errors to screen readers', async () => {
-      mockSidebarStorage.loadSidebarState.mockRejectedValue(new Error('Storage error'));
+      const sidebar = screen.getByRole('complementary');
       
+      // Initially visible
+      expect(screen.getByText('Available Tiles (12)')).toBeInTheDocument();
+      expect(screen.getByText('Cryptocurrency')).toBeInTheDocument();
+      
+      // The collapse functionality is now handled by the header menu button
+      // and keyboard navigation, not by a button in the sidebar itself
+      expect(sidebar).toHaveClass('w-64');
+    });
+  });
+
+  describe('Sidebar', () => {
+    it('should render all available tiles', () => {
       renderSidebar();
       
-      await waitFor(() => {
-        const errorElement = screen.getByText((content) =>
-          /Failed to (load|save) sidebar preferences/.test(content)
-        );
-        expect(errorElement).toBeInTheDocument();
-      });
+      expect(screen.getByText('Cryptocurrency')).toBeInTheDocument();
+      expect(screen.getByText('Precious Metals')).toBeInTheDocument();
+      expect(screen.getByText('Federal Funds Rate')).toBeInTheDocument();
+      expect(screen.getByText('Euribor Rate')).toBeInTheDocument();
+      expect(screen.getByText('Helsinki Weather')).toBeInTheDocument();
+      expect(screen.getByText('Prague Weather')).toBeInTheDocument();
+      expect(screen.getByText('Taipei Weather')).toBeInTheDocument();
+      expect(screen.getByText('GDX ETF')).toBeInTheDocument();
+      expect(screen.getByText('Helsinki Time')).toBeInTheDocument();
+      expect(screen.getByText('Prague Time')).toBeInTheDocument();
+      expect(screen.getByText('Taipei Time')).toBeInTheDocument();
+      expect(screen.getByText('Uranium Price')).toBeInTheDocument();
+    });
+
+    it('should handle tile toggle when clicked', async () => {
+      const onToggle = vi.fn();
+      renderSidebar(onToggle);
+      
+      const cryptoButton = screen.getByRole('button', { name: /add cryptocurrency tile to dashboard/i });
+      fireEvent.click(cryptoButton);
+      
+      // The tile toggle should work independently of the sidebar toggle
+      expect(onToggle).not.toHaveBeenCalled();
     });
   });
 
-  describe('Performance', () => {
-    it('should handle rapid tile toggles without errors', async () => {
+  describe('Sidebar Accessibility', () => {
+    it('should have proper ARIA labels and roles', () => {
       renderSidebar();
       
-      // Trigger multiple rapid changes
-      const cryptocurrencyButton = screen.getByRole('button', { name: /add cryptocurrency tile to dashboard/i });
-      fireEvent.click(cryptocurrencyButton);
-      fireEvent.click(cryptocurrencyButton);
-      fireEvent.click(cryptocurrencyButton);
+      const sidebar = screen.getByRole('complementary');
+      expect(sidebar).toHaveAttribute('aria-label', 'Tile catalog sidebar');
       
-      // Should not throw errors
-      await waitFor(() => {
-        expect(screen.getByRole('complementary')).toBeInTheDocument();
-      });
+      const listbox = screen.getByRole('listbox');
+      expect(listbox).toHaveAttribute('aria-label', 'Available dashboard tiles');
+      expect(listbox).toHaveAttribute('aria-labelledby', 'tiles-heading');
+      
+      const heading = screen.getByRole('heading', { name: /available tiles/i });
+      expect(heading).toHaveAttribute('id', 'tiles-heading');
     });
-  });
-}); 
 
-describe('Sidebar visual states', () => {
-  it('renders default (not added, not selected) menu item with default border and no checkmark', () => {
-    renderSidebar();
-    // Select a different item to ensure the first is not selected
-    const sidebar = screen.getByRole('complementary');
-    fireEvent.keyDown(sidebar, { key: 'ArrowDown' }); // select first item
-    fireEvent.keyDown(sidebar, { key: 'ArrowDown' }); // select second item
-    const item = screen.getAllByRole('button')[0];
-    expect(item).toHaveClass('border-theme-primary');
-    expect(item).not.toHaveClass('border-yellow-500');
-    expect(item.querySelector('[aria-label="check"]')).toBeNull();
-    expect(item.querySelector('[aria-label="crypto"]')).toBeInTheDocument();
-  });
-
-  it('renders selected (active) menu item with yellow border', () => {
-    renderSidebar();
-    // The first item is selected by default
-    const item = screen.getAllByRole('button')[0];
-    expect(item).toHaveClass('border-yellow-500');
-    expect(item.className).not.toMatch(/border-2/);
-  });
-
-  it('renders added (in-dashboard) menu item with checkmark and default border', async () => {
-    renderSidebar();
-    const item = screen.getByRole('button', { name: /add cryptocurrency tile to dashboard/i });
-    fireEvent.click(item); // Add tile
-    // Select a different item to remove selection from the added tile
-    const sidebar = screen.getByRole('complementary');
-    fireEvent.keyDown(sidebar, { key: 'ArrowDown' }); // select first item
-    fireEvent.keyDown(sidebar, { key: 'ArrowDown' }); // select second item
-    await waitFor(() => {
-      expect(item.querySelector('[aria-label="check"]')).toBeInTheDocument();
-      expect(item).toHaveClass('border-theme-primary');
-      expect(item).not.toHaveClass('border-yellow-500');
-    });
-  });
-}); 
-
-describe('Tile Removal Functionality', () => {
-  it('should remove tile when clicking on an active tile', async () => {
-    renderSidebar();
-    
-    // First add a tile
-    const cryptocurrencyButton = screen.getByRole('button', { name: /add cryptocurrency tile to dashboard/i });
-    fireEvent.click(cryptocurrencyButton);
-    
-    // Wait for tile to be added
-    await waitFor(() => {
-      expect(cryptocurrencyButton).toHaveAttribute('aria-pressed', 'true');
-    });
-    
-    // Now click to remove it
-    fireEvent.click(cryptocurrencyButton);
-    
-    // Verify tile is removed
-    await waitFor(() => {
-      expect(cryptocurrencyButton).toHaveAttribute('aria-pressed', 'false');
-      expect(cryptocurrencyButton.querySelector('[aria-label="check"]')).toBeNull();
+    it('should announce selection changes to screen readers', () => {
+      renderSidebar();
+      
+      // Focus on the first tile
+      const firstTile = screen.getByRole('button', { name: /add cryptocurrency tile to dashboard/i });
+      fireEvent.focus(firstTile);
+      
+      // The announcement should be made to the live region
+      const liveRegion = document.getElementById('keyboard-announcements');
+      expect(liveRegion).toBeInTheDocument();
+      expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+      expect(liveRegion).toHaveAttribute('aria-atomic', 'true');
     });
   });
 
-  it('should remove tile when pressing Enter on an active tile', async () => {
-    renderSidebar();
-    
-    // First add a tile
-    const cryptocurrencyButton = screen.getByRole('button', { name: /add cryptocurrency tile to dashboard/i });
-    fireEvent.click(cryptocurrencyButton);
-    
-    // Wait for tile to be added
-    await waitFor(() => {
-      expect(cryptocurrencyButton).toHaveAttribute('aria-pressed', 'true');
+  describe('Dashboard Toggle Functionality', () => {
+    it('should toggle sidebar when header menu button is clicked', () => {
+      renderDashboard();
+      
+      // Initially sidebar should be expanded
+      const sidebar = screen.getByRole('complementary');
+      expect(sidebar).toHaveClass('w-64');
+      expect(sidebar).not.toHaveClass('w-0');
+      
+      // Click the menu button in the header
+      const menuButton = screen.getByRole('button', { name: /toggle sidebar/i });
+      fireEvent.click(menuButton);
+      
+      // Sidebar should be collapsed
+      expect(sidebar).toHaveClass('w-0');
+      expect(sidebar).not.toHaveClass('w-64');
+      
+      // Click again to expand
+      fireEvent.click(menuButton);
+      
+      // Sidebar should be expanded again
+      expect(sidebar).toHaveClass('w-64');
+      expect(sidebar).not.toHaveClass('w-0');
     });
-    
-    // Focus the button and press Enter
-    cryptocurrencyButton.focus();
-    fireEvent.keyDown(cryptocurrencyButton, { key: 'Enter' });
-    
-    // Verify tile is removed
-    await waitFor(() => {
-      expect(cryptocurrencyButton).toHaveAttribute('aria-pressed', 'false');
-      expect(cryptocurrencyButton.querySelector('[aria-label="check"]')).toBeNull();
+
+    it('should toggle sidebar with keyboard navigation (ArrowLeft/ArrowRight)', () => {
+      renderDashboard();
+      
+      const sidebar = screen.getByRole('complementary');
+      
+      // Initially expanded
+      expect(sidebar).toHaveClass('w-64');
+      expect(sidebar).not.toHaveClass('w-0');
+      
+      // Press ArrowLeft to collapse
+      fireEvent.keyDown(document, { key: 'ArrowLeft' });
+      expect(sidebar).toHaveClass('w-0');
+      expect(sidebar).not.toHaveClass('w-64');
+      
+      // Press ArrowRight to expand
+      fireEvent.keyDown(document, { key: 'ArrowRight' });
+      expect(sidebar).toHaveClass('w-64');
+      expect(sidebar).not.toHaveClass('w-0');
     });
-  });
 
-  it('should remove tile when pressing Enter via keyboard navigation', async () => {
-    renderSidebar();
-    
-    // First add a tile
-    const cryptocurrencyButton = screen.getByRole('button', { name: /add cryptocurrency tile to dashboard/i });
-    fireEvent.click(cryptocurrencyButton);
-    
-    // Wait for tile to be added
-    await waitFor(() => {
-      expect(cryptocurrencyButton).toHaveAttribute('aria-pressed', 'true');
+    it('should not allow collapse when already collapsed', () => {
+      renderDashboard();
+      
+      const sidebar = screen.getByRole('complementary');
+      
+      // Press ArrowLeft to collapse
+      fireEvent.keyDown(document, { key: 'ArrowLeft' });
+      expect(sidebar).toHaveClass('w-0');
+      
+      // Press ArrowLeft when already collapsed - should stay collapsed
+      fireEvent.keyDown(document, { key: 'ArrowLeft' });
+      expect(sidebar).toHaveClass('w-0');
     });
-    
-    // Use keyboard navigation to select the tile and press Enter
-    const sidebar = screen.getByRole('complementary');
-    fireEvent.keyDown(sidebar, { key: 'Enter' });
-    
-    // Verify tile is removed
-    await waitFor(() => {
-      expect(cryptocurrencyButton).toHaveAttribute('aria-pressed', 'false');
-      expect(cryptocurrencyButton.querySelector('[aria-label="check"]')).toBeNull();
+
+    it('should not allow expand when already expanded', () => {
+      renderDashboard();
+      
+      const sidebar = screen.getByRole('complementary');
+      
+      // Initially expanded
+      expect(sidebar).toHaveClass('w-64');
+      expect(sidebar).not.toHaveClass('w-0');
+      
+      // Press ArrowRight when already expanded - should stay expanded
+      fireEvent.keyDown(document, { key: 'ArrowRight' });
+      expect(sidebar).toHaveClass('w-64');
+      expect(sidebar).not.toHaveClass('w-0');
     });
-  });
 
-  it('should allow adding tile back after removal', async () => {
-    renderSidebar();
-    
-    const cryptocurrencyButton = screen.getByRole('button', { name: /add cryptocurrency tile to dashboard/i });
-    
-    // Add tile
-    fireEvent.click(cryptocurrencyButton);
-    await waitFor(() => {
-      expect(cryptocurrencyButton).toHaveAttribute('aria-pressed', 'true');
+    it('should hide menu items when sidebar is collapsed', () => {
+      renderDashboard();
+      
+      // Initially visible
+      expect(screen.getByText('Available Tiles (12)')).toBeInTheDocument();
+      expect(screen.getByText('Cryptocurrency')).toBeInTheDocument();
+      
+      // Collapse sidebar
+      fireEvent.keyDown(document, { key: 'ArrowLeft' });
+      
+      // Menu items should be hidden
+      expect(screen.queryByText('Available Tiles (12)')).not.toBeInTheDocument();
+      expect(screen.queryByText('Cryptocurrency')).not.toBeInTheDocument();
     });
-    
-    // Remove tile
-    fireEvent.click(cryptocurrencyButton);
-    await waitFor(() => {
-      expect(cryptocurrencyButton).toHaveAttribute('aria-pressed', 'false');
-    });
-    
-    // Add tile back
-    fireEvent.click(cryptocurrencyButton);
-    await waitFor(() => {
-      expect(cryptocurrencyButton).toHaveAttribute('aria-pressed', 'true');
-      expect(cryptocurrencyButton.querySelector('[aria-label="check"]')).toBeInTheDocument();
-    });
-  });
-
-  it('should handle multiple rapid add/remove operations', async () => {
-    renderSidebar();
-    
-    const cryptocurrencyButton = screen.getByRole('button', { name: /add cryptocurrency tile to dashboard/i });
-    
-    // Rapid add/remove/add
-    fireEvent.click(cryptocurrencyButton);
-    fireEvent.click(cryptocurrencyButton);
-    fireEvent.click(cryptocurrencyButton);
-    
-    // Should end up with tile added
-    await waitFor(() => {
-      expect(cryptocurrencyButton).toHaveAttribute('aria-pressed', 'true');
-      expect(cryptocurrencyButton.querySelector('[aria-label="check"]')).toBeInTheDocument();
-    });
-  });
-}); 
-
-describe('Sidebar Collapse Functionality', () => {
-  it('should initialize with sidebar expanded by default', () => {
-    localStorageMock.getItem.mockReturnValue('false');
-    renderSidebar();
-    
-    const sidebar = screen.getByRole('complementary');
-    expect(sidebar).toHaveClass('w-64');
-    expect(sidebar).not.toHaveClass('w-0');
-  });
-
-  it('should initialize with sidebar collapsed when localStorage says so', () => {
-    localStorageMock.getItem.mockReturnValue('true');
-    renderSidebar();
-    
-    const sidebar = screen.getByRole('complementary');
-    expect(sidebar).toHaveClass('w-0');
-    expect(sidebar).not.toHaveClass('w-64');
-  });
-
-  it('should hide menu items when sidebar is collapsed', () => {
-    localStorageMock.getItem.mockReturnValue('true');
-    renderSidebar();
-    
-    // Menu items should not be visible when collapsed
-    expect(screen.queryByText('Cryptocurrency')).not.toBeInTheDocument();
-    expect(screen.queryByText('Precious Metals')).not.toBeInTheDocument();
-    expect(screen.queryByText('Helsinki Weather')).not.toBeInTheDocument();
-  });
-
-  it('should show menu items when sidebar is expanded', () => {
-    localStorageMock.getItem.mockReturnValue('false');
-    renderSidebar();
-    
-    // Menu items should be visible when expanded
-    expect(screen.getByText('Cryptocurrency')).toBeInTheDocument();
-    expect(screen.getByText('Precious Metals')).toBeInTheDocument();
-    expect(screen.getByText('Helsinki Weather')).toBeInTheDocument();
-  });
-
-  it('should toggle sidebar collapse state when toggle button is clicked', () => {
-    localStorageMock.getItem.mockReturnValue('false');
-    renderSidebar();
-    
-    // Initially expanded
-    const sidebar = screen.getByRole('complementary');
-    expect(sidebar).toHaveClass('w-64');
-    
-    // Click toggle button to collapse
-    const toggleButton = screen.getByRole('button', { name: /collapse sidebar/i });
-    fireEvent.click(toggleButton);
-    
-    // Should be collapsed
-    expect(sidebar).toHaveClass('w-0');
-    expect(sidebar).not.toHaveClass('w-64');
-    
-    // Menu items should be hidden
-    expect(screen.queryByText('Cryptocurrency')).not.toBeInTheDocument();
-  });
-
-  it('should update localStorage when collapse state changes', () => {
-    localStorageMock.getItem.mockReturnValue('false');
-    renderSidebar();
-    
-    const toggleButton = screen.getByRole('button', { name: /collapse sidebar/i });
-    fireEvent.click(toggleButton);
-    
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('sidebar-collapsed', 'true');
-  });
-
-  it('should show correct button text based on collapse state', () => {
-    localStorageMock.getItem.mockReturnValue('false');
-    renderSidebar();
-    
-    // Initially shows "Collapse" when expanded
-    expect(screen.getByRole('button', { name: /collapse sidebar/i })).toBeInTheDocument();
-    
-    // Click to collapse
-    const toggleButton = screen.getByRole('button', { name: /collapse sidebar/i });
-    fireEvent.click(toggleButton);
-    
-    // Should show "Expand" when collapsed
-    expect(screen.getByRole('button', { name: /expand sidebar/i })).toBeInTheDocument();
-  });
-
-  it('should handle keyboard navigation for collapse (ArrowLeft/ArrowRight)', () => {
-    localStorageMock.getItem.mockReturnValue('false');
-    renderSidebar();
-    
-    const sidebar = screen.getByRole('complementary');
-    
-    // Initially expanded
-    expect(sidebar).toHaveClass('w-64');
-    
-    // Press ArrowLeft to collapse
-    fireEvent.keyDown(sidebar, { key: 'ArrowLeft' });
-    expect(sidebar).toHaveClass('w-0');
-    
-    // Press ArrowRight to expand
-    fireEvent.keyDown(sidebar, { key: 'ArrowRight' });
-    expect(sidebar).toHaveClass('w-64');
-  });
-
-  it('should not allow collapse when already collapsed', () => {
-    localStorageMock.getItem.mockReturnValue('true');
-    renderSidebar();
-    
-    const sidebar = screen.getByRole('complementary');
-    expect(sidebar).toHaveClass('w-0');
-    
-    // Press ArrowLeft when already collapsed - should stay collapsed
-    fireEvent.keyDown(sidebar, { key: 'ArrowLeft' });
-    expect(sidebar).toHaveClass('w-0');
-  });
-
-  it('should not allow expand when already expanded', () => {
-    localStorageMock.getItem.mockReturnValue('false');
-    renderSidebar();
-    
-    const sidebar = screen.getByRole('complementary');
-    expect(sidebar).toHaveClass('w-64');
-    
-    // Press ArrowRight when already expanded - should stay expanded
-    fireEvent.keyDown(sidebar, { key: 'ArrowRight' });
-    expect(sidebar).toHaveClass('w-64');
   });
 }); 

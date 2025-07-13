@@ -3,11 +3,10 @@ import { useState, useCallback, useEffect } from 'react';
 export const useKeyboardNavigation = <T extends string>(
   items: T[],
   onToggle: (itemId: T) => void,
-  onSidebarToggle: (collapse: boolean) => void,
-  initialCollapsed = false
+  onSidebarToggle: () => void,
+  isCollapsed: boolean
 ) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(initialCollapsed);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     switch (event.key) {
@@ -28,20 +27,18 @@ export const useKeyboardNavigation = <T extends string>(
         break;
       case 'ArrowLeft':
         event.preventDefault();
-        if (!isSidebarCollapsed) {
-          setIsSidebarCollapsed(true);
-          onSidebarToggle(true);
+        if (!isCollapsed) {
+          onSidebarToggle();
         }
         break;
       case 'ArrowRight':
         event.preventDefault();
-        if (isSidebarCollapsed) {
-          setIsSidebarCollapsed(false);
-          onSidebarToggle(false);
+        if (isCollapsed) {
+          onSidebarToggle();
         }
         break;
     }
-  }, [items, selectedIndex, isSidebarCollapsed, onToggle, onSidebarToggle]);
+  }, [items, selectedIndex, isCollapsed, onToggle, onSidebarToggle]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -51,7 +48,5 @@ export const useKeyboardNavigation = <T extends string>(
   return {
     selectedIndex,
     setSelectedIndex,
-    isSidebarCollapsed,
-    setIsSidebarCollapsed,
   };
 }; 
