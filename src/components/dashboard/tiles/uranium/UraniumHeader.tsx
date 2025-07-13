@@ -45,7 +45,7 @@ export const UraniumHeader = React.memo<UraniumHeaderProps>(({ uraniumData, size
         <div className={`font-bold ${getPriceSizeClass()} text-theme-primary`}>
           <PriceDisplay
             price={uraniumData.spotPrice}
-            currency="$"
+            currency="USD"
             showChange={true}
             changeValue={uraniumData.change}
             changePercent={uraniumData.changePercent}
