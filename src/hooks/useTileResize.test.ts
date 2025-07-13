@@ -199,4 +199,4 @@ describe('useTileResize', () => {
 
     expect(result.current.resizeState.currentSize).toBe('small'); // Should keep previous size
   });
-}); 
+});

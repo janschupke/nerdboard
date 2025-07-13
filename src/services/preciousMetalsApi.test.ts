@@ -92,7 +92,7 @@ describe('PreciousMetalsApiService', () => {
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
-      
+
       // Check structure of first item
       const firstItem = result[0];
       expect(firstItem).toHaveProperty('timestamp');
@@ -104,7 +104,7 @@ describe('PreciousMetalsApiService', () => {
     it('should return silver price history', async () => {
       const mockHistory = [
         { timestamp: 1640995200000, price: 24.75 },
-        { timestamp: 1641081600000, price: 24.80 },
+        { timestamp: 1641081600000, price: 24.8 },
       ];
 
       configureMockForTest('/api/metals/silver/history', {
@@ -117,7 +117,7 @@ describe('PreciousMetalsApiService', () => {
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
-      
+
       // Check structure of first item
       const firstItem = result[0];
       expect(firstItem).toHaveProperty('timestamp');
@@ -134,7 +134,7 @@ describe('PreciousMetalsApiService', () => {
 
       const mockSilverHistory = [
         { timestamp: 1640995200000, price: 24.75 },
-        { timestamp: 1641081600000, price: 24.80 },
+        { timestamp: 1641081600000, price: 24.8 },
       ];
 
       configureMockForTest('/api/metals/gold/history', {
@@ -212,7 +212,7 @@ describe('PreciousMetalsApiService', () => {
 
       const mockSilverHistory = [
         { timestamp: 1640995200000, price: 24.75 },
-        { timestamp: 1641081600000, price: 24.80 },
+        { timestamp: 1641081600000, price: 24.8 },
       ];
 
       configureMockForTest('/api/metals/gold/history', {
@@ -268,4 +268,4 @@ describe('PreciousMetalsApiService', () => {
       consoleSpy.mockRestore();
     });
   });
-}); 
+});

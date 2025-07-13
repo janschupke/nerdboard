@@ -19,4 +19,4 @@ describe('App', () => {
     render(<App />);
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
   });
-}); 
+});

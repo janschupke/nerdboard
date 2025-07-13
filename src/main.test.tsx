@@ -36,9 +36,7 @@ describe('main.tsx', () => {
 
   it('should render the app with ThemeProvider', async () => {
     await import('./main');
-    expect(createRootMock).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'root' })
-    );
+    expect(createRootMock).toHaveBeenCalledWith(expect.objectContaining({ id: 'root' }));
   });
 
   // NOTE: The following two tests are skipped due to ESM/Vite entry point test limitations.
@@ -53,7 +51,7 @@ describe('main.tsx', () => {
     expect(renderMock).toHaveBeenCalledWith(
       expect.objectContaining({
         type: React.StrictMode,
-      })
+      }),
     );
   });
 
@@ -67,4 +65,4 @@ describe('main.tsx', () => {
     const call = renderMock.mock.calls[0][0];
     expect(call.props.children.type.name).toBe('ThemeProvider');
   });
-}); 
+});

@@ -1,21 +1,19 @@
 import { useDashboard } from '../../hooks/useDashboard';
 import { Tile } from './Tile';
-import { DraggableTile } from './DraggableTile';
 import { useState } from 'react';
 
 export function TileGrid() {
-  const { state, removeTile, addTile, moveTile } = useDashboard();
-  const { tiles } = state;
+  const { layout, removeTile, addTile } = useDashboard();
+  const { tiles } = layout;
   const [isDragOver, setIsDragOver] = useState(false);
 
   if (tiles.length === 0) {
     return (
-      <div 
-        className="flex items-center justify-center h-full"
-        aria-label="Dashboard grid"
-      >
+      <div className="flex items-center justify-center h-full" aria-label="Dashboard grid">
         <div className="text-center">
-          <div className="text-6xl mb-4" role="img" aria-label="Dashboard icon">📊</div>
+          <div className="text-6xl mb-4" role="img" aria-label="Dashboard icon">
+            📊
+          </div>
           <h2 className="text-xl font-semibold text-theme-primary mb-2">Welcome to Nerdboard</h2>
           <p className="text-theme-secondary mb-4">Add tiles from the sidebar to get started</p>
           <div className="text-sm text-theme-tertiary">
@@ -25,10 +23,6 @@ export function TileGrid() {
       </div>
     );
   }
-
-  const handleTileMove = (from: number, to: number) => {
-    moveTile(from, to);
-  };
 
   const handleDragOver = (e: React.DragEvent) => {
     if (e.dataTransfer.types.includes('application/nerdboard-tile-type')) {
@@ -57,21 +51,19 @@ export function TileGrid() {
       onDragLeave={handleDragLeave}
       role="grid"
       aria-label="Dashboard tiles grid"
-      aria-describedby={tiles.length > 0 ? "tiles-description" : undefined}
+      aria-describedby={tiles.length > 0 ? 'tiles-description' : undefined}
     >
       {tiles.length > 0 && (
         <div id="tiles-description" className="sr-only">
           Dashboard grid containing {tiles.length} tile{tiles.length !== 1 ? 's' : ''}
         </div>
       )}
-      {tiles.map((tile, idx) => (
-        <DraggableTile key={tile.id} tile={tile} index={idx} onMove={handleTileMove}>
-          <Tile tile={tile} onRemove={removeTile} />
-        </DraggableTile>
+      {tiles.map((tile) => (
+        <Tile key={tile.id} tile={tile} onRemove={removeTile} />
       ))}
       {isDragOver && (
-        <div 
-          className="absolute inset-0 bg-accent-muted opacity-30 pointer-events-none z-10 rounded-lg" 
+        <div
+          className="absolute inset-0 bg-accent-muted opacity-30 pointer-events-none z-10 rounded-lg"
           aria-hidden="true"
           role="presentation"
         />

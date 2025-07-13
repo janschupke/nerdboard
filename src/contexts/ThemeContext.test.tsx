@@ -69,7 +69,7 @@ describe('ThemeContext', () => {
       </ThemeProvider>,
     );
 
-    expect(localStorageMock.getItem).toHaveBeenCalledWith('theme');
+    expect(localStorageMock.getItem).toHaveBeenCalledWith('nerdboard-theme');
     expect(screen.getByTestId('theme')).toHaveTextContent('dark');
   });
 
@@ -85,7 +85,7 @@ describe('ThemeContext', () => {
     fireEvent.click(screen.getByTestId('toggle'));
 
     expect(screen.getByTestId('theme')).toHaveTextContent('dark');
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('theme', 'dark');
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('nerdboard-theme', 'dark');
   });
 
   it('should save theme to localStorage when changed', () => {
@@ -97,7 +97,7 @@ describe('ThemeContext', () => {
 
     fireEvent.click(screen.getByTestId('toggle'));
 
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('theme', 'dark');
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('nerdboard-theme', 'dark');
   });
 
   it('should toggle from dark to light', () => {
@@ -114,6 +114,6 @@ describe('ThemeContext', () => {
     fireEvent.click(screen.getByTestId('toggle'));
 
     expect(screen.getByTestId('theme')).toHaveTextContent('light');
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('theme', 'light');
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('nerdboard-theme', 'light');
   });
 });

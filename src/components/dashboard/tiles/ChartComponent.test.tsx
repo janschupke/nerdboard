@@ -11,24 +11,14 @@ const mockData = [
 describe('ChartComponent', () => {
   it('renders without crashing', () => {
     const { container } = render(
-      <ChartComponent
-        data={mockData}
-        color="blue"
-        height={200}
-        title="Test Chart"
-      />
+      <ChartComponent data={mockData} color="blue" height={200} title="Test Chart" />,
     );
     expect(container).toBeInTheDocument();
   });
 
   it('renders the title', () => {
     const { getByText } = render(
-      <ChartComponent
-        data={mockData}
-        color="blue"
-        height={200}
-        title="Test Chart"
-      />
+      <ChartComponent data={mockData} color="blue" height={200} title="Test Chart" />,
     );
     expect(getByText('Test Chart')).toBeInTheDocument();
   });
@@ -36,4 +26,4 @@ describe('ChartComponent', () => {
   it.skip('renders the chart SVG', async () => {
     // Skipped: recharts may not render SVG in the test environment
   });
-}); 
+});

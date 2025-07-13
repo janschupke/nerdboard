@@ -11,12 +11,12 @@ import { useTheme } from '../../hooks/useTheme';
 /**
  * Main dashboard content component that renders the dashboard layout
  * including the header, sidebar, and tile grid.
- * 
+ *
  * @returns {JSX.Element} The dashboard content component
  */
 function DashboardContent() {
-  const { state, addTile, toggleSidebar } = useDashboard();
-  const { sidebarOpen } = state;
+  const { layout, addTile, toggleCollapse } = useDashboard();
+  const { tiles, isCollapsed } = layout;
   const { theme, toggleTheme } = useTheme();
 
   /**
@@ -28,12 +28,14 @@ function DashboardContent() {
   };
 
   return (
-    <div className={`min-h-screen w-full flex flex-col bg-theme-primary transition-all duration-${UI_CONFIG.TRANSITION_DURATION}`}>
+    <div
+      className={`min-h-screen w-full flex flex-col bg-theme-primary transition-all duration-${UI_CONFIG.TRANSITION_DURATION}`}
+    >
       {/* Header - Full Width */}
       <header className="bg-surface-primary border-b border-theme-primary px-4 py-3 flex items-center justify-between w-full">
         <div className="flex items-center space-x-3">
           <button
-            onClick={toggleSidebar}
+            onClick={toggleCollapse}
             className="p-2 text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary rounded-lg transition-colors"
             aria-label="Toggle sidebar"
           >
@@ -49,17 +51,19 @@ function DashboardContent() {
           >
             {theme === 'dark' ? <Icon name="sun" size="md" /> : <Icon name="moon" size="md" />}
           </button>
-          <span className="text-sm text-theme-secondary">{state.tiles.length} tiles</span>
+          <span className="text-sm text-theme-secondary">{tiles.length} tiles</span>
         </div>
       </header>
 
       {/* Main Content Area */}
       <div className="flex-1 flex">
         {/* Sidebar */}
-        <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} onTileSelect={handleTileSelect} />
+        <Sidebar isOpen={!isCollapsed} onToggle={toggleCollapse} onTileSelect={handleTileSelect} />
 
         {/* Tile Grid */}
-        <main className={`flex-1 overflow-hidden relative transition-all duration-${UI_CONFIG.TRANSITION_DURATION}`}>
+        <main
+          className={`flex-1 overflow-hidden relative transition-all duration-${UI_CONFIG.TRANSITION_DURATION}`}
+        >
           <div className="h-full overflow-auto">
             <TileGrid />
           </div>
@@ -72,7 +76,7 @@ function DashboardContent() {
 /**
  * Main Dashboard component that wraps the dashboard content
  * with error boundaries and context providers.
- * 
+ *
  * @returns {JSX.Element} The main dashboard component
  */
 export function Dashboard() {

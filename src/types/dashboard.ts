@@ -1,46 +1,85 @@
-export interface TileConfig {
+import type { BaseComponentProps } from './index';
+
+export interface DashboardTile {
   id: string;
-  type: TileType;
-  position: { x: number; y: number };
-  size: TileSize;
-  config: Record<string, unknown>;
+  type: 'cryptocurrency' | 'precious-metals' | 'precious_metals' | 'chart';
+  position: {
+    x: number;
+    y: number;
+  };
+  size: { width: number; height: number } | 'small' | 'medium' | 'large';
+  config?: Record<string, unknown>;
 }
 
-export const TileType = {
+export interface DashboardLayout {
+  tiles: DashboardTile[];
+  isCollapsed: boolean;
+  theme: 'light' | 'dark';
+}
+
+export interface DashboardContextType {
+  layout: DashboardLayout;
+  addTile: ((tile: DashboardTile) => void) & ((type: string) => void);
+  removeTile: (id: string) => void;
+  updateTile: (id: string, updates: Partial<DashboardTile>) => void;
+  toggleCollapse: () => void;
+  setTheme: (theme: 'light' | 'dark') => void;
+}
+
+export interface DashboardProps extends BaseComponentProps {
+  initialLayout?: DashboardTile[];
+}
+
+export interface TileProps extends BaseComponentProps {
+  tile: DashboardTile;
+  onRemove?: (id: string) => void;
+  onUpdate?: (id: string, updates: Partial<DashboardTile>) => void;
+}
+
+export interface DraggableTileProps extends TileProps {
+  onDragStart?: (id: string) => void;
+  onDragEnd?: (id: string, position: { x: number; y: number }) => void;
+}
+
+export interface TileGridProps extends BaseComponentProps {
+  tiles: DashboardTile[];
+  onTileUpdate?: (id: string, updates: Partial<DashboardTile>) => void;
+  onTileRemove?: (id: string) => void;
+}
+
+export interface SidebarProps extends BaseComponentProps {
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+  onAddTile: (type: DashboardTile['type']) => void;
+}
+
+export const TileTypeEnum = {
   CRYPTOCURRENCY: 'cryptocurrency',
-  PRECIOUS_METALS: 'precious_metals',
+  PRECIOUS_METALS: 'precious-metals',
+  CHART: 'chart',
 } as const;
 
-export type TileType = (typeof TileType)[keyof typeof TileType];
+export type TileType =
+  | (typeof TileTypeEnum)[keyof typeof TileTypeEnum]
+  | keyof typeof TileTypeEnum
+  | 'cryptocurrency'
+  | 'precious-metals'
+  | 'chart'
+  | 'precious_metals';
 
-export const TileSize = {
+export const TileSizeEnum = {
   SMALL: 'small',
   MEDIUM: 'medium',
   LARGE: 'large',
 } as const;
 
-export type TileSize = (typeof TileSize)[keyof typeof TileSize];
+export type TileSize =
+  | (typeof TileSizeEnum)[keyof typeof TileSizeEnum]
+  | keyof typeof TileSizeEnum
+  | 'small'
+  | 'medium'
+  | 'large';
 
-export interface DashboardState {
-  tiles: TileConfig[];
-  sidebarOpen: boolean;
-  loading: boolean;
-}
-
-export interface DashboardStorage {
-  tiles: TileConfig[];
-  layout: {
-    sidebarOpen: boolean;
-    gridColumns: number;
-  };
-  version: string; // For future migrations
-}
-
-export interface DashboardContextType {
-  state: DashboardState;
-  addTile: (type: TileType) => void;
-  removeTile: (id: string) => void;
-  toggleSidebar: () => void;
-  updateTileConfig: (id: string, config: Partial<TileConfig>) => void;
-  moveTile: (from: number, to: number) => void;
-}
+// Keep the old consts for backward compatibility
+export const TileType = TileTypeEnum;
+export const TileSize = TileSizeEnum;

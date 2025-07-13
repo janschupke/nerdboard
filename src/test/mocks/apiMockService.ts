@@ -23,10 +23,10 @@ export class MockApiService {
 
   async mockRequest(endpoint: string): Promise<Response> {
     const config = this.mockConfigs.get(endpoint) || {};
-    
+
     // Simulate network delay
     if (config.delay) {
-      await new Promise(resolve => setTimeout(resolve, config.delay));
+      await new Promise((resolve) => setTimeout(resolve, config.delay));
     }
 
     // Simulate failures
@@ -37,7 +37,7 @@ export class MockApiService {
     // Return mock response
     const mockData = config.responseData || this.getDefaultResponse(endpoint);
     const status = config.status || 200;
-    
+
     return new Response(JSON.stringify(mockData), {
       status,
       headers: { 'Content-Type': 'application/json' },
@@ -85,8 +85,8 @@ export class MockApiService {
 
   private getDefaultPreciousMetalsResponse(): unknown {
     return {
-      gold: { price: 1950.50, change_24h: 12.30, change_percentage_24h: 0.63 },
-      silver: { price: 25.10, change_24h: 0.20, change_percentage_24h: 0.80 },
+      gold: { price: 1950.5, change_24h: 12.3, change_percentage_24h: 0.63 },
+      silver: { price: 25.1, change_24h: 0.2, change_percentage_24h: 0.8 },
     };
   }
 
@@ -97,4 +97,4 @@ export class MockApiService {
   getMockConfig(endpoint: string): MockApiConfig | undefined {
     return this.mockConfigs.get(endpoint);
   }
-} 
+}

@@ -32,7 +32,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <div>Test content</div>
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Test content')).toBeInTheDocument();
@@ -42,11 +42,13 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
-    expect(screen.getByText(/We're sorry, but there was an error loading this component/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/We're sorry, but there was an error loading this component/),
+    ).toBeInTheDocument();
     expect(screen.getByText('Try Again')).toBeInTheDocument();
   });
 
@@ -54,7 +56,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary fallback={CustomFallback}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Custom error: Test error')).toBeInTheDocument();
@@ -65,7 +67,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     const tryAgainButton = screen.getByText('Try Again');
@@ -80,7 +82,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary fallback={CustomFallback}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     const resetButton = screen.getByText('Reset');
@@ -93,21 +95,25 @@ describe('ErrorBoundary', () => {
 
   it('logs error to console when error occurs', () => {
     const consoleSpy = vi.spyOn(console, 'error');
-    
+
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
-    expect(consoleSpy).toHaveBeenCalledWith('Dashboard Error:', expect.any(Error), expect.any(Object));
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Dashboard Error:',
+      expect.any(Error),
+      expect.any(Object),
+    );
   });
 
   it('recovers from error when child stops throwing', () => {
     const { rerender } = render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
@@ -116,10 +122,10 @@ describe('ErrorBoundary', () => {
     rerender(
       <ErrorBoundary>
         <ThrowError shouldThrow={false} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     // The error boundary should still show the error UI because it doesn't automatically recover
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
   });
-}); 
+});

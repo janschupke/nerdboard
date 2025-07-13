@@ -14,7 +14,7 @@ export class MockTimeoutError extends Error {
 
 export class MockApiError extends Error {
   public status: number;
-  
+
   constructor(message: string = 'API error', status: number = 500) {
     super(message);
     this.name = 'MockApiError';
@@ -37,7 +37,11 @@ export function createMockNetworkError(type: 'network' | 'timeout' | 'api' | 'ma
   }
 }
 
-export function createMockResponse(status: number, data: unknown, headers?: Record<string, string>): Response {
+export function createMockResponse(
+  status: number,
+  data: unknown,
+  headers?: Record<string, string>,
+): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -52,4 +56,4 @@ export function createMockErrorResponse(status: number, errorMessage: string): R
     status,
     headers: { 'Content-Type': 'application/json' },
   });
-} 
+}

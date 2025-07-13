@@ -34,7 +34,9 @@ export class PreciousMetalsApiService {
       return mockData;
     } catch (error) {
       console.error('Failed to fetch precious metals data:', error);
-      throw new Error(`Failed to fetch precious metals data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to fetch precious metals data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -44,7 +46,7 @@ export class PreciousMetalsApiService {
     }
 
     const metalsData = data as Record<string, unknown>;
-    
+
     if (!metalsData.gold || !metalsData.silver) {
       throw new Error('Invalid data format: missing gold or silver data');
     }
@@ -55,9 +57,11 @@ export class PreciousMetalsApiService {
       }
 
       const metalData = metal as Record<string, unknown>;
-      if (typeof metalData.price !== 'number' || 
-          typeof metalData.change_24h !== 'number' || 
-          typeof metalData.change_percentage_24h !== 'number') {
+      if (
+        typeof metalData.price !== 'number' ||
+        typeof metalData.change_24h !== 'number' ||
+        typeof metalData.change_percentage_24h !== 'number'
+      ) {
         throw new Error(`Invalid ${metalName} data: missing required fields`);
       }
     };

@@ -14,18 +14,22 @@ const mockFetch = vi.fn().mockImplementation(async () => {
 (globalThis as typeof globalThis & { fetch: ReturnType<typeof vi.fn> }).fetch = mockFetch;
 
 // Mock IntersectionObserver
-(globalThis as typeof globalThis & { IntersectionObserver: ReturnType<typeof vi.fn> }).IntersectionObserver = vi.fn().mockImplementation(() => ({
+(
+  globalThis as typeof globalThis & { IntersectionObserver: ReturnType<typeof vi.fn> }
+).IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }));
 
 // Mock ResizeObserver
-(globalThis as typeof globalThis & { ResizeObserver: ReturnType<typeof vi.fn> }).ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+(globalThis as typeof globalThis & { ResizeObserver: ReturnType<typeof vi.fn> }).ResizeObserver = vi
+  .fn()
+  .mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }));
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -72,10 +76,10 @@ beforeEach(() => {
   // Suppress console.error and console.warn during tests
   console.error = vi.fn();
   console.warn = vi.fn();
-  
+
   // Clear all mocks before each test
   vi.clearAllMocks();
-  
+
   // Setup default mocks for API calls
   setupDefaultMocks();
 });

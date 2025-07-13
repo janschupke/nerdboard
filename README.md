@@ -28,7 +28,7 @@ A modern dashboard application built with React 19, TypeScript, and Vite that di
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Setup
@@ -87,12 +87,14 @@ src/
 ## API Integration
 
 ### Cryptocurrency Data
+
 - **Source**: CoinGecko API
 - **Features**: Real-time price data, market cap, 24h changes
 - **Caching**: 30-second cache with automatic refresh
 - **Error Handling**: Retry logic with timeout handling
 
 ### Precious Metals Data
+
 - **Source**: Mock data (ready for real API integration)
 - **Features**: Gold and silver price tracking
 - **Caching**: 5-minute cache with validation

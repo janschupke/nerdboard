@@ -28,7 +28,7 @@ describe('ApiService', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-      })
+      }),
     );
 
     expect(result).toEqual({
@@ -99,7 +99,7 @@ describe('ApiService', () => {
 
     expect(mockFetch).toHaveBeenCalledWith(
       'http://localhost:3000/api/market-data?symbols=AAPL,GOOGL',
-      expect.any(Object)
+      expect.any(Object),
     );
 
     expect(result).toEqual({
@@ -122,7 +122,7 @@ describe('ApiService', () => {
 
     expect(mockFetch).toHaveBeenCalledWith(
       'http://localhost:3000/api/news?category=technology&limit=5',
-      expect.any(Object)
+      expect.any(Object),
     );
 
     expect(result).toEqual({
@@ -145,7 +145,7 @@ describe('ApiService', () => {
 
     expect(mockFetch).toHaveBeenCalledWith(
       'http://localhost:3000/api/news?limit=10',
-      expect.any(Object)
+      expect.any(Object),
     );
 
     expect(result).toEqual({
@@ -168,7 +168,7 @@ describe('ApiService', () => {
 
     expect(mockFetch).toHaveBeenCalledWith(
       'http://localhost:3000/api/weather?location=New%20York',
-      expect.any(Object)
+      expect.any(Object),
     );
 
     expect(result).toEqual({
@@ -223,4 +223,4 @@ describe('ApiService', () => {
       timestamp: expect.any(String),
     });
   });
-}); 
+});

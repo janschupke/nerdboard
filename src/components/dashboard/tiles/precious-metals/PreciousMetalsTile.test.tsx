@@ -21,7 +21,10 @@ describe('PreciousMetalsTile', () => {
   });
 
   it('renders data when loaded', async () => {
-    vi.spyOn(preciousMetalsApiModule.PreciousMetalsApiService.prototype, 'getPreciousMetalsData').mockResolvedValue({
+    vi.spyOn(
+      preciousMetalsApiModule.PreciousMetalsApiService.prototype,
+      'getPreciousMetalsData',
+    ).mockResolvedValue({
       gold: { price: 1950.5, change_24h: 12.3, change_percentage_24h: 0.63 },
       silver: { price: 24.75, change_24h: -0.15, change_percentage_24h: -0.6 },
     });
@@ -33,10 +36,13 @@ describe('PreciousMetalsTile', () => {
   });
 
   it('renders error state', async () => {
-    vi.spyOn(preciousMetalsApiModule.PreciousMetalsApiService.prototype, 'getPreciousMetalsData').mockRejectedValue(new Error('Failed to load precious metals data'));
+    vi.spyOn(
+      preciousMetalsApiModule.PreciousMetalsApiService.prototype,
+      'getPreciousMetalsData',
+    ).mockRejectedValue(new Error('Failed to load precious metals data'));
     render(<PreciousMetalsTile {...baseProps} />);
     await waitFor(() => {
       expect(screen.getByText(/failed to load precious metals data/i)).toBeInTheDocument();
     });
   });
-}); 
+});

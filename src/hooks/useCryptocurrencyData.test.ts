@@ -1,7 +1,10 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { useCryptocurrencyData } from './useCryptocurrencyData';
-import { createCryptocurrencyListMockData, createCryptocurrencyMockData } from '../test/mocks/factories/cryptocurrencyFactory';
+import {
+  createCryptocurrencyListMockData,
+  createCryptocurrencyMockData,
+} from '../test/mocks/factories/cryptocurrencyFactory';
 import { CoinGeckoApiService } from '../services/coinGeckoApi';
 
 describe('useCryptocurrencyData', () => {
@@ -34,7 +37,9 @@ describe('useCryptocurrencyData', () => {
   });
 
   it('returns error on fetch failure', async () => {
-    vi.spyOn(service, 'getTopCryptocurrencies').mockRejectedValue(new Error('Network error: Failed to fetch'));
+    vi.spyOn(service, 'getTopCryptocurrencies').mockRejectedValue(
+      new Error('Network error: Failed to fetch'),
+    );
     const { result } = renderHook(() => useCryptocurrencyData(30000, service));
     await vi.waitFor(() => {
       expect(result.current.error).toBe('Network error: Failed to fetch');
@@ -43,7 +48,9 @@ describe('useCryptocurrencyData', () => {
   });
 
   it('handles API errors correctly', async () => {
-    vi.spyOn(service, 'getTopCryptocurrencies').mockRejectedValue(new Error('API error: 500 Internal Server Error'));
+    vi.spyOn(service, 'getTopCryptocurrencies').mockRejectedValue(
+      new Error('API error: 500 Internal Server Error'),
+    );
     const { result } = renderHook(() => useCryptocurrencyData(30000, service));
     await vi.waitFor(() => {
       expect(result.current.error).toBe('API error: 500 Internal Server Error');
@@ -61,7 +68,9 @@ describe('useCryptocurrencyData', () => {
   });
 
   it('handles malformed response errors', async () => {
-    vi.spyOn(service, 'getTopCryptocurrencies').mockRejectedValue(new Error('Invalid JSON response'));
+    vi.spyOn(service, 'getTopCryptocurrencies').mockRejectedValue(
+      new Error('Invalid JSON response'),
+    );
     const { result } = renderHook(() => useCryptocurrencyData(30000, service));
     await vi.waitFor(() => {
       expect(result.current.error).toBe('Invalid JSON response');
@@ -103,4 +112,4 @@ describe('useCryptocurrencyData', () => {
       expect(result.current.retryCount).toBe(0);
     });
   });
-}); 
+});

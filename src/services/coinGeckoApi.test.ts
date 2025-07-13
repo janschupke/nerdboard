@@ -74,7 +74,9 @@ describe('CoinGeckoApiService', () => {
         statusText: 'Internal Server Error',
       } as Response);
 
-      await expect(service.getTopCryptocurrencies()).rejects.toThrow(/Failed to fetch cryptocurrency data/);
+      await expect(service.getTopCryptocurrencies()).rejects.toThrow(
+        /Failed to fetch cryptocurrency data/,
+      );
     });
 
     it('should throw error when fetch throws', async () => {
@@ -85,7 +87,9 @@ describe('CoinGeckoApiService', () => {
 
       vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(service.getTopCryptocurrencies()).rejects.toThrow(/Failed to fetch cryptocurrency data/);
+      await expect(service.getTopCryptocurrencies()).rejects.toThrow(
+        /Failed to fetch cryptocurrency data/,
+      );
     });
 
     it('should handle rate limiting with retries', async () => {
@@ -147,7 +151,9 @@ describe('CoinGeckoApiService', () => {
         statusText: 'Internal Server Error',
       } as Response);
 
-      await expect(service.getTopCryptocurrencies()).rejects.toThrow(/Failed to fetch cryptocurrency data/);
+      await expect(service.getTopCryptocurrencies()).rejects.toThrow(
+        /Failed to fetch cryptocurrency data/,
+      );
     });
   });
 
@@ -190,7 +196,9 @@ describe('CoinGeckoApiService', () => {
         statusText: 'Not Found',
       } as Response);
 
-      await expect(service.getPriceHistory('bitcoin', 7)).rejects.toThrow(/Failed to fetch price history/);
+      await expect(service.getPriceHistory('bitcoin', 7)).rejects.toThrow(
+        /Failed to fetch price history/,
+      );
     });
 
     it('should throw error when fetch throws', async () => {
@@ -201,7 +209,9 @@ describe('CoinGeckoApiService', () => {
 
       vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(service.getPriceHistory('bitcoin', 7)).rejects.toThrow(/Failed to fetch price history/);
+      await expect(service.getPriceHistory('bitcoin', 7)).rejects.toThrow(
+        /Failed to fetch price history/,
+      );
     });
 
     it('should throw error when response format is invalid', async () => {
@@ -215,7 +225,9 @@ describe('CoinGeckoApiService', () => {
         json: async () => ({ invalid: 'format' }),
       } as Response);
 
-      await expect(service.getPriceHistory('bitcoin', 7)).rejects.toThrow('Invalid price history response format');
+      await expect(service.getPriceHistory('bitcoin', 7)).rejects.toThrow(
+        'Invalid price history response format',
+      );
     });
 
     it('should handle empty price data', async () => {
@@ -285,4 +297,4 @@ describe('CoinGeckoApiService', () => {
       expect(fetch).toHaveBeenCalledTimes(1);
     });
   });
-}); 
+});

@@ -166,4 +166,4 @@ describe('useDragAndDrop', () => {
     expect(result.current.dragState.startPosition).toEqual({ x: 100, y: 200 });
     expect(result.current.dragState.currentPosition).toEqual({ x: 200, y: 300 });
   });
-}); 
+});

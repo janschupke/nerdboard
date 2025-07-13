@@ -6,7 +6,10 @@ export class CoinGeckoApiService {
   private cache = new Map<string, { data: unknown; timestamp: number }>();
   private readonly CACHE_DURATION = 30000; // 30 seconds
 
-  private async makeRequest(url: string, retries: number = API_CONFIG.MAX_RETRIES): Promise<Response> {
+  private async makeRequest(
+    url: string,
+    retries: number = API_CONFIG.MAX_RETRIES,
+  ): Promise<Response> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= retries; attempt++) {
@@ -17,7 +20,7 @@ export class CoinGeckoApiService {
         const response = await fetch(url, {
           signal: controller.signal,
           headers: {
-            'Accept': 'application/json',
+            Accept: 'application/json',
           },
         });
 
@@ -27,7 +30,9 @@ export class CoinGeckoApiService {
           if (response.status === 429) {
             // Rate limit hit, wait and retry
             if (attempt < retries) {
-              await new Promise(resolve => setTimeout(resolve, API_CONFIG.RETRY_DELAY * (attempt + 1)));
+              await new Promise((resolve) =>
+                setTimeout(resolve, API_CONFIG.RETRY_DELAY * (attempt + 1)),
+              );
               continue;
             }
           }
@@ -37,9 +42,11 @@ export class CoinGeckoApiService {
         return response;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error('Unknown error occurred');
-        
+
         if (attempt < retries && !(error instanceof Error && error.name === 'AbortError')) {
-          await new Promise(resolve => setTimeout(resolve, API_CONFIG.RETRY_DELAY * (attempt + 1)));
+          await new Promise((resolve) =>
+            setTimeout(resolve, API_CONFIG.RETRY_DELAY * (attempt + 1)),
+          );
           continue;
         }
       }
@@ -59,7 +66,7 @@ export class CoinGeckoApiService {
       );
 
       const data = await response.json();
-      
+
       if (!Array.isArray(data)) {
         throw new Error('Invalid response format from API');
       }
@@ -68,7 +75,9 @@ export class CoinGeckoApiService {
       return data;
     } catch (error) {
       console.error('Failed to fetch cryptocurrency data:', error);
-      throw new Error(`Failed to fetch cryptocurrency data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to fetch cryptocurrency data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -83,7 +92,7 @@ export class CoinGeckoApiService {
       );
 
       const data = await response.json();
-      
+
       if (!data.prices || !Array.isArray(data.prices)) {
         throw new Error('Invalid price history response format');
       }
@@ -97,7 +106,9 @@ export class CoinGeckoApiService {
       return formattedData;
     } catch (error) {
       console.error('Failed to fetch price history:', error);
-      throw new Error(`Failed to fetch price history for ${coinId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to fetch price history for ${coinId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 

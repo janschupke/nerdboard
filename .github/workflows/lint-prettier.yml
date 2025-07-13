@@ -2,7 +2,7 @@ name: Lint and Prettier
 
 on:
   pull_request:
-    branches: [**]
+    branches: ['**']
 
 jobs:
   lint-and-prettier:
@@ -23,4 +23,4 @@ jobs:
         run: npm run lint
 
       - name: Run Prettier check
-        run: npm run prettier 
+        run: npm run prettier

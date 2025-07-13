@@ -40,7 +40,7 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
           <h2 className="text-lg font-semibold text-theme-primary mb-4" id="tiles-heading">
             Available Tiles
           </h2>
-          <div 
+          <div
             className="space-y-3"
             role="listbox"
             aria-labelledby="tiles-heading"
@@ -71,7 +71,12 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
               >
                 <div className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
-                    <Icon name={tile.icon} size="md" className="text-accent-primary" aria-hidden="true" />
+                    <Icon
+                      name={tile.icon}
+                      size="md"
+                      className="text-accent-primary"
+                      aria-hidden="true"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-medium text-theme-primary truncate">{tile.name}</h3>
@@ -88,10 +93,10 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
 
         {/* Footer */}
         <div className="p-4 border-t border-theme-primary">
-          <Button 
-            variant="primary" 
-            size="sm" 
-            className="w-full" 
+          <Button
+            variant="primary"
+            size="sm"
+            className="w-full"
             onClick={onToggle}
             aria-label="Close sidebar"
           >

@@ -79,7 +79,7 @@ describe('useLocalStorage', () => {
 
   it('should handle localStorage errors gracefully', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     // Mock localStorage to throw an error
     const originalGetItem = window.localStorage.getItem;
     window.localStorage.getItem = vi.fn().mockImplementation(() => {
@@ -89,7 +89,10 @@ describe('useLocalStorage', () => {
     const { result } = renderHook(() => useLocalStorage('test-key', 'fallback-value'));
 
     expect(result.current[0]).toBe('fallback-value');
-    expect(consoleSpy).toHaveBeenCalledWith('Error reading localStorage key "test-key":', expect.any(Error));
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Error reading localStorage key "test-key":',
+      expect.any(Error),
+    );
 
     // Restore localStorage
     window.localStorage.getItem = originalGetItem;
@@ -98,7 +101,7 @@ describe('useLocalStorage', () => {
 
   it('should handle setItem errors gracefully', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     // Mock localStorage.setItem to throw an error
     const originalSetItem = window.localStorage.setItem;
     window.localStorage.setItem = vi.fn().mockImplementation(() => {
@@ -115,7 +118,10 @@ describe('useLocalStorage', () => {
 
     // The state should still be updated even if localStorage fails
     expect(result.current[0]).toBe('new-value');
-    expect(consoleSpy).toHaveBeenCalledWith('Error setting localStorage key "test-key":', expect.any(Error));
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Error setting localStorage key "test-key":',
+      expect.any(Error),
+    );
 
     // Restore localStorage
     window.localStorage.setItem = originalSetItem;
@@ -141,4 +147,4 @@ describe('useLocalStorage', () => {
     expect(result1.current[0]).toBe('updated1');
     expect(result2.current[0]).toBe('updated2');
   });
-}); 
+});

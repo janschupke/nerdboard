@@ -90,7 +90,7 @@ describe('ErrorHandler', () => {
           message: 'Test',
           type: 'api',
           severity: 'high',
-        })
+        }),
       );
     });
 
@@ -130,7 +130,7 @@ describe('ErrorHandler', () => {
   describe('console logging', () => {
     it('should log errors in development mode', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       // Mock development environment
       vi.stubEnv('DEV', true);
 
@@ -148,9 +148,9 @@ describe('ErrorHandler', () => {
 describe('withRetry', () => {
   it('should resolve immediately on success', async () => {
     const fn = vi.fn().mockResolvedValue('success');
-    
+
     const result = await withRetry(fn);
-    
+
     expect(result).toBe('success');
     expect(fn).toHaveBeenCalledTimes(1);
   });
@@ -203,4 +203,4 @@ describe('withRetry', () => {
     // Should have some delay between retries
     expect(endTime - startTime).toBeGreaterThan(50);
   });
-}); 
+});

@@ -8,11 +8,11 @@ export interface PreciousMetalsMockData {
 }
 
 export function createPreciousMetalsMockData(
-  overrides: Partial<PreciousMetalsMockData> = {}
+  overrides: Partial<PreciousMetalsMockData> = {},
 ): PreciousMetalsMockData {
   return {
     metal: 'gold',
-    price: 1950.50,
+    price: 1950.5,
     unit: 'USD/oz',
     change_24h: 15.25,
     change_percentage: 0.79,
@@ -23,19 +23,19 @@ export function createPreciousMetalsMockData(
 
 export function createPreciousMetalsListMockData(): PreciousMetalsMockData[] {
   return [
-    createPreciousMetalsMockData({ metal: 'gold', price: 1950.50 }),
+    createPreciousMetalsMockData({ metal: 'gold', price: 1950.5 }),
     createPreciousMetalsMockData({ metal: 'silver', price: 24.75 }),
-    createPreciousMetalsMockData({ metal: 'platinum', price: 950.00 }),
-    createPreciousMetalsMockData({ metal: 'palladium', price: 1200.00 }),
+    createPreciousMetalsMockData({ metal: 'platinum', price: 950.0 }),
+    createPreciousMetalsMockData({ metal: 'palladium', price: 1200.0 }),
   ];
 }
 
 export function createPreciousMetalsErrorData(): { error: string } {
   return {
-    error: 'Failed to fetch precious metals data'
+    error: 'Failed to fetch precious metals data',
   };
 }
 
 export function createPreciousMetalsLoadingData(): null {
   return null;
-} 
+}

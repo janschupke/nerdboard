@@ -5,25 +5,32 @@ import { TileGrid } from './TileGrid';
 // Mock useDashboard hook
 vi.mock('../../hooks/useDashboard', () => ({
   useDashboard: () => ({
-    state: {
+    layout: {
       tiles: [],
+      isCollapsed: false,
+      theme: 'light',
     },
     removeTile: vi.fn(),
     addTile: vi.fn(),
-    moveTile: vi.fn(),
   }),
 }));
 
 // Mock Tile component
 vi.mock('./Tile', () => ({
-  Tile: ({ tile }: { tile: Record<string, unknown> }) => <div data-testid={`tile-${tile.id as string}`}>{tile.type as string} Tile</div>,
+  Tile: ({ tile }: { tile: Record<string, unknown> }) => (
+    <div data-testid={`tile-${tile.id as string}`}>{tile.type as string} Tile</div>
+  ),
 }));
 
 // Mock DraggableTile component
 vi.mock('./DraggableTile', () => ({
-  DraggableTile: ({ children, tile }: { children: React.ReactNode; tile: Record<string, unknown> }) => (
-    <div data-testid={`draggable-tile-${tile.id as string}`}>{children}</div>
-  ),
+  DraggableTile: ({
+    children,
+    tile,
+  }: {
+    children: React.ReactNode;
+    tile: Record<string, unknown>;
+  }) => <div data-testid={`draggable-tile-${tile.id as string}`}>{children}</div>,
 }));
 
 describe('TileGrid', () => {

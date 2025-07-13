@@ -28,8 +28,8 @@ export const PreciousMetalsTile = React.memo<PreciousMetalsTileProps>(({ size, c
 
   // Memoize the chart color based on selected metal
   const chartColor = useMemo(() => {
-    return selectedMetal === 'gold' 
-      ? PRECIOUS_METALS_CHART_CONFIG.COLORS.GOLD 
+    return selectedMetal === 'gold'
+      ? PRECIOUS_METALS_CHART_CONFIG.COLORS.GOLD
       : PRECIOUS_METALS_CHART_CONFIG.COLORS.SILVER;
   }, [selectedMetal]);
 
@@ -86,10 +86,7 @@ export const PreciousMetalsTile = React.memo<PreciousMetalsTileProps>(({ size, c
                 {selectedMetal.charAt(0).toUpperCase() + selectedMetal.slice(1)}
               </span>
             </div>
-            <PriceDisplay
-              price={selectedMetalData.price}
-              change={selectedMetalData.change_24h}
-            />
+            <PriceDisplay price={selectedMetalData.price} change={selectedMetalData.change_24h} />
           </div>
 
           {/* Chart */}

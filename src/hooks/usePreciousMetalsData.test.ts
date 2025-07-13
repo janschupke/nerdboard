@@ -38,7 +38,9 @@ describe('usePreciousMetalsData', () => {
   });
 
   it('returns error on fetch failure', async () => {
-    vi.spyOn(service, 'getPreciousMetalsData').mockRejectedValue(new Error('Network error: Failed to fetch'));
+    vi.spyOn(service, 'getPreciousMetalsData').mockRejectedValue(
+      new Error('Network error: Failed to fetch'),
+    );
     const { result } = renderHook(() => usePreciousMetalsData(300000, service));
     await vi.waitFor(() => {
       expect(result.current.error).toBe('Network error: Failed to fetch');
@@ -47,7 +49,9 @@ describe('usePreciousMetalsData', () => {
   });
 
   it('handles API errors correctly', async () => {
-    vi.spyOn(service, 'getPreciousMetalsData').mockRejectedValue(new Error('API error: 500 Internal Server Error'));
+    vi.spyOn(service, 'getPreciousMetalsData').mockRejectedValue(
+      new Error('API error: 500 Internal Server Error'),
+    );
     const { result } = renderHook(() => usePreciousMetalsData(300000, service));
     await vi.waitFor(() => {
       expect(result.current.error).toBe('API error: 500 Internal Server Error');
@@ -99,4 +103,4 @@ describe('usePreciousMetalsData', () => {
       expect(result.current.retryCount).toBe(0);
     });
   });
-}); 
+});

@@ -1,20 +1,38 @@
+import type { BaseComponentProps } from './index';
+
 export interface CryptocurrencyData {
   id: string;
   symbol: string;
   name: string;
   current_price: number;
   market_cap: number;
-  price_change_24h: number;
   price_change_percentage_24h: number;
-  total_volume: number;
+  last_updated: string;
 }
 
-export interface PriceHistory {
+export interface CryptocurrencyApiResponse {
+  data: CryptocurrencyData[];
   timestamp: number;
-  price: number;
+  success: boolean;
 }
 
-export interface CryptocurrencyTileConfig {
-  selectedCoins?: string[];
-  chartPeriod?: '7d' | '30d' | '1y';
+export interface CryptocurrencyTileProps extends BaseComponentProps {
+  data?: CryptocurrencyData[];
+  loading?: boolean;
+  error?: Error | null;
+  refreshInterval?: number;
+}
+
+export interface CryptocurrencyConfig {
+  symbols: string[];
+  refreshInterval: number;
+  showChart: boolean;
+  maxItems: number;
+}
+
+export interface CryptocurrencyHookResult {
+  data: CryptocurrencyData[] | null;
+  loading: boolean;
+  error: Error | null;
+  refetch: () => Promise<void>;
 }

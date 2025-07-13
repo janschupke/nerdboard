@@ -7,7 +7,7 @@ describe('AnimationContainer', () => {
     render(
       <AnimationContainer animation="enter">
         <div>Test content</div>
-      </AnimationContainer>
+      </AnimationContainer>,
     );
 
     expect(screen.getByText('Test content')).toBeInTheDocument();
@@ -17,7 +17,7 @@ describe('AnimationContainer', () => {
     const { container } = render(
       <AnimationContainer animation="enter">
         <div>Test content</div>
-      </AnimationContainer>
+      </AnimationContainer>,
     );
 
     const animationDiv = container.firstChild as HTMLElement;
@@ -30,7 +30,7 @@ describe('AnimationContainer', () => {
     const { container } = render(
       <AnimationContainer animation="exit">
         <div>Test content</div>
-      </AnimationContainer>
+      </AnimationContainer>,
     );
 
     const animationDiv = container.firstChild as HTMLElement;
@@ -43,7 +43,7 @@ describe('AnimationContainer', () => {
     const { container } = render(
       <AnimationContainer animation="move">
         <div>Test content</div>
-      </AnimationContainer>
+      </AnimationContainer>,
     );
 
     const animationDiv = container.firstChild as HTMLElement;
@@ -56,7 +56,7 @@ describe('AnimationContainer', () => {
     const { container } = render(
       <AnimationContainer animation="resize">
         <div>Test content</div>
-      </AnimationContainer>
+      </AnimationContainer>,
     );
 
     const animationDiv = container.firstChild as HTMLElement;
@@ -67,35 +67,35 @@ describe('AnimationContainer', () => {
 
   it('calls onAnimationComplete when animation ends', () => {
     const onAnimationComplete = vi.fn();
-    
+
     const { container } = render(
       <AnimationContainer animation="enter" onAnimationComplete={onAnimationComplete}>
         <div>Test content</div>
-      </AnimationContainer>
+      </AnimationContainer>,
     );
 
     const animationDiv = container.firstChild as HTMLElement;
-    
+
     // Simulate animation end
     fireEvent.animationEnd(animationDiv);
-    
+
     expect(onAnimationComplete).toHaveBeenCalledTimes(1);
   });
 
   it('calls onAnimationComplete when transition ends', () => {
     const onAnimationComplete = vi.fn();
-    
+
     const { container } = render(
       <AnimationContainer animation="move" onAnimationComplete={onAnimationComplete}>
         <div>Test content</div>
-      </AnimationContainer>
+      </AnimationContainer>,
     );
 
     const animationDiv = container.firstChild as HTMLElement;
-    
+
     // Simulate transition end
     fireEvent.transitionEnd(animationDiv);
-    
+
     expect(onAnimationComplete).toHaveBeenCalledTimes(1);
   });
 
@@ -103,11 +103,11 @@ describe('AnimationContainer', () => {
     const { container } = render(
       <AnimationContainer animation="enter">
         <div>Test content</div>
-      </AnimationContainer>
+      </AnimationContainer>,
     );
 
     const animationDiv = container.firstChild as HTMLElement;
-    
+
     // This should not throw an error
     expect(() => {
       fireEvent.animationEnd(animationDiv);
@@ -118,7 +118,7 @@ describe('AnimationContainer', () => {
     const { container } = render(
       <AnimationContainer animation="enter">
         <div>Test content</div>
-      </AnimationContainer>
+      </AnimationContainer>,
     );
 
     const animationDiv = container.firstChild as HTMLElement;
@@ -128,19 +128,19 @@ describe('AnimationContainer', () => {
 
   it('handles multiple animation events correctly', () => {
     const onAnimationComplete = vi.fn();
-    
+
     const { container } = render(
       <AnimationContainer animation="enter" onAnimationComplete={onAnimationComplete}>
         <div>Test content</div>
-      </AnimationContainer>
+      </AnimationContainer>,
     );
 
     const animationDiv = container.firstChild as HTMLElement;
-    
+
     // Simulate multiple animation events
     fireEvent.animationEnd(animationDiv);
     fireEvent.transitionEnd(animationDiv);
-    
+
     expect(onAnimationComplete).toHaveBeenCalledTimes(2);
   });
-}); 
+});

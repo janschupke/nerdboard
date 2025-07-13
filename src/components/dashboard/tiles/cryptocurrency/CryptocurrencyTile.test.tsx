@@ -21,7 +21,10 @@ describe('CryptocurrencyTile', () => {
   });
 
   it('renders data when loaded', async () => {
-    vi.spyOn(coinGeckoApiModule.CoinGeckoApiService.prototype, 'getTopCryptocurrencies').mockResolvedValue([
+    vi.spyOn(
+      coinGeckoApiModule.CoinGeckoApiService.prototype,
+      'getTopCryptocurrencies',
+    ).mockResolvedValue([
       {
         id: 'bitcoin',
         symbol: 'btc',
@@ -50,10 +53,13 @@ describe('CryptocurrencyTile', () => {
   });
 
   it('renders error state', async () => {
-    vi.spyOn(coinGeckoApiModule.CoinGeckoApiService.prototype, 'getTopCryptocurrencies').mockRejectedValue(new Error('Failed to load cryptocurrency data'));
+    vi.spyOn(
+      coinGeckoApiModule.CoinGeckoApiService.prototype,
+      'getTopCryptocurrencies',
+    ).mockRejectedValue(new Error('Failed to load cryptocurrency data'));
     render(<CryptocurrencyTile {...baseProps} />);
     await waitFor(() => {
       expect(screen.getByText(/failed to load cryptocurrency data/i)).toBeInTheDocument();
     });
   });
-}); 
+});

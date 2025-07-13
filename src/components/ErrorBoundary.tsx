@@ -27,7 +27,7 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
 
     // Log error to monitoring service
     console.error('Dashboard Error:', error, errorInfo);
-    
+
     // Call custom error handler if provided
     if (this.props.onError) {
       try {
@@ -55,7 +55,7 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
         userAgent: navigator.userAgent,
         url: window.location.href,
       };
-      
+
       // Example: send to error reporting service
       // errorReportingService.captureException(errorReport);
       console.log('Error report:', errorReport);
@@ -79,12 +79,10 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
         <div className="p-6 text-center bg-surface-secondary border border-error-200 rounded-lg">
           <div className="mb-4">
             <Icon name="warning" size="lg" className="text-error-500 mx-auto mb-3" />
-            <h2 className="text-lg font-semibold text-error-600 mb-2">
-              Something went wrong
-            </h2>
+            <h2 className="text-lg font-semibold text-error-600 mb-2">Something went wrong</h2>
             <p className="text-theme-secondary mb-4 text-sm">
-              We're sorry, but there was an error loading this component. 
-              This has been automatically reported to our team.
+              We're sorry, but there was an error loading this component. This has been
+              automatically reported to our team.
             </p>
             {this.state.error && (
               <details className="text-xs text-theme-tertiary mb-4">
@@ -101,11 +99,7 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
             <Button variant="primary" size="sm" onClick={this.resetError}>
               Try Again
             </Button>
-            <Button 
-              variant="secondary" 
-              size="sm" 
-              onClick={() => window.location.reload()}
-            >
+            <Button variant="secondary" size="sm" onClick={() => window.location.reload()}>
               Reload Page
             </Button>
           </div>

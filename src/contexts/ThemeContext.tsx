@@ -1,48 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import type { ThemeProviderProps, ThemeContextType } from '../theme/types';
+import { THEME_TOKENS } from '../theme/tokens';
 import { ThemeContext } from './ThemeContextDef';
 
-type Theme = 'light' | 'dark';
-
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('light');
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({
+  children,
+  initialTheme = 'light',
+}) => {
+  const [theme, setTheme] = useState<'light' | 'dark'>(initialTheme);
 
   useEffect(() => {
-    // Check if the dark class is already set by the inline script
-    const isDark = document.documentElement.classList.contains('dark');
-    const stored = localStorage.getItem('theme') as Theme | null;
-
-    if (stored) {
-      setThemeState(stored);
-      // Only update the class if it doesn't match the stored theme
-      if ((stored === 'dark') !== isDark) {
-        document.documentElement.classList.toggle('dark', stored === 'dark');
-      }
-    } else {
-      // Default to system preference or current class state
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const newTheme = isDark || prefersDark ? 'dark' : 'light';
-      setThemeState(newTheme);
-      // Only update the class if it doesn't match the new theme
-      if ((newTheme === 'dark') !== isDark) {
-        document.documentElement.classList.toggle('dark', newTheme === 'dark');
-      }
+    const savedTheme = localStorage.getItem('nerdboard-theme') as 'light' | 'dark';
+    if (savedTheme) {
+      setTheme(savedTheme);
     }
   }, []);
 
-  const setTheme = (t: Theme) => {
-    setThemeState(t);
-    localStorage.setItem('theme', t);
-    document.documentElement.classList.toggle('dark', t === 'dark');
-  };
+  useEffect(() => {
+    localStorage.setItem('nerdboard-theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-}
+  const value: ThemeContextType = {
+    theme,
+    toggleTheme,
+    tokens: THEME_TOKENS,
+  };
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+};

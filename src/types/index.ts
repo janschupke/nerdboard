@@ -1,62 +1,36 @@
-// Common types for the Nerdboard dashboard application
+export * from './dashboard';
+export * from './cryptocurrency';
+export * from './preciousMetals';
+export * from './animations';
+export * from './dragDrop';
+export * from './errors';
+export { TileType, TileSize } from './dashboard';
 
-export interface DashboardTile {
-  id: string;
-  type: 'market-data' | 'news' | 'weather' | 'custom';
-  title: string;
-  content: MarketData | NewsItem | WeatherData | Record<string, unknown>;
-  position: {
-    x: number;
-    y: number;
-  };
-  size: {
-    width: number;
-    height: number;
-  };
-  refreshInterval?: number; // in milliseconds
-}
-
-export interface MarketData {
-  symbol: string;
-  price: number;
-  change: number;
-  changePercent: number;
-  volume: number;
-  marketCap?: number;
-}
-
-export interface NewsItem {
-  id: string;
-  title: string;
-  summary: string;
-  url: string;
-  publishedAt: string;
-  source: string;
-}
-
-export interface WeatherData {
-  location: string;
-  temperature: number;
-  condition: string;
-  humidity: number;
-  windSpeed: number;
-  forecast: Array<{
-    date: string;
-    high: number;
-    low: number;
-    condition: string;
-  }>;
-}
-
-export interface ApiResponse<T> {
-  data: T;
-  status: 'success' | 'error';
-  message?: string;
-  timestamp: string;
+// Common types
+export interface BaseComponentProps {
+  className?: string;
+  children?: React.ReactNode;
+  'data-testid'?: string;
 }
 
 export interface LoadingState {
-  isLoading: boolean;
-  error: string | null;
-  lastUpdated: string | null;
+  loading: boolean;
+  error: Error | null;
+}
+
+export interface ApiResponse<T> {
+  data: T | null;
+  error: Error | null;
+  loading: boolean;
+}
+
+export interface PaginationParams {
+  page: number;
+  limit: number;
+  offset: number;
+}
+
+export interface SortParams {
+  field: string;
+  direction: 'asc' | 'desc';
 }
