@@ -16,7 +16,7 @@ export function LoadingSkeleton({ tileSize = 'medium', className = '' }: Loading
   };
 
   return (
-    <div className={`animate-pulse ${getHeight()} ${className}`}>
+    <div className={`animate-pulse ${getHeight()} ${className}`} data-testid="loading-skeleton">
       <div className="h-full bg-surface-secondary rounded-lg flex flex-col">
         {/* Header skeleton */}
         <div className="h-12 bg-surface-tertiary rounded-t-lg"></div>

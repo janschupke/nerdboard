@@ -46,8 +46,9 @@ describe('ThemeContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorageMock.getItem.mockReturnValue(null);
-    // Reset document class
+    // Reset document class and attribute
     document.documentElement.classList.remove('dark');
+    document.documentElement.removeAttribute('data-theme');
   });
 
   it('should provide light theme by default when no localStorage or system preference', () => {

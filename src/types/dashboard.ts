@@ -2,7 +2,7 @@ import type { BaseComponentProps } from './index';
 
 export interface DashboardTile {
   id: string;
-  type: 'cryptocurrency' | 'precious-metals' | 'precious_metals' | 'chart';
+  type: 'cryptocurrency' | 'precious-metals' | 'precious_metals' | 'chart' | 'federal_funds_rate';
   position: {
     x: number;
     y: number;
@@ -57,6 +57,7 @@ export const TileTypeEnum = {
   CRYPTOCURRENCY: 'cryptocurrency',
   PRECIOUS_METALS: 'precious-metals',
   CHART: 'chart',
+  FEDERAL_FUNDS_RATE: 'federal_funds_rate',
 } as const;
 
 export type TileType =
@@ -65,7 +66,8 @@ export type TileType =
   | 'cryptocurrency'
   | 'precious-metals'
   | 'chart'
-  | 'precious_metals';
+  | 'precious_metals'
+  | 'federal_funds_rate';
 
 export const TileSizeEnum = {
   SMALL: 'small',

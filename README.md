@@ -15,9 +15,9 @@ A modern dashboard application built with React 19, TypeScript, and Vite that di
 
 ## Features
 
-- **Real-time Market Data**: Cryptocurrency and precious metals price tracking
+- **Real-time Market Data**: Cryptocurrency, precious metals, and Federal Funds rate tracking
 - **Interactive Dashboard**: Drag-and-drop tile layout with responsive design
-- **Data Visualization**: Interactive charts with historical price data
+- **Data Visualization**: Interactive charts with historical price and rate data
 - **Accessibility**: WCAG 2.1 AA compliance with full keyboard navigation
 - **Error Handling**: Comprehensive error boundaries and recovery mechanisms
 - **Performance**: Optimized components with React.memo and useMemo
@@ -74,7 +74,8 @@ src/
 │   │   ├── Tile.tsx        # Base tile component
 │   │   └── tiles/          # Tile implementations
 │   │       ├── cryptocurrency/
-│   │       └── precious-metals/
+│   │       ├── precious-metals/
+│   │       └── federal-funds-rate/
 │   └── ui/                 # Reusable UI components
 ├── contexts/               # React contexts
 ├── hooks/                  # Custom React hooks
@@ -99,6 +100,13 @@ src/
 - **Features**: Gold and silver price tracking
 - **Caching**: 5-minute cache with validation
 - **Error Handling**: Comprehensive data validation
+
+### Federal Funds Rate Data
+
+- **Source**: FRED API (Federal Reserve Economic Data) with fallback
+- **Features**: Real-time Federal Funds rate monitoring with historical trends
+- **Caching**: 24-hour cache with automatic refresh
+- **Error Handling**: Graceful fallback to mock data with user-friendly messages
 
 ## Accessibility
 

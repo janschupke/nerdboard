@@ -22,6 +22,12 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
       description: 'Gold and silver price data',
       icon: 'metals',
     },
+    {
+      type: TileType.FEDERAL_FUNDS_RATE,
+      name: 'Federal Funds Rate',
+      description: 'Federal Reserve interest rate monitoring',
+      icon: 'chart',
+    },
   ];
 
   return (

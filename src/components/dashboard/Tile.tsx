@@ -2,6 +2,7 @@ import type { DashboardTile } from '../../types/dashboard';
 import { Icon } from '../ui/Icon';
 import { CryptocurrencyTile } from './tiles/cryptocurrency/CryptocurrencyTile';
 import { PreciousMetalsTile } from './tiles/precious-metals/PreciousMetalsTile';
+import { FederalFundsRateTile } from './tiles/federal-funds-rate/FederalFundsRateTile';
 
 interface TileProps {
   tile: DashboardTile;
@@ -20,6 +21,8 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
         return <CryptocurrencyTile id={tile.id} size={size} config={config} />;
       case 'precious_metals':
         return <PreciousMetalsTile id={tile.id} size={size} config={config} />;
+      case 'federal_funds_rate':
+        return <FederalFundsRateTile id={tile.id} size={size} config={config} />;
       default:
         return (
           <div className="flex items-center justify-center h-32 text-theme-muted">
@@ -52,6 +55,7 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
     const titles = {
       cryptocurrency: 'Cryptocurrency',
       precious_metals: 'Precious Metals',
+      federal_funds_rate: 'Federal Funds Rate',
     };
     return titles[tile.type as keyof typeof titles] || 'Tile';
   };
@@ -60,6 +64,7 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
     const icons = {
       cryptocurrency: 'crypto',
       precious_metals: 'metals',
+      federal_funds_rate: 'chart',
     };
     return icons[tile.type as keyof typeof icons] || 'settings';
   };
