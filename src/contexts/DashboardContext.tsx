@@ -26,6 +26,7 @@ interface DashboardContextType {
   addTile: (tileType: TileType) => void;
   removeTile: (id: string) => void;
   updateTile: (id: string, updates: Partial<DashboardTile>) => void;
+  moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
   toggleCollapse: () => void;
   refreshAllTiles: () => void;
   isRefreshing: boolean;
@@ -151,10 +152,23 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
         return;
       }
 
+      // Find next available position
+      const existingPositions = state.layout.tiles
+        .filter(tile => tile.position)
+        .map(tile => tile.position!);
+      
+      let newPosition = { x: 0, y: 0 };
+      if (existingPositions.length > 0) {
+        // Find the next available position
+        const maxX = Math.max(...existingPositions.map(p => p.x));
+        const maxY = Math.max(...existingPositions.map(p => p.y));
+        newPosition = { x: maxX + 1, y: maxY };
+      }
+
       const newTile: DashboardTile = {
         id: `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: tileType,
-        position: { x: 0, y: 0 },
+        position: newPosition,
         size: 'medium',
       };
 
@@ -169,6 +183,13 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
 
   const updateTile = useCallback((id: string, updates: Partial<DashboardTile>) => {
     dispatch({ type: 'UPDATE_TILE', payload: { id, updates } });
+  }, []);
+
+  const moveTile = useCallback((tileId: string, newPosition: { x: number; y: number }) => {
+    dispatch({
+      type: 'UPDATE_TILE',
+      payload: { id: tileId, updates: { position: newPosition } },
+    });
   }, []);
 
   const toggleCollapse = useCallback(() => {
@@ -191,12 +212,13 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       addTile,
       removeTile,
       updateTile,
+      moveTile,
       toggleCollapse,
       refreshAllTiles,
       isRefreshing: state.isRefreshing,
       lastRefreshTime: state.lastRefreshTime,
     }),
-    [state, addTile, removeTile, updateTile, toggleCollapse, refreshAllTiles],
+    [state, addTile, removeTile, updateTile, moveTile, toggleCollapse, refreshAllTiles],
   );
 
   return (

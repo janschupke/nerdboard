@@ -71,7 +71,7 @@ describe('Tile', () => {
     const largeTile: DashboardTile = {
       id: 'test-tile-large',
       type: 'cryptocurrency',
-      position: { x: 1, y: 1 }, // Use position that matches large size
+      position: { x: 1, y: 1 },
       size: 'large',
       config: {},
     };
@@ -79,7 +79,10 @@ describe('Tile', () => {
     render(<Tile tile={largeTile} onRemove={mockProps.onRemove} />);
 
     const tileElement = screen.getByTestId('cryptocurrency-tile').closest('[data-tile-id]');
-    expect(tileElement).toHaveStyle({ gridColumn: 'span 2', gridRow: 'span 2' });
+    expect(tileElement).toHaveStyle({ 
+      gridColumn: '2 / span 2', 
+      gridRow: '2 / span 2' 
+    });
   });
 
   it('calls onRemove when close button is clicked', () => {
@@ -160,8 +163,9 @@ describe('Tile', () => {
 
     render(<Tile {...mockProps} dragHandleProps={dragHandleProps} />);
 
-    const tileElement = screen.getByTestId('cryptocurrency-tile').closest('[data-tile-id]');
-    expect(tileElement).toHaveAttribute('draggable', 'true');
+    // The drag handle is now on the header, not the main tile element
+    const header = screen.getByText('Cryptocurrency').closest('div')?.parentElement;
+    expect(header).toHaveAttribute('draggable', 'true');
   });
 
   it('renders with correct data attributes', () => {

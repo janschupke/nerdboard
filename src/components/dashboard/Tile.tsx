@@ -125,15 +125,17 @@ export function Tile({ tile, onRemove, children, dragHandleProps, loading, error
     const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
     const sizeStyles = {
       small: { gridColumn: 'span 1', gridRow: 'span 1' },
-      medium: { gridColumn: 'span 1', gridRow: 'span 1' },
-      large: { gridColumn: 'span 2', gridRow: 'span 2' },
+      medium: { gridColumn: 'span 2', gridRow: 'span 2' },
+      large: { gridColumn: 'span 3', gridRow: 'span 3' },
     };
     
     // Use position if available, otherwise use size-based styles
     if (tile.position) {
+      const spanX = size === 'large' ? 3 : 2;
+      const spanY = size === 'large' ? 3 : 2;
       return {
-        gridColumn: `span ${tile.position.x + 1}`,
-        gridRow: `span ${tile.position.y + 1}`,
+        gridColumn: `${tile.position.x + 1} / span ${spanX}`,
+        gridRow: `${tile.position.y + 1} / span ${spanY}`,
       };
     }
     
@@ -184,20 +186,24 @@ export function Tile({ tile, onRemove, children, dragHandleProps, loading, error
       data-tile-type={tile.type}
       role="gridcell"
       aria-label={`${getTileTitle()} tile`}
-      {...dragHandleProps}
     >
-      {/* Tile Header */}
-      <div className="flex items-center justify-between p-3 border-b border-theme-primary bg-surface-secondary">
+      {/* Tile Header - Grabbable */}
+      <div 
+        className="flex items-center justify-between p-3 border-b border-theme-primary bg-surface-secondary cursor-grab active:cursor-grabbing"
+        {...dragHandleProps}
+      >
         <div className="flex items-center space-x-2">
           <Icon name={getTileIcon()} size="sm" className="text-accent-primary" aria-hidden="true" />
           <h3 className="text-sm font-medium text-theme-primary truncate">{getTileTitle()}</h3>
         </div>
-        {/* Close Button */}
+        {/* Close Button - Not grabbable */}
         {onRemove && (
           <button
             onClick={() => onRemove(tile.id)}
-            className="p-1 text-theme-tertiary hover:text-theme-primary hover:bg-theme-tertiary rounded transition-colors"
+            className="p-1 text-theme-tertiary hover:text-theme-primary hover:bg-theme-tertiary rounded transition-colors cursor-pointer"
             aria-label={`Remove ${getTileTitle()} tile`}
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
           >
             <Icon name="close" size="sm" />
           </button>
