@@ -38,7 +38,7 @@ describe('IEX Cloud API Proxy', () => {
     await handler(req as any, res as any);
     expect(mockFetch).toHaveBeenCalledWith(
       'https://cloud.iexapis.com/stable/stock/GDX/quote?token=demo',
-      expect.objectContaining({ method: 'GET' })
+      expect.objectContaining({ method: 'GET' }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
@@ -63,4 +63,4 @@ describe('IEX Cloud API Proxy', () => {
     const res = createMockResponse();
     await expect(handler(req as any, res as any)).rejects.toThrow('Network error');
   });
-}); 
+});

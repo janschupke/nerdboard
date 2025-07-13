@@ -108,4 +108,4 @@ export type WeatherError = {
   message: string;
   code?: string;
   retryable: boolean;
-}; 
+};

@@ -19,7 +19,7 @@ export function DraggableTile({ tile, index, children, onMove }: DraggableTilePr
   if (!dashboardContext) {
     throw new Error('DraggableTile must be used within DashboardProvider');
   }
-  
+
   const { updateTile } = dashboardContext;
   const { startResize, updateResize, endResize } = useTileResize((tileId, newSize) => {
     updateTile(tileId, { size: newSize as 'small' | 'medium' | 'large' });

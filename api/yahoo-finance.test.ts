@@ -49,7 +49,7 @@ describe('Yahoo Finance API Proxy', () => {
         headers: expect.objectContaining({
           host: undefined,
         }),
-      })
+      }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
@@ -71,7 +71,7 @@ describe('Yahoo Finance API Proxy', () => {
 
     expect(mockFetch).toHaveBeenCalledWith(
       'https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=1mo',
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -148,7 +148,7 @@ describe('Yahoo Finance API Proxy', () => {
           host: undefined,
           'user-agent': 'test-agent',
         }),
-      })
+      }),
     );
   });
-}); 
+});

@@ -15,13 +15,28 @@ interface TileProps {
   onRemove?: (id: string) => void;
   children?: React.ReactNode;
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
+  loading?: boolean;
+  error?: string | null;
+  lastUpdated?: Date;
+  isCached?: boolean;
+  className?: string;
 }
 
-export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
+export function Tile({
+  tile,
+  onRemove,
+  children,
+  dragHandleProps,
+  loading = false,
+  error = null,
+  lastUpdated,
+  isCached = false,
+  className = '',
+}: TileProps) {
   const renderTileContent = () => {
     const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
     const config = tile.config || {};
-    
+
     switch (tile.type) {
       case TileType.CRYPTOCURRENCY:
         return <CryptocurrencyTile id={tile.id} size={size} config={config} />;
@@ -32,19 +47,44 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
       case TileType.EURIBOR_RATE:
         return <EuriborRateTile />;
       case TileType.WEATHER_HELSINKI:
-        return <WeatherTile size={size} config={{ city: 'helsinki', country: 'Finland', refreshInterval: 300000 }} />;
+        return (
+          <WeatherTile
+            size={size}
+            config={{ city: 'helsinki', country: 'Finland', refreshInterval: 300000 }}
+          />
+        );
       case TileType.WEATHER_PRAGUE:
-        return <WeatherTile size={size} config={{ city: 'prague', country: 'Czech Republic', refreshInterval: 300000 }} />;
+        return (
+          <WeatherTile
+            size={size}
+            config={{ city: 'prague', country: 'Czech Republic', refreshInterval: 300000 }}
+          />
+        );
       case TileType.WEATHER_TAIPEI:
-        return <WeatherTile size={size} config={{ city: 'taipei', country: 'Taiwan', refreshInterval: 300000 }} />;
+        return (
+          <WeatherTile
+            size={size}
+            config={{ city: 'taipei', country: 'Taiwan', refreshInterval: 300000 }}
+          />
+        );
       case TileType.GDX_ETF:
         return <GDXETFTile id={tile.id} size={size} config={config} />;
       case TileType.TIME_HELSINKI:
-        return <TimeTile id={tile.id} size={size} config={{ city: 'helsinki', showBusinessHours: true }} />;
+        return (
+          <TimeTile
+            id={tile.id}
+            size={size}
+            config={{ city: 'helsinki', showBusinessHours: true }}
+          />
+        );
       case TileType.TIME_PRAGUE:
-        return <TimeTile id={tile.id} size={size} config={{ city: 'prague', showBusinessHours: true }} />;
+        return (
+          <TimeTile id={tile.id} size={size} config={{ city: 'prague', showBusinessHours: true }} />
+        );
       case TileType.TIME_TAIPEI:
-        return <TimeTile id={tile.id} size={size} config={{ city: 'taipei', showBusinessHours: true }} />;
+        return (
+          <TimeTile id={tile.id} size={size} config={{ city: 'taipei', showBusinessHours: true }} />
+        );
       case TileType.URANIUM:
         return <UraniumTile id={tile.id} size={size} config={config} />;
       default:
@@ -118,9 +158,24 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
     }
   };
 
+  const formatLastUpdated = (date: Date) => {
+    const now = new Date();
+    const diffInSeconds = (now.getTime() - date.getTime()) / 1000;
+
+    if (diffInSeconds < 60) {
+      return `${Math.round(diffInSeconds)}s ago`;
+    } else if (diffInSeconds < 3600) {
+      return `${Math.round(diffInSeconds / 60)}m ago`;
+    } else if (diffInSeconds < 86400) {
+      return `${Math.round(diffInSeconds / 3600)}h ago`;
+    } else {
+      return `${Math.round(diffInSeconds / 86400)}d ago`;
+    }
+  };
+
   return (
     <div
-      className={getTileClasses()}
+      className={`${getTileClasses()} ${className}`}
       style={getTileStyles()}
       data-tile-id={tile.id}
       data-tile-type={tile.type}
@@ -144,6 +199,30 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
           <Icon name={getTileIcon()} size="sm" className="text-accent-primary" aria-hidden="true" />
           <h3 className="text-sm font-medium text-theme-primary truncate">{getTileTitle()}</h3>
         </div>
+        {/* Cached/Fresh Indicator & Last Updated */}
+        <div className="flex items-center space-x-2">
+          {isCached && (
+            <span
+              className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400"
+              tabIndex={0}
+              aria-label="Data is cached"
+              title="This data is loaded from cache. It may not be the most recent."
+            >
+              <Icon name="database" className="w-3 h-3" />
+              <span>Cached</span>
+            </span>
+          )}
+          {lastUpdated && (
+            <span
+              className="text-xs text-gray-500 dark:text-gray-400"
+              tabIndex={0}
+              aria-label={`Last updated ${lastUpdated.toLocaleString()}`}
+              title={`Last updated: ${lastUpdated.toLocaleString()}`}
+            >
+              Updated {formatLastUpdated(lastUpdated)}
+            </span>
+          )}
+        </div>
         {/* Close Button */}
         {onRemove && (
           <button
@@ -157,10 +236,29 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
           </button>
         )}
       </div>
-
       {/* Tile Content */}
       <div className="flex-1 p-4" role="region" aria-label={`${getTileTitle()} content`}>
-        {children || renderTileContent()}
+        {loading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+              <Icon name="loading" className="w-5 h-5 animate-spin" />
+              <span>Loading...</span>
+            </div>
+          </div>
+        )}
+        {error && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <Icon name="alert-circle" className="w-8 h-8 text-red-500 mx-auto mb-2" />
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Unable to load data</p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">{error}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                Showing cached data if available
+              </p>
+            </div>
+          </div>
+        )}
+        {!loading && !error && (children || renderTileContent())}
       </div>
     </div>
   );

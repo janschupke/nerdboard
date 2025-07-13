@@ -56,4 +56,4 @@ export const GDX_MARKET_MESSAGES = {
   MARKET_CLOSED: 'Market Closed',
   PRE_MARKET: 'Pre-Market',
   AFTER_HOURS: 'After Hours',
-} as const; 
+} as const;

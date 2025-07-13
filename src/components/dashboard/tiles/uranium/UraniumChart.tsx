@@ -1,5 +1,13 @@
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import { URANIUM_CHART_CONFIG } from './constants';
 import type { UraniumPriceData } from './types';
 import type { TileSize } from '../../../../types/dashboard';
@@ -14,7 +22,7 @@ const generateChartData = (basePrice: number) => {
   const data = [];
   const now = Date.now();
   const days = 30;
-  
+
   for (let i = days; i >= 0; i--) {
     const date = new Date(now - i * 24 * 60 * 60 * 1000);
     const variation = (Math.random() - 0.5) * 10;
@@ -23,13 +31,13 @@ const generateChartData = (basePrice: number) => {
       price: basePrice + variation,
     });
   }
-  
+
   return data;
 };
 
 export const UraniumChart = React.memo<UraniumChartProps>(({ uraniumData, size }) => {
   const chartData = generateChartData(uraniumData.spotPrice);
-  
+
   const getChartHeight = () => {
     switch (size) {
       case 'small':
@@ -43,7 +51,11 @@ export const UraniumChart = React.memo<UraniumChartProps>(({ uraniumData, size }
     }
   };
 
-  const CustomTooltip = ({ active, payload, label }: {
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
     active?: boolean;
     payload?: Array<{ value: number }>;
     label?: string;
@@ -52,9 +64,7 @@ export const UraniumChart = React.memo<UraniumChartProps>(({ uraniumData, size }
       return (
         <div className="bg-surface-primary border border-theme-primary rounded-lg p-2 shadow-lg">
           <p className="text-sm font-medium text-theme-primary">{label}</p>
-          <p className="text-sm text-theme-secondary">
-            Price: ${payload[0].value.toFixed(2)}
-          </p>
+          <p className="text-sm text-theme-secondary">Price: ${payload[0].value.toFixed(2)}</p>
         </div>
       );
     }
@@ -95,4 +105,4 @@ export const UraniumChart = React.memo<UraniumChartProps>(({ uraniumData, size }
   );
 });
 
-UraniumChart.displayName = 'UraniumChart'; 
+UraniumChart.displayName = 'UraniumChart';

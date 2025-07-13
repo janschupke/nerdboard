@@ -24,6 +24,9 @@ export interface DashboardContextType {
   updateTile: (id: string, updates: Partial<DashboardTile>) => void;
   toggleCollapse: () => void;
   setTheme: (theme: 'light' | 'dark') => void;
+  refreshAllTiles: () => Promise<void>;
+  isRefreshing: boolean;
+  lastRefreshTime: Date | null;
 }
 
 export interface TileGridProps extends BaseComponentProps {
@@ -66,8 +69,8 @@ export const TileSize = {
   LARGE: 'large',
 } as const;
 
-export type TileType = typeof TileType[keyof typeof TileType];
-export type TileSize = typeof TileSize[keyof typeof TileSize];
+export type TileType = (typeof TileType)[keyof typeof TileType];
+export type TileSize = (typeof TileSize)[keyof typeof TileSize];
 
 // Type aliases for backward compatibility
 export type TileTypeValue = string;

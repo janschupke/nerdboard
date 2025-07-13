@@ -26,7 +26,7 @@ describe('TileGrid', () => {
     render(
       <DashboardProvider>
         <TileGrid />
-      </DashboardProvider>
+      </DashboardProvider>,
     );
 
     expect(screen.getByText('Welcome to Dashboard')).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe('TileGrid', () => {
     render(
       <DashboardProvider>
         <TileGrid />
-      </DashboardProvider>
+      </DashboardProvider>,
     );
 
     const container = screen.getByText('Welcome to Dashboard').closest('div');
@@ -49,7 +49,7 @@ describe('TileGrid', () => {
     render(
       <DashboardProvider>
         <TileGrid />
-      </DashboardProvider>
+      </DashboardProvider>,
     );
 
     const heading = screen.getByText('Welcome to Dashboard');
@@ -63,7 +63,7 @@ describe('TileGrid', () => {
     render(
       <DashboardProvider>
         <TileGrid />
-      </DashboardProvider>
+      </DashboardProvider>,
     );
 
     const mainContainer = screen.getByText('Welcome to Dashboard').closest('div')?.parentElement;

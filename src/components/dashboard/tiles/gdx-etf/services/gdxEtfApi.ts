@@ -12,7 +12,7 @@ export class GDXETFApiService {
 
     // Use mock data more frequently to avoid rate limiting
     const useMockData = Math.random() < 0.7; // 70% chance to use mock data
-    
+
     if (useMockData) {
       const mockData = this.getMockData();
       this.setCachedData(cacheKey, mockData);
@@ -53,7 +53,7 @@ export class GDXETFApiService {
 
     // Use mock data more frequently to avoid rate limiting
     const useMockData = Math.random() < 0.8; // 80% chance to use mock data
-    
+
     if (useMockData) {
       const mockData = this.getMockPriceHistory(period);
       this.setCachedData(cacheKey, mockData);
@@ -84,7 +84,7 @@ export class GDXETFApiService {
     }
 
     const data = await response.json();
-    
+
     // Simulate Alpha Vantage response structure
     return {
       symbol: GDX_API_CONFIG.SYMBOL,
@@ -92,7 +92,9 @@ export class GDXETFApiService {
       currentPrice: parseFloat(data['Global Quote']?.['05. price'] || '0'),
       previousClose: parseFloat(data['Global Quote']?.['08. previous close'] || '0'),
       priceChange: parseFloat(data['Global Quote']?.['09. change'] || '0'),
-      priceChangePercent: parseFloat(data['Global Quote']?.['10. change percent']?.replace('%', '') || '0'),
+      priceChangePercent: parseFloat(
+        data['Global Quote']?.['10. change percent']?.replace('%', '') || '0',
+      ),
       volume: parseInt(data['Global Quote']?.['06. volume'] || '0'),
       marketCap: 0, // Alpha Vantage doesn't provide market cap
       high: parseFloat(data['Global Quote']?.['03. high'] || '0'),
@@ -128,7 +130,8 @@ export class GDXETFApiService {
         currentPrice: quote.regularMarketPrice,
         previousClose: quote.previousClose,
         priceChange: quote.regularMarketPrice - quote.previousClose,
-        priceChangePercent: ((quote.regularMarketPrice - quote.previousClose) / quote.previousClose) * 100,
+        priceChangePercent:
+          ((quote.regularMarketPrice - quote.previousClose) / quote.previousClose) * 100,
         volume: indicators.volume[indicators.volume.length - 1] || 0,
         marketCap: quote.marketCap || 0,
         high: quote.regularMarketDayHigh,
@@ -212,7 +215,7 @@ export class GDXETFApiService {
       '6M': '6mo',
       '1Y': '1y',
       '5Y': '5y',
-      'MAX': 'max',
+      MAX: 'max',
     };
     return periodMap[period] || '1mo';
   }
@@ -236,7 +239,7 @@ export class GDXETFApiService {
   }
 
   private getMockData(): GDXETFData {
-    const basePrice = 25.50;
+    const basePrice = 25.5;
     const change = (Math.random() - 0.5) * 2; // Random change between -1 and 1
 
     return {
@@ -258,16 +261,16 @@ export class GDXETFApiService {
 
   private getMockPriceHistory(period: string): GDXETFPriceHistory[] {
     const days = this.getDaysFromPeriod(period);
-    const basePrice = 25.50;
+    const basePrice = 25.5;
     const history: GDXETFPriceHistory[] = [];
     const now = Date.now();
     const dayMs = 24 * 60 * 60 * 1000;
 
     for (let i = days; i >= 0; i--) {
-      const timestamp = now - (i * dayMs);
+      const timestamp = now - i * dayMs;
       const randomChange = (Math.random() - 0.5) * 0.1; // ±5% daily change
       const price = basePrice * (1 + randomChange);
-      
+
       history.push({
         timestamp,
         price,
@@ -287,7 +290,7 @@ export class GDXETFApiService {
       '6M': 180,
       '1Y': 365,
       '5Y': 1825,
-      'MAX': 1825,
+      MAX: 1825,
     };
     return periodMap[period] || 30;
   }
@@ -303,4 +306,4 @@ export class GDXETFApiService {
   private setCachedData(key: string, data: unknown): void {
     this.cache.set(key, { data, timestamp: Date.now() });
   }
-} 
+}

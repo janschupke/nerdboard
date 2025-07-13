@@ -52,4 +52,4 @@ export interface BusinessHoursProps {
   size: TileSize;
 }
 
-export type TimeFormat = '12-hour' | '24-hour'; 
+export type TimeFormat = '12-hour' | '24-hour';

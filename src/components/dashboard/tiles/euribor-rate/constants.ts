@@ -49,5 +49,5 @@ export const TIME_RANGE_CONFIG = {
   '6M': { days: 180, label: '6 Months' },
   '1Y': { days: 365, label: '1 Year' },
   '5Y': { days: 1825, label: '5 Years' },
-  'Max': { days: 3650, label: 'Max' },
-} as const; 
+  Max: { days: 3650, label: 'Max' },
+} as const;

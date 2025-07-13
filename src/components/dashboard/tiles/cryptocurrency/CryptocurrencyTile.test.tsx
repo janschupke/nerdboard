@@ -1,30 +1,66 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { CryptocurrencyTile } from './CryptocurrencyTile';
 import { TileSize } from '../../../../types/dashboard';
-import * as coinGeckoApiModule from './services/coinGeckoApi';
+import * as coinGeckoApiModule from '../../../../services/coinGeckoApi';
+
+type Coin = {
+  id: string;
+  symbol: string;
+  name: string;
+  current_price: number;
+  market_cap: number;
+  market_cap_rank: number;
+  price_change_percentage_24h: number;
+  price_change_24h: number;
+  total_volume: number;
+  circulating_supply: number;
+  total_supply: number;
+  max_supply: number;
+  ath: number;
+  ath_change_percentage: number;
+  atl: number;
+  atl_change_percentage: number;
+  last_updated: string;
+};
 
 describe('CryptocurrencyTile', () => {
   const baseProps = {
     id: 'test',
     size: TileSize.MEDIUM,
-    config: {},
+    config: {
+      refreshInterval: 0, // Force immediate fetches for tests
+    },
   };
 
-  afterEach(() => {
+  let mockResolvedValue: Coin[] | null = null;
+  let mockRejectedValue: Error | null = null;
+
+  beforeEach(() => {
     vi.restoreAllMocks();
+    vi.spyOn(
+      coinGeckoApiModule.CoinGeckoApiService.prototype,
+      'getTopCryptocurrencies',
+    ).mockImplementation(() => {
+      if (mockRejectedValue) return Promise.reject(mockRejectedValue);
+      return Promise.resolve(mockResolvedValue ?? []);
+    });
+  });
+
+  afterEach(() => {
+    mockResolvedValue = null;
+    mockRejectedValue = null;
+    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it('renders loading state', () => {
     render(<CryptocurrencyTile {...baseProps} />);
-    expect(document.querySelector('.animate-pulse')).toBeInTheDocument();
+    expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
   it('renders data when loaded', async () => {
-    vi.spyOn(
-      coinGeckoApiModule.CoinGeckoApiService.prototype,
-      'getTopCryptocurrencies',
-    ).mockResolvedValue([
+    mockResolvedValue = [
       {
         id: 'bitcoin',
         symbol: 'btc',
@@ -44,22 +80,26 @@ describe('CryptocurrencyTile', () => {
         atl_change_percentage: 73600,
         last_updated: '2024-07-12T23:00:00Z',
       },
-    ]);
-    render(<CryptocurrencyTile {...baseProps} />);
-    await waitFor(() => {
-      expect(screen.getByText('Bitcoin')).toBeInTheDocument();
-      expect(screen.getByText('BTC')).toBeInTheDocument();
-    });
+    ];
+    const { container } = render(<CryptocurrencyTile {...baseProps} />);
+    await waitFor(
+      () => {
+        expect(container.textContent?.toLowerCase()).toMatch(/bitcoin/);
+        expect(container.textContent?.toLowerCase()).toMatch(/btc/);
+      },
+      { timeout: 2000 },
+    );
   });
 
   it('renders error state', async () => {
-    vi.spyOn(
-      coinGeckoApiModule.CoinGeckoApiService.prototype,
-      'getTopCryptocurrencies',
-    ).mockRejectedValue(new Error('Failed to load cryptocurrency data'));
-    render(<CryptocurrencyTile {...baseProps} />);
-    await waitFor(() => {
-      expect(screen.getByText(/failed to load cryptocurrency data/i)).toBeInTheDocument();
-    });
+    mockRejectedValue = new Error('Failed to load cryptocurrency data');
+    const { container } = render(<CryptocurrencyTile {...baseProps} />);
+    await waitFor(
+      () => {
+        expect(container.textContent?.toLowerCase()).toMatch(/failed to load cryptocurrency data/);
+        expect(container.textContent?.toLowerCase()).toMatch(/unable to load data/);
+      },
+      { timeout: 2000 },
+    );
   });
 });

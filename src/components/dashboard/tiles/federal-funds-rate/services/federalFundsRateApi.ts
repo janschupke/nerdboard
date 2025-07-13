@@ -30,16 +30,16 @@ export class FederalFundsRateApiService {
   private async fetchFromFredApi(): Promise<FederalFundsRateData> {
     const { FRED_BASE_URL, SERIES_ID } = FEDERAL_FUNDS_API_CONFIG;
     const API_KEY = import.meta.env.VITE_FRED_API_KEY || '';
-    
+
     if (!API_KEY) {
       // Fallback to mock data instead of throwing
       return this.getMockData('1Y');
     }
 
     const url = `${FRED_BASE_URL}?series_id=${SERIES_ID}&api_key=${API_KEY}&file_type=json&sort_order=desc&limit=1000`;
-    
+
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       throw new Error(`${FEDERAL_FUNDS_ERROR_MESSAGES.API_ERROR}: ${response.status}`);
     }
@@ -56,17 +56,17 @@ export class FederalFundsRateApiService {
 
   private transformFredData(fredData: FredApiResponse): FederalFundsRateData {
     const observations = fredData.observations || [];
-    
+
     if (observations.length === 0) {
       // Fallback to mock data instead of throwing
       return this.getMockData('1Y');
     }
 
     const historicalData = observations
-      .filter(obs => obs.value !== '.') // Filter out missing data
-      .map(obs => ({
+      .filter((obs) => obs.value !== '.') // Filter out missing data
+      .map((obs) => ({
         date: new Date(obs.date),
-        rate: parseFloat(obs.value)
+        rate: parseFloat(obs.value),
       }))
       .sort((a, b) => a.date.getTime() - b.date.getTime()); // Sort by date ascending
 
@@ -81,7 +81,7 @@ export class FederalFundsRateApiService {
     return {
       currentRate,
       lastUpdate,
-      historicalData
+      historicalData,
     };
   }
 
@@ -89,29 +89,29 @@ export class FederalFundsRateApiService {
     // Generate mock data for development/testing
     const now = new Date();
     const historicalData: Array<{ date: Date; rate: number }> = [];
-    
+
     // Generate data points for the specified time range
     const days = this.getDaysForTimeRange(timeRange);
     const baseRate = 5.25; // Current approximate rate
-    
+
     for (let i = days; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
-      
+
       // Use deterministic variation for testing
       const variation = Math.sin(i * 0.1) * 0.25;
       const rate = Math.max(0, baseRate + variation);
-      
+
       historicalData.push({
         date,
-        rate: parseFloat(rate.toFixed(2))
+        rate: parseFloat(rate.toFixed(2)),
       });
     }
 
     return {
       currentRate: historicalData[historicalData.length - 1]?.rate || baseRate,
       lastUpdate: now,
-      historicalData
+      historicalData,
     };
   }
 
@@ -122,9 +122,9 @@ export class FederalFundsRateApiService {
       '6M': 180,
       '1Y': 365,
       '5Y': 1825,
-      'Max': 3650
+      Max: 3650,
     };
-    
+
     return timeRangeMap[timeRange] || 365;
   }
 
@@ -139,4 +139,4 @@ export class FederalFundsRateApiService {
   private setCachedData(key: string, data: unknown): void {
     this.cache.set(key, { data, timestamp: Date.now() });
   }
-} 
+}

@@ -144,3 +144,21 @@ export const CACHE_CONFIG = {
   /** Long cache TTL in milliseconds (30 minutes) */
   LONG_TTL: 1800000, // 30 minutes
 } as const;
+
+/**
+ * Data refresh intervals
+ * Contains refresh intervals for different data types
+ */
+export const REFRESH_INTERVALS = {
+  TILE_DATA: 10 * 60 * 1000, // 10 minutes
+  COUNTDOWN_UPDATE: 1000, // 1 second for countdown timer
+} as const;
+
+/**
+ * Local storage keys
+ * Contains key prefixes and names for local storage
+ */
+export const STORAGE_KEYS = {
+  TILE_DATA_PREFIX: 'tile-data-',
+  DASHBOARD_CONFIG: 'dashboard-config',
+} as const;

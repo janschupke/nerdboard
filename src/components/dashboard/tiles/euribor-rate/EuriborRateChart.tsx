@@ -1,5 +1,13 @@
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import { EURIBOR_RATE_CHART_CONFIG } from './constants';
 import type { EuriborRatePoint, TimeRange } from './types';
 
@@ -11,21 +19,27 @@ interface EuriborRateChartProps {
 
 export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
   data = [],
-  loading = false
+  loading = false,
 }) => {
   const formatYAxis = (tickItem: number) => {
     return `${tickItem.toFixed(2)}%`;
   };
 
-  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
+    active?: boolean;
+    payload?: Array<{ value: number }>;
+    label?: string;
+  }) => {
     if (active && payload && payload.length) {
       const dataPoint = payload[0];
       return (
         <div className="custom-tooltip">
           <p className="tooltip-date">{label}</p>
-          <p className="tooltip-rate">
-            Rate: {dataPoint.value.toFixed(2)}%
-          </p>
+          <p className="tooltip-rate">Rate: {dataPoint.value.toFixed(2)}%</p>
         </div>
       );
     }
@@ -49,13 +63,13 @@ export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
   }
 
   // Transform data for Recharts
-  const chartData = data.map(point => ({
+  const chartData = data.map((point) => ({
     date: point.date,
     rate: point.rate,
-    formattedDate: point.date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: '2-digit' 
-    })
+    formattedDate: point.date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+    }),
   }));
 
   return (
@@ -63,14 +77,14 @@ export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
       <ResponsiveContainer width="100%" height={200}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-200)" />
-          <XAxis 
+          <XAxis
             dataKey="formattedDate"
             stroke="var(--color-gray-600)"
             fontSize={EURIBOR_RATE_CHART_CONFIG.STYLES.FONT_SIZE}
             tickLine={false}
             axisLine={false}
           />
-          <YAxis 
+          <YAxis
             stroke="var(--color-gray-600)"
             fontSize={EURIBOR_RATE_CHART_CONFIG.STYLES.FONT_SIZE}
             tickLine={false}
@@ -78,23 +92,23 @@ export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
             tickFormatter={formatYAxis}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Line 
-            type="monotone" 
-            dataKey="rate" 
+          <Line
+            type="monotone"
+            dataKey="rate"
             stroke={EURIBOR_RATE_CHART_CONFIG.COLORS.PRIMARY}
             strokeWidth={EURIBOR_RATE_CHART_CONFIG.STYLES.STROKE_WIDTH}
-            dot={{ 
+            dot={{
               fill: EURIBOR_RATE_CHART_CONFIG.COLORS.PRIMARY,
               strokeWidth: 2,
-              r: 2
+              r: 2,
             }}
-            activeDot={{ 
+            activeDot={{
               r: EURIBOR_RATE_CHART_CONFIG.STYLES.ACTIVE_DOT_RADIUS,
-              fill: EURIBOR_RATE_CHART_CONFIG.COLORS.SECONDARY
+              fill: EURIBOR_RATE_CHART_CONFIG.COLORS.SECONDARY,
             }}
           />
         </LineChart>
       </ResponsiveContainer>
     </div>
   );
-}; 
+};

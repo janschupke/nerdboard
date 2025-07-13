@@ -33,12 +33,14 @@ describe('Alpha Vantage API Proxy', () => {
       arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(8)),
     };
     mockFetch.mockResolvedValue(mockResponse);
-    const req = createMockRequest('/api/alpha-vantage/query?function=GLOBAL_QUOTE&symbol=GDX&apikey=demo');
+    const req = createMockRequest(
+      '/api/alpha-vantage/query?function=GLOBAL_QUOTE&symbol=GDX&apikey=demo',
+    );
     const res = createMockResponse();
     await handler(req as any, res as any);
     expect(mockFetch).toHaveBeenCalledWith(
       'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=GDX&apikey=demo',
-      expect.objectContaining({ method: 'GET' })
+      expect.objectContaining({ method: 'GET' }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
@@ -59,8 +61,10 @@ describe('Alpha Vantage API Proxy', () => {
   });
   it('handles fetch error gracefully', async () => {
     mockFetch.mockRejectedValue(new Error('Network error'));
-    const req = createMockRequest('/api/alpha-vantage/query?function=GLOBAL_QUOTE&symbol=GDX&apikey=demo');
+    const req = createMockRequest(
+      '/api/alpha-vantage/query?function=GLOBAL_QUOTE&symbol=GDX&apikey=demo',
+    );
     const res = createMockResponse();
     await expect(handler(req as any, res as any)).rejects.toThrow('Network error');
   });
-}); 
+});

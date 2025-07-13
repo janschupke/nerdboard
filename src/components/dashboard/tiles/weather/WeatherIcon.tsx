@@ -4,7 +4,7 @@ import type { WeatherIconProps } from './types';
 
 export const WeatherIcon = React.memo<WeatherIconProps>(({ condition, size = 'md' }) => {
   const icon = WEATHER_ICONS[condition as keyof typeof WEATHER_ICONS] || '🌤️';
-  
+
   const sizeClasses = {
     sm: 'text-lg',
     md: 'text-2xl',
@@ -12,7 +12,7 @@ export const WeatherIcon = React.memo<WeatherIconProps>(({ condition, size = 'md
   };
 
   return (
-    <span 
+    <span
       className={`${sizeClasses[size]} inline-block`}
       role="img"
       aria-label={`Weather condition: ${condition}`}
@@ -22,4 +22,4 @@ export const WeatherIcon = React.memo<WeatherIconProps>(({ condition, size = 'md
   );
 });
 
-WeatherIcon.displayName = 'WeatherIcon'; 
+WeatherIcon.displayName = 'WeatherIcon';

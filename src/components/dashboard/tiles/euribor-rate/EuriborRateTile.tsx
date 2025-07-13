@@ -7,16 +7,8 @@ import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { EURIBOR_RATE_ERROR_MESSAGES } from './constants';
 
 export const EuriborRateTile: React.FC = () => {
-  const { 
-    data, 
-    loading, 
-    error, 
-    timeRange, 
-    setTimeRange, 
-    refreshData,
-    hasError,
-    hasData 
-  } = useEuriborRateData();
+  const { data, loading, error, timeRange, setTimeRange, refreshData, hasError, hasData } =
+    useEuriborRateData();
 
   if (loading && !hasData) {
     return (
@@ -30,10 +22,8 @@ export const EuriborRateTile: React.FC = () => {
     return (
       <div className="tile euribor-rate-tile">
         <div className="tile-error">
-          <div className="error-message">
-            {error || EURIBOR_RATE_ERROR_MESSAGES.FETCH_FAILED}
-          </div>
-          <button 
+          <div className="error-message">{error || EURIBOR_RATE_ERROR_MESSAGES.FETCH_FAILED}</div>
+          <button
             onClick={refreshData}
             className="retry-button"
             aria-label="Retry loading Euribor rate data"
@@ -48,26 +38,20 @@ export const EuriborRateTile: React.FC = () => {
   if (!hasData) {
     return (
       <div className="tile euribor-rate-tile">
-        <div className="tile-error">
-          {EURIBOR_RATE_ERROR_MESSAGES.NO_DATA}
-        </div>
+        <div className="tile-error">{EURIBOR_RATE_ERROR_MESSAGES.NO_DATA}</div>
       </div>
     );
   }
 
   return (
     <div className="tile euribor-rate-tile">
-      <EuriborRateHeader 
+      <EuriborRateHeader
         currentRate={data?.currentRate}
         lastUpdate={data?.lastUpdate}
         loading={loading}
       />
-      <EuriborRateChart 
-        data={data?.historicalData}
-        timeRange={timeRange}
-        loading={loading}
-      />
-      <EuriborRateControls 
+      <EuriborRateChart data={data?.historicalData} timeRange={timeRange} loading={loading} />
+      <EuriborRateControls
         timeRange={timeRange}
         onTimeRangeChange={setTimeRange}
         onRefresh={refreshData}
@@ -75,4 +59,4 @@ export const EuriborRateTile: React.FC = () => {
       />
     </div>
   );
-}; 
+};

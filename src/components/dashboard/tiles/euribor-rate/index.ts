@@ -5,4 +5,4 @@ export { EuriborRateControls } from './EuriborRateControls';
 export { useEuriborRateData } from './hooks/useEuriborRateData';
 export { EuriborRateApiService } from './services/euriborRateApi';
 export * from './types';
-export * from './constants'; 
+export * from './constants';

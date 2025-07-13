@@ -9,11 +9,9 @@ export const TimezoneInfo = React.memo<TimezoneInfoProps>(({ timeData, size }) =
       <div className={`${textSizeClass} text-theme-secondary font-medium`}>
         {timeData.abbreviation}
       </div>
-      <div className={`${textSizeClass} text-theme-muted`}>
-        UTC{timeData.offset}
-      </div>
+      <div className={`${textSizeClass} text-theme-muted`}>UTC{timeData.offset}</div>
     </div>
   );
 });
 
-TimezoneInfo.displayName = 'TimezoneInfo'; 
+TimezoneInfo.displayName = 'TimezoneInfo';

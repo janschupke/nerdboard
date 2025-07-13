@@ -38,7 +38,7 @@ describe('OpenWeatherMap API Proxy', () => {
     await handler(req as any, res as any);
     expect(mockFetch).toHaveBeenCalledWith(
       'https://api.openweathermap.org/data/2.5/weather?q=Berlin',
-      expect.objectContaining({ method: 'GET' })
+      expect.objectContaining({ method: 'GET' }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
@@ -63,4 +63,4 @@ describe('OpenWeatherMap API Proxy', () => {
     const res = createMockResponse();
     await expect(handler(req as any, res as any)).rejects.toThrow('Network error');
   });
-}); 
+});

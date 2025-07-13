@@ -13,7 +13,7 @@ export const EuriborRateControls: React.FC<EuriborRateControlsProps> = ({
   timeRange,
   onTimeRangeChange,
   onRefresh,
-  loading = false
+  loading = false,
 }) => {
   const handleTimeRangeClick = (newTimeRange: TimeRange) => {
     if (!loading && newTimeRange !== timeRange) {
@@ -54,4 +54,4 @@ export const EuriborRateControls: React.FC<EuriborRateControlsProps> = ({
       </div>
     </div>
   );
-}; 
+};

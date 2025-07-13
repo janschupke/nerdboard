@@ -21,7 +21,7 @@ describe('FederalFundsRateApiService', () => {
     originalApiKey = import.meta.env.VITE_FRED_API_KEY;
     (import.meta.env as Record<string, string>).VITE_FRED_API_KEY = 'test-api-key';
     service = new FederalFundsRateApiService();
-    ((service as unknown) as { cache: Map<string, unknown> }).cache.clear();
+    (service as unknown as { cache: Map<string, unknown> }).cache.clear();
   });
 
   afterEach(() => {
@@ -38,18 +38,18 @@ describe('FederalFundsRateApiService', () => {
       ok: true,
       json: async () => mockResponse,
     });
-    
+
     const data = await service.getFederalFundsRateData('1Y');
-    
+
     expect(data.currentRate).toBe(5.25);
     expect(data.historicalData.length).toBe(2);
     expect(data.historicalData[0]).toEqual({
       date: new Date('2024-01-01'),
-      rate: 5.0
+      rate: 5.0,
     });
     expect(data.historicalData[1]).toEqual({
       date: new Date('2024-01-15'),
-      rate: 5.25
+      rate: 5.25,
     });
     expect(fetch).toHaveBeenCalled();
   });
@@ -65,9 +65,9 @@ describe('FederalFundsRateApiService', () => {
         ],
       }),
     });
-    
+
     const data = await service.getFederalFundsRateData('1Y');
-    
+
     // Should filter out the missing data point (value: '.')
     expect(data.historicalData.length).toBe(2);
     expect(data.historicalData[0].rate).toBe(5.0);
@@ -76,21 +76,21 @@ describe('FederalFundsRateApiService', () => {
 
   it('falls back to mock data on fetch error', async () => {
     (fetch as unknown as Mock).mockRejectedValueOnce(new Error('Network error'));
-    
+
     const data = await service.getFederalFundsRateData('1Y');
-    
+
     expect(data.currentRate).toBeGreaterThan(0);
     expect(data.historicalData.length).toBeGreaterThan(0);
   });
 
   it('falls back to mock data on bad response', async () => {
-    (fetch as unknown as Mock).mockResolvedValueOnce({ 
-      ok: false, 
-      status: 500 
+    (fetch as unknown as Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
     });
-    
+
     const data = await service.getFederalFundsRateData('1Y');
-    
+
     expect(data.currentRate).toBeGreaterThan(0);
     expect(data.historicalData.length).toBeGreaterThan(0);
   });
@@ -100,9 +100,9 @@ describe('FederalFundsRateApiService', () => {
       ok: true,
       json: async () => ({ observations: [] }),
     });
-    
+
     const data = await service.getFederalFundsRateData('1Y');
-    
+
     expect(data.currentRate).toBeGreaterThan(0);
     expect(data.historicalData.length).toBeGreaterThan(0);
   });
@@ -110,10 +110,10 @@ describe('FederalFundsRateApiService', () => {
   it('falls back to mock data when API key is missing', async () => {
     // Clear API key for this test
     delete (import.meta.env as Record<string, string>).VITE_FRED_API_KEY;
-    
+
     const data = await service.getFederalFundsRateData('1Y');
-    
+
     expect(data.currentRate).toBeGreaterThan(0);
     expect(data.historicalData.length).toBeGreaterThan(0);
   });
-}); 
+});

@@ -36,4 +36,4 @@ export interface FredApiResponse {
 export interface ScrapedRateData {
   rate: number;
   date: string;
-} 
+}

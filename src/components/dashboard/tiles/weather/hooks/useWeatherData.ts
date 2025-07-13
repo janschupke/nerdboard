@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { weatherApiService } from '../services/weatherApi';
 import { WEATHER_UI_CONFIG, WEATHER_ERROR_MESSAGES } from '../constants';
 import type { WeatherData, WeatherForecast, WeatherApiResponse } from '../types';
+import { getCachedData, setCachedData } from '../../../../../utils/localStorage';
+import { STORAGE_KEYS, REFRESH_INTERVALS } from '../../../../../utils/constants';
 
 interface UseWeatherDataReturn {
   data: WeatherData | null;
@@ -9,47 +11,54 @@ interface UseWeatherDataReturn {
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
-  lastUpdate: number | null;
+  lastUpdated: Date | null;
+  isCached: boolean;
 }
 
 export const useWeatherData = (
   city: string,
-  refreshInterval: number = WEATHER_UI_CONFIG.DEFAULT_REFRESH_INTERVAL,
+  refreshInterval: number = REFRESH_INTERVALS.TILE_DATA,
 ): UseWeatherDataReturn => {
   const [data, setData] = useState<WeatherData | null>(null);
   const [forecast, setForecast] = useState<WeatherForecast[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdate, setLastUpdate] = useState<number | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isCached, setIsCached] = useState(false);
 
-  const transformApiResponse = useCallback((apiData: WeatherApiResponse, cityName: string): WeatherData => {
-    const current = apiData.current;
-    const weather = current.weather[0];
+  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}weather-${city}`;
 
-    return {
-      city: cityName,
-      country: '', // Will be set based on city
-      temperature: {
-        current: current.temp,
-        feels_like: current.feels_like,
-        min: 0, // Will be calculated from forecast
-        max: 0, // Will be calculated from forecast
-      },
-      conditions: {
-        main: weather.main,
-        description: weather.description,
-        icon: weather.icon,
-      },
-      humidity: current.humidity,
-      wind: {
-        speed: current.wind_speed,
-        direction: current.wind_deg,
-      },
-      pressure: current.pressure,
-      visibility: current.visibility,
-      timestamp: current.dt * 1000, // Convert to milliseconds
-    };
-  }, []);
+  const transformApiResponse = useCallback(
+    (apiData: WeatherApiResponse, cityName: string): WeatherData => {
+      const current = apiData.current;
+      const weather = current.weather[0];
+
+      return {
+        city: cityName,
+        country: '', // Will be set based on city
+        temperature: {
+          current: current.temp,
+          feels_like: current.feels_like,
+          min: 0, // Will be calculated from forecast
+          max: 0, // Will be calculated from forecast
+        },
+        conditions: {
+          main: weather.main,
+          description: weather.description,
+          icon: weather.icon,
+        },
+        humidity: current.humidity,
+        wind: {
+          speed: current.wind_speed,
+          direction: current.wind_deg,
+        },
+        pressure: current.pressure,
+        visibility: current.visibility,
+        timestamp: current.dt * 1000, // Convert to milliseconds
+      };
+    },
+    [],
+  );
 
   const transformForecast = useCallback((apiData: WeatherApiResponse): WeatherForecast[] => {
     return apiData.daily.slice(0, WEATHER_UI_CONFIG.FORECAST_DAYS).map((day) => {
@@ -73,36 +82,59 @@ export const useWeatherData = (
     });
   }, []);
 
-  const fetchWeatherData = useCallback(async (): Promise<void> => {
-    try {
-      setLoading(true);
-      setError(null);
+  const fetchWeatherData = useCallback(
+    async (forceRefresh = false): Promise<void> => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const apiData = await weatherApiService.getWeatherDataWithRetry(city);
-      
-      const weatherData = transformApiResponse(apiData, city);
-      const forecastData = transformForecast(apiData);
+        // Check cache first unless forcing refresh
+        if (!forceRefresh) {
+          const cached = getCachedData<{ data: WeatherData; forecast: WeatherForecast[] }>(
+            storageKey,
+          );
+          if (cached) {
+            setData(cached.data);
+            setForecast(cached.forecast);
+            setLastUpdated(new Date());
+            setIsCached(true);
+            setLoading(false);
+            return;
+          }
+        }
 
-      // Update min/max temperatures from forecast
-      if (forecastData.length > 0) {
-        const todayForecast = forecastData[0];
-        weatherData.temperature.min = todayForecast.temperature.min;
-        weatherData.temperature.max = todayForecast.temperature.max;
+        const apiData = await weatherApiService.getWeatherDataWithRetry(city);
+
+        const weatherData = transformApiResponse(apiData, city);
+        const forecastData = transformForecast(apiData);
+
+        // Update min/max temperatures from forecast
+        if (forecastData.length > 0) {
+          const todayForecast = forecastData[0];
+          weatherData.temperature.min = todayForecast.temperature.min;
+          weatherData.temperature.max = todayForecast.temperature.max;
+        }
+
+        setData(weatherData);
+        setForecast(forecastData);
+        setLastUpdated(new Date());
+        setIsCached(false);
+
+        // Cache the fresh data
+        setCachedData(storageKey, { data: weatherData, forecast: forecastData });
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : WEATHER_ERROR_MESSAGES.FETCH_FAILED;
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
       }
-
-      setData(weatherData);
-      setForecast(forecastData);
-      setLastUpdate(Date.now());
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : WEATHER_ERROR_MESSAGES.FETCH_FAILED;
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [city, transformApiResponse, transformForecast]);
+    },
+    [city, transformApiResponse, transformForecast, storageKey],
+  );
 
   const refetch = useCallback(async (): Promise<void> => {
-    await fetchWeatherData();
+    await fetchWeatherData(true);
   }, [fetchWeatherData]);
 
   // Initial data fetch
@@ -124,14 +156,18 @@ export const useWeatherData = (
   }, [fetchWeatherData, refreshInterval]);
 
   // Memoize the return value to prevent unnecessary re-renders
-  const returnValue = useMemo<UseWeatherDataReturn>(() => ({
-    data,
-    forecast,
-    loading,
-    error,
-    refetch,
-    lastUpdate,
-  }), [data, forecast, loading, error, refetch, lastUpdate]);
+  const returnValue = useMemo<UseWeatherDataReturn>(
+    () => ({
+      data,
+      forecast,
+      loading,
+      error,
+      refetch,
+      lastUpdated,
+      isCached,
+    }),
+    [data, forecast, loading, error, refetch, lastUpdated, isCached],
+  );
 
   return returnValue;
-}; 
+};

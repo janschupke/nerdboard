@@ -10,9 +10,7 @@ import { URANIUM_ERROR_MESSAGES } from './constants';
 import type { UraniumTileProps, UraniumTimeRange } from './types';
 
 export const UraniumTile = React.memo<UraniumTileProps>(({ size, config }) => {
-  const [timeRange, setTimeRange] = useState<UraniumTimeRange>(
-    config.timeRange || '1Y',
-  );
+  const [timeRange, setTimeRange] = useState<UraniumTimeRange>(config.timeRange || '1Y');
 
   const { uraniumData, loading, error, refetch } = useUraniumData(
     timeRange,
@@ -56,16 +54,10 @@ export const UraniumTile = React.memo<UraniumTileProps>(({ size, config }) => {
       </div>
 
       {/* Controls for time range selection */}
-      <UraniumControls
-        timeRange={timeRange}
-        onTimeRangeChange={setTimeRange}
-        size={size}
-      />
+      <UraniumControls timeRange={timeRange} onTimeRangeChange={setTimeRange} size={size} />
 
       {/* Market information for large tiles */}
-      {isLargeTile && (
-        <UraniumMarketInfo uraniumData={uraniumData} size={size} />
-      )}
+      {isLargeTile && <UraniumMarketInfo uraniumData={uraniumData} size={size} />}
 
       {/* Last update info */}
       <div className="text-xs text-theme-muted text-center">
@@ -75,4 +67,4 @@ export const UraniumTile = React.memo<UraniumTileProps>(({ size, config }) => {
   );
 });
 
-UraniumTile.displayName = 'UraniumTile'; 
+UraniumTile.displayName = 'UraniumTile';

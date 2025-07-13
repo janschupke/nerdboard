@@ -198,4 +198,4 @@ For issues with:
 
 - **Vercel Deployment**: Check Vercel documentation
 - **API Proxies**: See `api/README.md`
-- **Application Code**: Check the main `README.md` 
+- **Application Code**: Check the main `README.md`

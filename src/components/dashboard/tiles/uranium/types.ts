@@ -39,4 +39,4 @@ export interface UraniumApiResponse {
   supply?: number;
   demand?: number;
   marketStatus?: string;
-} 
+}

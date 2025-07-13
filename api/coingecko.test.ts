@@ -49,7 +49,7 @@ describe('CoinGecko API Proxy', () => {
         headers: expect.objectContaining({
           host: undefined,
         }),
-      })
+      }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
@@ -64,14 +64,16 @@ describe('CoinGecko API Proxy', () => {
     };
     mockFetch.mockResolvedValue(mockResponse);
 
-    const req = createMockRequest('/api/coingecko/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30');
+    const req = createMockRequest(
+      '/api/coingecko/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30',
+    );
     const res = createMockResponse();
 
     await handler(req as any, res as any);
 
     expect(mockFetch).toHaveBeenCalledWith(
       'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30',
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -148,7 +150,7 @@ describe('CoinGecko API Proxy', () => {
           host: undefined,
           'user-agent': 'test-agent',
         }),
-      })
+      }),
     );
   });
-}); 
+});

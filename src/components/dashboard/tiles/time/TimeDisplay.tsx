@@ -4,7 +4,7 @@ import type { TimeDisplayProps } from './types';
 
 export const TimeDisplay = React.memo<TimeDisplayProps>(({ timeData, timeFormat, size }) => {
   const timezoneService = React.useMemo(() => TimezoneService.getInstance(), []);
-  
+
   const formattedTime = React.useMemo(() => {
     return timezoneService.formatTime(timeData.currentTime, timeFormat);
   }, [timezoneService, timeData.currentTime, timeFormat]);
@@ -24,4 +24,4 @@ export const TimeDisplay = React.memo<TimeDisplayProps>(({ timeData, timeFormat,
   );
 });
 
-TimeDisplay.displayName = 'TimeDisplay'; 
+TimeDisplay.displayName = 'TimeDisplay';

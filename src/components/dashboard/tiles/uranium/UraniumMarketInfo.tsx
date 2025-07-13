@@ -72,4 +72,4 @@ export const UraniumMarketInfo = React.memo<UraniumMarketInfoProps>(({ uraniumDa
   );
 });
 
-UraniumMarketInfo.displayName = 'UraniumMarketInfo'; 
+UraniumMarketInfo.displayName = 'UraniumMarketInfo';

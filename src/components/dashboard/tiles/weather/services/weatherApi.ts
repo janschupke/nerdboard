@@ -272,7 +272,7 @@ class WeatherApiService {
   private async fetchFromOpenWeatherMap(city: string): Promise<WeatherApiResponse> {
     const cityKey = city.toLowerCase();
     const cached = this.cache.get(cityKey);
-    
+
     if (cached && Date.now() - cached.timestamp < WEATHER_API_CONFIG.CACHE_DURATION) {
       return cached.data;
     }
@@ -323,17 +323,17 @@ class WeatherApiService {
       return await this.fetchFromOpenWeatherMap(city);
     } catch (error) {
       console.warn('OpenWeatherMap failed, trying WeatherAPI.com:', error);
-      
+
       try {
         return await this.fetchFromWeatherAPI(city);
       } catch (error) {
         console.warn('WeatherAPI.com failed, trying AccuWeather:', error);
-        
+
         try {
           return await this.fetchFromAccuWeather(city);
         } catch (error) {
           console.warn('AccuWeather failed, trying web scraping:', error);
-          
+
           try {
             return await this.scrapeWeatherData(city);
           } catch (error) {
@@ -353,11 +353,11 @@ class WeatherApiService {
         return await this.getWeatherData(city);
       } catch (error) {
         lastError = error as Error;
-        
+
         if (attempt < maxRetries) {
           // Exponential backoff
           const delay = Math.pow(2, attempt) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
@@ -374,4 +374,4 @@ class WeatherApiService {
   }
 }
 
-export const weatherApiService = new WeatherApiService(); 
+export const weatherApiService = new WeatherApiService();

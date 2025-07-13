@@ -98,50 +98,56 @@ The application uses a comprehensive API proxy system to handle CORS issues and 
 
 ### Available APIs
 
-| Service | Purpose | Used By |
-|---------|---------|---------|
-| **CoinGecko** | Cryptocurrency data | Cryptocurrency tile |
-| **TradingEconomics** | Commodity prices | Uranium tile |
-| **Yahoo Finance** | Stock/ETF data | GDX ETF tile |
-| **FRED** | Economic indicators | Federal Funds Rate tile |
-| **ECB/EMMI** | European rates | Euribor Rate tile |
-| **OpenWeatherMap** | Weather data | Weather tiles |
-| **Alpha Vantage** | Financial data | GDX ETF tile (fallback) |
-| **IEX Cloud** | Market data | GDX ETF tile (fallback) |
+| Service              | Purpose             | Used By                 |
+| -------------------- | ------------------- | ----------------------- |
+| **CoinGecko**        | Cryptocurrency data | Cryptocurrency tile     |
+| **TradingEconomics** | Commodity prices    | Uranium tile            |
+| **Yahoo Finance**    | Stock/ETF data      | GDX ETF tile            |
+| **FRED**             | Economic indicators | Federal Funds Rate tile |
+| **ECB/EMMI**         | European rates      | Euribor Rate tile       |
+| **OpenWeatherMap**   | Weather data        | Weather tiles           |
+| **Alpha Vantage**    | Financial data      | GDX ETF tile (fallback) |
+| **IEX Cloud**        | Market data         | GDX ETF tile (fallback) |
 
 ### Data Sources
 
 #### Cryptocurrency Data
+
 - **Source**: CoinGecko API via proxy
 - **Features**: Real-time price data, market cap, 24h changes
 - **Caching**: 30-second cache with automatic refresh
 - **Error Handling**: Retry logic with timeout handling
 
 #### Precious Metals Data
+
 - **Source**: Mock data (ready for real API integration)
 - **Features**: Gold and silver price tracking
 - **Caching**: 5-minute cache with validation
 - **Error Handling**: Comprehensive data validation
 
 #### Federal Funds Rate Data
+
 - **Source**: FRED API via proxy with fallback
 - **Features**: Real-time Federal Funds rate monitoring with historical trends
 - **Caching**: 24-hour cache with automatic refresh
 - **Error Handling**: Graceful fallback to mock data with user-friendly messages
 
 #### Uranium Data
+
 - **Source**: TradingEconomics API via proxy
 - **Features**: Real-time uranium price tracking
 - **Fallbacks**: Quandl and UXC APIs
 - **Error Handling**: Multiple fallback sources with mock data
 
 #### GDX ETF Data
+
 - **Source**: Yahoo Finance API via proxy
 - **Features**: Real-time ETF price and volume data
 - **Fallbacks**: Alpha Vantage and IEX Cloud APIs
 - **Error Handling**: Multiple data sources with historical charts
 
 #### Weather Data
+
 - **Source**: OpenWeatherMap API via proxy
 - **Features**: Current weather and forecasts for multiple cities
 - **Fallbacks**: WeatherAPI and AccuWeather

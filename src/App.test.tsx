@@ -12,11 +12,11 @@ describe('App', () => {
     render(<App />);
     // The Dashboard component should be rendered
     // We can check for elements that are part of the Dashboard
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText('Nerdboard')).toBeInTheDocument();
   });
 
   it('has the correct structure', () => {
     render(<App />);
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText('Nerdboard')).toBeInTheDocument();
   });
 });

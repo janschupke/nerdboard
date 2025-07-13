@@ -32,7 +32,7 @@ export const WEATHER_CITIES = {
   TAIPEI: {
     name: 'Taipei',
     country: 'Taiwan',
-    coordinates: { lat: 25.0330, lon: 121.5654 },
+    coordinates: { lat: 25.033, lon: 121.5654 },
     timezone: 'Asia/Taipei',
   },
 } as const;
@@ -73,4 +73,4 @@ export const TEMPERATURE_CONFIG = {
   KELVIN_OFFSET: 273.15,
   CELSIUS_SYMBOL: '°C',
   FAHRENHEIT_SYMBOL: '°F',
-} as const; 
+} as const;

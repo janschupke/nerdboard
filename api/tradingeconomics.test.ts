@@ -49,7 +49,7 @@ describe('TradingEconomics API Proxy', () => {
         headers: expect.objectContaining({
           host: undefined,
         }),
-      })
+      }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
@@ -71,7 +71,7 @@ describe('TradingEconomics API Proxy', () => {
 
     expect(mockFetch).toHaveBeenCalledWith(
       'https://api.tradingeconomics.com/commodity/gold?period=1M&format=json',
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -148,7 +148,7 @@ describe('TradingEconomics API Proxy', () => {
           host: undefined,
           'user-agent': 'test-agent',
         }),
-      })
+      }),
     );
   });
-}); 
+});

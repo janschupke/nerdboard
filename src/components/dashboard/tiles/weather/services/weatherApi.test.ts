@@ -69,11 +69,11 @@ describe('WeatherApiService', () => {
 
     it('should throw error for invalid city', async () => {
       vi.mocked(weatherApiService.getWeatherData).mockRejectedValue(
-        new Error(WEATHER_ERROR_MESSAGES.CITY_NOT_FOUND)
+        new Error(WEATHER_ERROR_MESSAGES.CITY_NOT_FOUND),
       );
 
       await expect(weatherApiService.getWeatherData('invalid-city')).rejects.toThrow(
-        WEATHER_ERROR_MESSAGES.CITY_NOT_FOUND
+        WEATHER_ERROR_MESSAGES.CITY_NOT_FOUND,
       );
     });
   });
@@ -112,11 +112,11 @@ describe('WeatherApiService', () => {
 
     it('should throw error after max retries', async () => {
       vi.mocked(weatherApiService.getWeatherDataWithRetry).mockRejectedValue(
-        new Error(WEATHER_ERROR_MESSAGES.FETCH_FAILED)
+        new Error(WEATHER_ERROR_MESSAGES.FETCH_FAILED),
       );
 
       await expect(weatherApiService.getWeatherDataWithRetry('invalid-city')).rejects.toThrow(
-        WEATHER_ERROR_MESSAGES.FETCH_FAILED
+        WEATHER_ERROR_MESSAGES.FETCH_FAILED,
       );
     });
   });
@@ -139,4 +139,4 @@ describe('WeatherApiService', () => {
       expect(weatherApiService.getCacheSize).toHaveBeenCalled();
     });
   });
-}); 
+});

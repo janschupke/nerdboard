@@ -1,4 +1,4 @@
-import React, { createContext } from 'react';
+import React, { createContext, useState, useCallback } from 'react';
 import type { DashboardTile, DashboardLayout, DashboardContextType } from '../types/dashboard';
 import { TileType, TileSize } from '../types/dashboard';
 import { useLocalStorage } from '../hooks/useLocalStorage';
@@ -64,7 +64,12 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     initialState,
   );
   const [state, dispatch] = React.useReducer(dashboardReducer, storedState);
-  const [toast, setToast] = React.useState<{ message: string; visible: boolean }>({ message: '', visible: false });
+  const [toast, setToast] = React.useState<{ message: string; visible: boolean }>({
+    message: '',
+    visible: false,
+  });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(new Date());
 
   // Save state to localStorage whenever it changes
   React.useEffect(() => {
@@ -81,21 +86,21 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     if (typeof tileOrType === 'string') {
       // Validate that the tile type is valid
       const validTypes = Object.values(TileType);
-      normalizedType = validTypes.includes(tileOrType as TileType) 
-        ? (tileOrType as TileType) 
+      normalizedType = validTypes.includes(tileOrType as TileType)
+        ? (tileOrType as TileType)
         : TileType.CRYPTOCURRENCY;
     } else {
       normalizedType = tileOrType.type;
     }
-    
+
     // Prevent duplicate tiles of the same type
     const hasDuplicate = state.tiles.some((tile) => tile.type === normalizedType);
-    
+
     if (hasDuplicate) {
       showToast('This tile is already on your dashboard.');
       return;
     }
-    
+
     const newTile: DashboardTile =
       typeof tileOrType === 'string'
         ? {
@@ -121,6 +126,22 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'UPDATE_TILE_CONFIG', payload: { id, config } });
   };
 
+  const refreshAllTiles = useCallback(async () => {
+    setIsRefreshing(true);
+
+    try {
+      // Trigger refresh for all tiles
+      const event = new CustomEvent('refresh-all-tiles');
+      window.dispatchEvent(event);
+
+      setLastRefreshTime(new Date());
+    } catch (error) {
+      console.error('Failed to refresh all tiles:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
   const value: DashboardContextType = {
     layout: state,
     addTile,
@@ -128,6 +149,9 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     updateTile: updateTileConfig,
     toggleCollapse: toggleSidebar,
     setTheme: () => {}, // No-op, theme handled elsewhere
+    refreshAllTiles,
+    isRefreshing,
+    lastRefreshTime,
   };
 
   return (

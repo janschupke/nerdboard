@@ -19,49 +19,71 @@ vi.mock('./hooks/useEuriborRateData', () => {
 
 // Mock the sub-components
 vi.mock('./EuriborRateHeader', () => ({
-  EuriborRateHeader: ({ currentRate, lastUpdate, loading }: { currentRate?: number; lastUpdate?: Date; loading?: boolean }) => (
+  EuriborRateHeader: ({
+    currentRate,
+    lastUpdate,
+    loading,
+  }: {
+    currentRate?: number;
+    lastUpdate?: Date;
+    loading?: boolean;
+  }) => (
     <div data-testid="euribor-rate-header">
       <div data-testid="current-rate">{currentRate}</div>
       <div data-testid="last-update">{lastUpdate?.toISOString()}</div>
       <div data-testid="loading">{loading ? 'loading' : 'not-loading'}</div>
     </div>
-  )
+  ),
 }));
 
 vi.mock('./EuriborRateChart', () => ({
-  EuriborRateChart: ({ data, timeRange, loading }: { data?: Array<{ date: Date; rate: number }>; timeRange?: string; loading?: boolean }) => (
+  EuriborRateChart: ({
+    data,
+    timeRange,
+    loading,
+  }: {
+    data?: Array<{ date: Date; rate: number }>;
+    timeRange?: string;
+    loading?: boolean;
+  }) => (
     <div data-testid="euribor-rate-chart">
       <div data-testid="chart-data-points">{data?.length || 0}</div>
       <div data-testid="chart-time-range">{timeRange}</div>
       <div data-testid="chart-loading">{loading ? 'loading' : 'not-loading'}</div>
     </div>
-  )
+  ),
 }));
 
 vi.mock('./EuriborRateControls', () => ({
-  EuriborRateControls: ({ timeRange, onTimeRangeChange, onRefresh, loading }: { timeRange?: string; onTimeRangeChange?: (range: string) => void; onRefresh?: () => void; loading?: boolean }) => (
+  EuriborRateControls: ({
+    timeRange,
+    onTimeRangeChange,
+    onRefresh,
+    loading,
+  }: {
+    timeRange?: string;
+    onTimeRangeChange?: (range: string) => void;
+    onRefresh?: () => void;
+    loading?: boolean;
+  }) => (
     <div data-testid="euribor-rate-controls">
       <div data-testid="controls-time-range">{timeRange}</div>
-      <button 
-        data-testid="controls-refresh" 
-        onClick={onRefresh}
-        disabled={loading}
-      >
+      <button data-testid="controls-refresh" onClick={onRefresh} disabled={loading}>
         Refresh
       </button>
-      <button 
-        data-testid="controls-time-1m" 
+      <button
+        data-testid="controls-time-1m"
         onClick={() => onTimeRangeChange?.('1M')}
         disabled={loading}
       >
         1M
       </button>
     </div>
-  )
+  ),
 }));
 
 vi.mock('../../../ui/LoadingSkeleton', () => ({
-  LoadingSkeleton: () => <div data-testid="loading-skeleton">Loading...</div>
+  LoadingSkeleton: () => <div data-testid="loading-skeleton">Loading...</div>,
 }));
 
 describe('EuriborRateTile', () => {
@@ -69,9 +91,9 @@ describe('EuriborRateTile', () => {
     currentRate: 3.85,
     lastUpdate: new Date('2024-01-15T10:30:00Z'),
     historicalData: [
-      { date: new Date('2024-01-01'), rate: 3.80 },
-      { date: new Date('2024-01-15'), rate: 3.85 }
-    ]
+      { date: new Date('2024-01-01'), rate: 3.8 },
+      { date: new Date('2024-01-15'), rate: 3.85 },
+    ],
   };
 
   let mockUseEuriborRateData: ReturnType<typeof vi.fn>;
@@ -87,7 +109,7 @@ describe('EuriborRateTile', () => {
       setTimeRange: vi.fn(),
       refreshData: vi.fn(),
       hasError: false,
-      hasData: false
+      hasData: false,
     });
   });
 
@@ -100,11 +122,11 @@ describe('EuriborRateTile', () => {
       setTimeRange: vi.fn(),
       refreshData: vi.fn(),
       hasError: false,
-      hasData: false
+      hasData: false,
     });
 
     render(<EuriborRateTile />);
-    
+
     expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument();
   });
 
@@ -117,11 +139,11 @@ describe('EuriborRateTile', () => {
       setTimeRange: vi.fn(),
       refreshData: vi.fn(),
       hasError: true,
-      hasData: false
+      hasData: false,
     });
 
     render(<EuriborRateTile />);
-    
+
     expect(screen.getByText('API Error')).toBeInTheDocument();
     expect(screen.getByText('Retry')).toBeInTheDocument();
   });
@@ -135,11 +157,11 @@ describe('EuriborRateTile', () => {
       setTimeRange: vi.fn(),
       refreshData: vi.fn(),
       hasError: false,
-      hasData: false
+      hasData: false,
     });
 
     render(<EuriborRateTile />);
-    
+
     expect(screen.getByText('No Euribor rate data available')).toBeInTheDocument();
   });
 
@@ -152,11 +174,11 @@ describe('EuriborRateTile', () => {
       setTimeRange: vi.fn(),
       refreshData: vi.fn(),
       hasError: false,
-      hasData: true
+      hasData: true,
     });
 
     render(<EuriborRateTile />);
-    
+
     expect(screen.getByTestId('euribor-rate-header')).toBeInTheDocument();
     expect(screen.getByTestId('euribor-rate-chart')).toBeInTheDocument();
     expect(screen.getByTestId('euribor-rate-controls')).toBeInTheDocument();
@@ -171,11 +193,11 @@ describe('EuriborRateTile', () => {
       setTimeRange: vi.fn(),
       refreshData: vi.fn(),
       hasError: false,
-      hasData: true
+      hasData: true,
     });
 
     render(<EuriborRateTile />);
-    
+
     expect(screen.getByTestId('current-rate')).toHaveTextContent('3.85');
   });
 
@@ -188,11 +210,11 @@ describe('EuriborRateTile', () => {
       setTimeRange: vi.fn(),
       refreshData: vi.fn(),
       hasError: false,
-      hasData: true
+      hasData: true,
     });
 
     render(<EuriborRateTile />);
-    
+
     expect(screen.getByTestId('last-update')).toHaveTextContent('2024-01-15T10:30:00.000Z');
   });
 
@@ -205,11 +227,11 @@ describe('EuriborRateTile', () => {
       setTimeRange: vi.fn(),
       refreshData: vi.fn(),
       hasError: false,
-      hasData: true
+      hasData: true,
     });
 
     render(<EuriborRateTile />);
-    
+
     expect(screen.getByTestId('chart-data-points')).toHaveTextContent('2');
     expect(screen.getByTestId('chart-time-range')).toHaveTextContent('1Y');
   });
@@ -223,11 +245,11 @@ describe('EuriborRateTile', () => {
       setTimeRange: vi.fn(),
       refreshData: vi.fn(),
       hasError: false,
-      hasData: true
+      hasData: true,
     });
 
     render(<EuriborRateTile />);
-    
+
     expect(screen.getByTestId('controls-time-range')).toHaveTextContent('1Y');
     expect(screen.getByTestId('controls-refresh')).toBeInTheDocument();
   });
@@ -242,14 +264,14 @@ describe('EuriborRateTile', () => {
       setTimeRange: vi.fn(),
       refreshData: mockRefreshData,
       hasError: false,
-      hasData: true
+      hasData: true,
     });
 
     render(<EuriborRateTile />);
-    
+
     const refreshButton = screen.getByTestId('controls-refresh');
     fireEvent.click(refreshButton);
-    
+
     expect(mockRefreshData).toHaveBeenCalled();
   });
 
@@ -263,14 +285,14 @@ describe('EuriborRateTile', () => {
       setTimeRange: mockSetTimeRange,
       refreshData: vi.fn(),
       hasError: false,
-      hasData: true
+      hasData: true,
     });
 
     render(<EuriborRateTile />);
-    
+
     const timeRangeButton = screen.getByTestId('controls-time-1m');
     fireEvent.click(timeRangeButton);
-    
+
     expect(mockSetTimeRange).toHaveBeenCalledWith('1M');
   });
-}); 
+});

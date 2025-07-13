@@ -38,7 +38,7 @@ describe('ECB API Proxy', () => {
     await handler(req as any, res as any);
     expect(mockFetch).toHaveBeenCalledWith(
       'https://api.data.ecb.europa.eu/service/data/EXR/D.EURIBOR12MD.EUR.SP00.A',
-      expect.objectContaining({ method: 'GET' })
+      expect.objectContaining({ method: 'GET' }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
@@ -63,4 +63,4 @@ describe('ECB API Proxy', () => {
     const res = createMockResponse();
     await expect(handler(req as any, res as any)).rejects.toThrow('Network error');
   });
-}); 
+});

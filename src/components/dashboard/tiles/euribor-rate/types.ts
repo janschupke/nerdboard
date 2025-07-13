@@ -32,4 +32,4 @@ export interface EuriborRateErrorMessages {
   NETWORK_ERROR: string;
   SCRAPING_FAILED: string;
   NO_DATA: string;
-} 
+}

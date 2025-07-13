@@ -41,4 +41,4 @@ export interface MarketHours {
   nextOpen: string;
   nextClose: string;
   currentTime: string;
-} 
+}

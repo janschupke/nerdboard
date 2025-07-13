@@ -26,28 +26,22 @@ export const WeatherForecast = React.memo<WeatherForecastProps>(({ forecast }) =
       <h4 className="text-sm font-medium text-theme-primary mb-2">5-Day Forecast</h4>
       <div className="space-y-2">
         {forecast.map((day) => (
-          <div 
-            key={day.date} 
+          <div
+            key={day.date}
             className="flex items-center justify-between p-2 bg-theme-tertiary rounded"
           >
             <div className="flex items-center space-x-2">
               <WeatherIcon condition={day.conditions.icon} size="sm" />
               <div className="text-xs">
-                <div className="text-theme-primary font-medium">
-                  {formatDate(day.date)}
-                </div>
-                <div className="text-theme-secondary capitalize">
-                  {day.conditions.description}
-                </div>
+                <div className="text-theme-primary font-medium">{formatDate(day.date)}</div>
+                <div className="text-theme-secondary capitalize">{day.conditions.description}</div>
               </div>
             </div>
             <div className="text-right text-xs">
               <div className="text-theme-primary font-medium">
                 {formatTemperature(day.temperature.max)}
               </div>
-              <div className="text-theme-muted">
-                {formatTemperature(day.temperature.min)}
-              </div>
+              <div className="text-theme-muted">{formatTemperature(day.temperature.min)}</div>
             </div>
           </div>
         ))}
@@ -56,4 +50,4 @@ export const WeatherForecast = React.memo<WeatherForecastProps>(({ forecast }) =
   );
 });
 
-WeatherForecast.displayName = 'WeatherForecast'; 
+WeatherForecast.displayName = 'WeatherForecast';

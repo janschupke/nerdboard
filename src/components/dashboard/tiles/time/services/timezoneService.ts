@@ -17,10 +17,10 @@ export class TimezoneService {
     try {
       const now = new Date();
       const cityTime = new Date(now.toLocaleString('en-US', { timeZone: cityConfig.timezone }));
-      
+
       const timeData = this.calculateTimeData(cityTime, cityConfig);
       const businessStatus = this.calculateBusinessStatus(cityTime, cityConfig.businessHours);
-      
+
       return {
         ...timeData,
         isBusinessHours: businessStatus === BUSINESS_STATUS.OPEN,
@@ -34,7 +34,10 @@ export class TimezoneService {
     }
   }
 
-  private calculateTimeData(cityTime: Date, cityConfig: CityConfig): Omit<TimeData, 'isBusinessHours' | 'businessStatus' | 'timeUntilNextDay' | 'lastUpdate'> {
+  private calculateTimeData(
+    cityTime: Date,
+    cityConfig: CityConfig,
+  ): Omit<TimeData, 'isBusinessHours' | 'businessStatus' | 'timeUntilNextDay' | 'lastUpdate'> {
     const timeOptions: Intl.DateTimeFormatOptions = {
       timeZone: cityConfig.timezone,
       hour12: false,
@@ -45,10 +48,10 @@ export class TimezoneService {
 
     const currentTime = cityTime.toLocaleTimeString('en-US', timeOptions);
     const dayOfWeek = cityTime.toLocaleDateString('en-US', { weekday: 'long' });
-    const date = cityTime.toLocaleDateString('en-US', { 
-      month: 'short', 
+    const date = cityTime.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
 
     // Calculate timezone offset
@@ -58,7 +61,7 @@ export class TimezoneService {
     const offsetMs = cityTimeMs - utcTimeMs;
     const offsetHours = Math.floor(offsetMs / (1000 * 60 * 60));
     const offsetMinutes = Math.floor((offsetMs % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     const offset = `${offsetHours >= 0 ? '+' : ''}${offsetHours}:${Math.abs(offsetMinutes).toString().padStart(2, '0')}`;
 
     return {
@@ -71,7 +74,10 @@ export class TimezoneService {
     };
   }
 
-  private calculateBusinessStatus(cityTime: Date, businessHours: { start: number; end: number }): 'open' | 'closed' | 'opening soon' | 'closing soon' {
+  private calculateBusinessStatus(
+    cityTime: Date,
+    businessHours: { start: number; end: number },
+  ): 'open' | 'closed' | 'opening soon' | 'closing soon' {
     const currentHour = cityTime.getHours();
     const currentMinute = cityTime.getMinutes();
     const currentTimeInMinutes = currentHour * 60 + currentMinute;
@@ -103,7 +109,10 @@ export class TimezoneService {
     }
   }
 
-  private calculateTimeUntilNextDay(cityTime: Date, businessHours: { start: number; end: number }): string {
+  private calculateTimeUntilNextDay(
+    cityTime: Date,
+    businessHours: { start: number; end: number },
+  ): string {
     const currentHour = cityTime.getHours();
     const currentMinute = cityTime.getMinutes();
     const currentTimeInMinutes = currentHour * 60 + currentMinute;
@@ -148,7 +157,7 @@ export class TimezoneService {
     const [hours, minutes, seconds] = time.split(':').map(Number);
     const period = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-    
+
     return `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${period}`;
   }
-} 
+}

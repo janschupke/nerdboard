@@ -38,9 +38,9 @@ describe('FRED API Proxy', () => {
     await handler(req as any, res as any);
     expect(mockFetch).toHaveBeenCalledWith(
       'https://api.stlouisfed.org/series/observations?series_id=FEDFUNDS',
-      expect.objectContaining({ method: 'GET' })
+      expect.objectContaining({ method: 'GET' }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
   });
-}); 
+});

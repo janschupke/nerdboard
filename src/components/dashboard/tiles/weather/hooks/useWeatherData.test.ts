@@ -101,7 +101,7 @@ describe('useWeatherData', () => {
 
   it('should handle API errors', async () => {
     mockGetWeatherDataWithRetry.fn.mockRejectedValue(
-      new Error(WEATHER_ERROR_MESSAGES.FETCH_FAILED)
+      new Error(WEATHER_ERROR_MESSAGES.FETCH_FAILED),
     );
 
     const { result } = renderHook(() => useWeatherData('invalid-city'));
@@ -172,4 +172,4 @@ describe('useWeatherData', () => {
 
     expect(mockGetWeatherDataWithRetry.fn).toHaveBeenCalledWith('helsinki');
   });
-}); 
+});

@@ -35,6 +35,14 @@ export function Icon({ name, size = 'md', className = '' }: IconProps) {
     loading: '⟳',
     sun: '☀',
     moon: '🌙',
+
+    // Enhanced UI icons
+    clock: '🕐',
+    database: '💾',
+    'alert-circle': '⚠️',
+    chart: '📊',
+    weather: '🌤️',
+    time: '⏰',
   };
 
   const icon = iconMap[name] || '?';

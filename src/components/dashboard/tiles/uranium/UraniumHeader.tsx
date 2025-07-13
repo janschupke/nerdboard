@@ -50,9 +50,7 @@ export const UraniumHeader = React.memo<UraniumHeaderProps>(({ uraniumData, size
             currency="$"
           />
         </div>
-        <div className={`${getChangeSizeClass()} text-theme-secondary`}>
-          Uranium Spot Price
-        </div>
+        <div className={`${getChangeSizeClass()} text-theme-secondary`}>Uranium Spot Price</div>
       </div>
 
       {/* Change Indicator */}
@@ -73,11 +71,12 @@ export const UraniumHeader = React.memo<UraniumHeaderProps>(({ uraniumData, size
           </span>
         </div>
         <div className={`${getChangeSizeClass()} text-theme-muted`}>
-          ({isPositive ? '+' : ''}{uraniumData.changePercent.toFixed(2)}%)
+          ({isPositive ? '+' : ''}
+          {uraniumData.changePercent.toFixed(2)}%)
         </div>
       </div>
     </div>
   );
 });
 
-UraniumHeader.displayName = 'UraniumHeader'; 
+UraniumHeader.displayName = 'UraniumHeader';

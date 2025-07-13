@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { EuriborRateApiService } from '../services/euriborRateApi';
 import { EURIBOR_RATE_UI_CONFIG } from '../constants';
 import type { EuriborRateData, TimeRange } from '../types';
+import { getCachedData, setCachedData } from '../../../../../utils/localStorage';
+import { STORAGE_KEYS } from '../../../../../utils/constants';
 
 const apiService = new EuriborRateApiService();
 
@@ -10,32 +12,58 @@ export const useEuriborRateData = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>(EURIBOR_RATE_UI_CONFIG.DEFAULT_TIME_RANGE);
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isCached, setIsCached] = useState(false);
 
-  const loadData = useCallback(async (range: TimeRange) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const result = await apiService.getEuriborRateData(range);
-      setData(result);
-      setLastRefresh(new Date());
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load Euribor rate data';
-      setError(errorMessage);
-      console.error('Euribor rate data loading error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}euribor-rate-${timeRange}`;
 
-  const handleTimeRangeChange = useCallback((newTimeRange: TimeRange) => {
-    setTimeRange(newTimeRange);
-    loadData(newTimeRange);
-  }, [loadData]);
+  const loadData = useCallback(
+    async (range: TimeRange, forceRefresh = false) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Check cache first unless forcing refresh
+        if (!forceRefresh) {
+          const cached = getCachedData<EuriborRateData>(storageKey);
+          if (cached) {
+            setData(cached);
+            setLastUpdated(new Date());
+            setIsCached(true);
+            setLoading(false);
+            return;
+          }
+        }
+
+        const result = await apiService.getEuriborRateData(range);
+        setData(result);
+        setLastUpdated(new Date());
+        setIsCached(false);
+
+        // Cache the fresh data
+        setCachedData(storageKey, result);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to load Euribor rate data';
+        setError(errorMessage);
+        console.error('Euribor rate data loading error:', err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [storageKey],
+  );
+
+  const handleTimeRangeChange = useCallback(
+    (newTimeRange: TimeRange) => {
+      setTimeRange(newTimeRange);
+      loadData(newTimeRange);
+    },
+    [loadData],
+  );
 
   const refreshData = useCallback(() => {
-    loadData(timeRange);
+    loadData(timeRange, true);
   }, [loadData, timeRange]);
 
   // Initial data load
@@ -46,8 +74,8 @@ export const useEuriborRateData = () => {
   // Auto-refresh every 24 hours
   useEffect(() => {
     const refreshInterval = setInterval(() => {
-      if (data && lastRefresh) {
-        const hoursSinceLastRefresh = (Date.now() - lastRefresh.getTime()) / (1000 * 60 * 60);
+      if (data && lastUpdated) {
+        const hoursSinceLastRefresh = (Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60);
         if (hoursSinceLastRefresh >= 24) {
           refreshData();
         }
@@ -55,18 +83,19 @@ export const useEuriborRateData = () => {
     }, 60000); // Check every minute
 
     return () => clearInterval(refreshInterval);
-  }, [data, lastRefresh, refreshData]);
+  }, [data, lastUpdated, refreshData]);
 
   return {
     data,
     loading,
     error,
     timeRange,
-    lastRefresh,
+    lastUpdated,
+    isCached,
     setTimeRange: handleTimeRangeChange,
     refreshData,
     isLoading: loading,
     hasError: !!error,
-    hasData: !!data
+    hasData: !!data,
   };
-}; 
+};

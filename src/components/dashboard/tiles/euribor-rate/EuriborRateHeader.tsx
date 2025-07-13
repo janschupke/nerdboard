@@ -10,18 +10,18 @@ interface EuriborRateHeaderProps {
 export const EuriborRateHeader: React.FC<EuriborRateHeaderProps> = ({
   currentRate,
   lastUpdate,
-  loading = false
+  loading = false,
 }) => {
   const formatRate = (rate: number): string => {
     return `${rate.toFixed(EURIBOR_RATE_UI_CONFIG.RATE_DECIMAL_PLACES)}%`;
   };
 
   const formatLastUpdate = (date: Date): string => {
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
       day: '2-digit',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -49,4 +49,4 @@ export const EuriborRateHeader: React.FC<EuriborRateHeaderProps> = ({
       </div>
     </div>
   );
-}; 
+};

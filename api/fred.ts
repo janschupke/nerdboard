@@ -11,4 +11,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.status(apiRes.status);
   apiRes.headers.forEach((value, key) => res.setHeader(key, value));
   res.send(Buffer.from(data));
-} 
+}

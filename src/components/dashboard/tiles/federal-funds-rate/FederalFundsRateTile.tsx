@@ -3,7 +3,11 @@ import { useFederalFundsRateData } from './hooks/useFederalFundsRateData';
 import { ChartComponent } from '../ChartComponent';
 import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { Button } from '../../../ui/Button';
-import { FEDERAL_FUNDS_UI_CONFIG, FEDERAL_FUNDS_ERROR_MESSAGES, TIME_RANGE_CONFIG } from './constants';
+import {
+  FEDERAL_FUNDS_UI_CONFIG,
+  FEDERAL_FUNDS_ERROR_MESSAGES,
+  TIME_RANGE_CONFIG,
+} from './constants';
 import type { FederalFundsRateTileProps } from './types';
 
 export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(({ size, config }) => {
@@ -14,8 +18,8 @@ export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(({ siz
   // Memoize chart data to prevent unnecessary re-renders
   const chartData = useMemo(() => {
     if (!data?.historicalData) return [];
-    
-    return data.historicalData.map(item => ({
+
+    return data.historicalData.map((item) => ({
       timestamp: item.date.getTime(),
       price: item.rate,
     }));
@@ -24,10 +28,10 @@ export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(({ siz
   // Memoize the current rate change
   const rateChange = useMemo(() => {
     if (!data?.historicalData || data.historicalData.length < 2) return 0;
-    
+
     const current = data.historicalData[data.historicalData.length - 1].rate;
     const previous = data.historicalData[data.historicalData.length - 2].rate;
-    
+
     return current - previous;
   }, [data?.historicalData]);
 
@@ -64,10 +68,13 @@ export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(({ siz
         </div>
         <div className="">
           <div className="text-lg font-semibold">{data.currentRate.toFixed(2)}%</div>
-          <div className={`text-sm flex items-center space-x-1 ${rateChange >= 0 ? 'text-success-600' : 'text-error-600'}`}>
+          <div
+            className={`text-sm flex items-center space-x-1 ${rateChange >= 0 ? 'text-success-600' : 'text-error-600'}`}
+          >
             <span>{rateChange >= 0 ? '↗' : '↘'}</span>
             <span>
-              {rateChange >= 0 ? '+' : ''}{rateChange.toFixed(2)}%
+              {rateChange >= 0 ? '+' : ''}
+              {rateChange.toFixed(2)}%
             </span>
           </div>
         </div>
@@ -114,4 +121,4 @@ export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(({ siz
   );
 });
 
-FederalFundsRateTile.displayName = 'FederalFundsRateTile'; 
+FederalFundsRateTile.displayName = 'FederalFundsRateTile';

@@ -6,4 +6,4 @@ export { WeatherIcon } from './WeatherIcon';
 export { useWeatherData } from './hooks/useWeatherData';
 export { weatherApiService } from './services/weatherApi';
 export * from './types';
-export * from './constants'; 
+export * from './constants';

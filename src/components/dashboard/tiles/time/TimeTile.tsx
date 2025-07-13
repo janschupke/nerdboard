@@ -13,10 +13,7 @@ export const TimeTile = React.memo<TimeTileProps>(({ size, config }) => {
     config.timeFormat || TIME_UI_CONFIG.DEFAULT_TIME_FORMAT,
   );
 
-  const { timeData, loading, error, refetch } = useTimeData(
-    config.city,
-    config.refreshInterval,
-  );
+  const { timeData, loading, error, refetch } = useTimeData(config.city, config.refreshInterval);
 
   if (loading) {
     const tileSize = typeof size === 'string' ? size : 'medium';
@@ -68,9 +65,7 @@ export const TimeTile = React.memo<TimeTileProps>(({ size, config }) => {
       {/* Timezone and business hours info */}
       <div className="flex justify-between items-center">
         <TimezoneInfo timeData={timeData} size={size} />
-        {config.showBusinessHours !== false && (
-          <BusinessHours timeData={timeData} size={size} />
-        )}
+        {config.showBusinessHours !== false && <BusinessHours timeData={timeData} size={size} />}
       </div>
 
       {/* Last update info for large tiles */}
@@ -83,4 +78,4 @@ export const TimeTile = React.memo<TimeTileProps>(({ size, config }) => {
   );
 });
 
-TimeTile.displayName = 'TimeTile'; 
+TimeTile.displayName = 'TimeTile';

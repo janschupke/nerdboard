@@ -162,7 +162,7 @@ describe('ApiService', () => {
       expect.objectContaining({
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-api-key',
+          Authorization: 'Bearer test-api-key',
         },
       }),
     );

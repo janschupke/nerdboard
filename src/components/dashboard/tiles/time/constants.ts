@@ -52,4 +52,4 @@ export const BUSINESS_STATUS = {
   CLOSED: 'closed',
   SOON: 'opening soon',
   CLOSING: 'closing soon',
-} as const; 
+} as const;

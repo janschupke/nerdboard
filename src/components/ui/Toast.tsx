@@ -22,4 +22,4 @@ export const Toast: React.FC<ToastProps> = ({ message, visible, onClose, duratio
       {message}
     </div>
   );
-}; 
+};

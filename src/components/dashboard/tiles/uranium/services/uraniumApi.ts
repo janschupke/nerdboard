@@ -3,8 +3,8 @@ import type { UraniumPriceData, UraniumTimeRange, UraniumApiResponse } from '../
 
 // Mock data for development and fallback
 const mockUraniumData: UraniumPriceData = {
-  spotPrice: 85.50,
-  change: 2.30,
+  spotPrice: 85.5,
+  change: 2.3,
   changePercent: 2.76,
   lastUpdated: new Date().toISOString(),
   volume: 1250000,
@@ -59,7 +59,7 @@ export const uraniumApi = {
     }
 
     const data: UraniumApiResponse = await response.json();
-    
+
     return {
       spotPrice: data.spotPrice,
       change: data.change,
@@ -106,12 +106,12 @@ export const uraniumApi = {
 
   getMockData(timeRange: UraniumTimeRange): UraniumPriceData {
     // Generate mock data based on time range
-    const basePrice = 85.50;
+    const basePrice = 85.5;
     const variation = Math.random() * 10 - 5; // ±5 variation
-    
+
     // Use timeRange to determine price variation (for future implementation)
     const timeRangeMultiplier = timeRange === 'MAX' ? 1.5 : 1.0;
-    
+
     return {
       ...mockUraniumData,
       spotPrice: basePrice + variation * timeRangeMultiplier,
@@ -127,4 +127,4 @@ export const uraniumApi = {
     // For now, return mock data
     return this.getMockData('1Y');
   },
-}; 
+};

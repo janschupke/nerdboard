@@ -43,7 +43,7 @@ describe('TimeDisplay', () => {
     } as unknown as TimezoneService);
 
     render(<TimeDisplay {...defaultProps} />);
-    
+
     expect(screen.getByText('14:30:25')).toBeInTheDocument();
     expect(screen.getByText('Monday, Jan 15, 2024')).toBeInTheDocument();
   });
@@ -55,7 +55,7 @@ describe('TimeDisplay', () => {
     } as unknown as TimezoneService);
 
     render(<TimeDisplay {...defaultProps} timeFormat="12-hour" />);
-    
+
     expect(screen.getByText('02:30:25 PM')).toBeInTheDocument();
     expect(screen.getByText('Monday, Jan 15, 2024')).toBeInTheDocument();
   });
@@ -101,7 +101,7 @@ describe('TimeDisplay', () => {
     } as unknown as TimezoneService);
 
     render(<TimeDisplay {...defaultProps} timeFormat="12-hour" />);
-    
+
     expect(mockFormatTime).toHaveBeenCalledWith('14:30:25', '12-hour');
   });
 
@@ -119,7 +119,7 @@ describe('TimeDisplay', () => {
     };
 
     render(<TimeDisplay {...defaultProps} timeData={differentTimeData} />);
-    
+
     expect(screen.getByText('09:15:30')).toBeInTheDocument();
     expect(screen.getByText('Tuesday, Jan 16, 2024')).toBeInTheDocument();
   });
@@ -134,14 +134,14 @@ describe('TimeDisplay', () => {
     } as unknown as TimezoneService);
 
     render(<TimeDisplay {...defaultProps} />);
-    
+
     const container = screen.getByText('14:30:25').parentElement;
     expect(container).toHaveClass('text-center');
-    
+
     const timeElement = screen.getByText('14:30:25');
     expect(timeElement).toHaveClass('font-mono', 'font-bold', 'text-theme-primary');
-    
+
     const labelElement = screen.getByText('Monday, Jan 15, 2024');
     expect(labelElement).toHaveClass('text-theme-muted', 'mt-1');
   });
-}); 
+});

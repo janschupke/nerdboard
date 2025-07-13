@@ -11,7 +11,7 @@ import type { WeatherTileProps } from './types';
 export const WeatherTile = React.memo<WeatherTileProps>(({ size, config }) => {
   const { data, forecast, loading, error, refetch } = useWeatherData(
     config.city,
-    config.refreshInterval
+    config.refreshInterval,
   );
 
   // Get city configuration
@@ -51,7 +51,7 @@ export const WeatherTile = React.memo<WeatherTileProps>(({ size, config }) => {
         conditions={data.conditions}
         timestamp={data.timestamp}
       />
-      
+
       <WeatherCurrent
         temperature={data.temperature}
         conditions={data.conditions}
@@ -59,11 +59,9 @@ export const WeatherTile = React.memo<WeatherTileProps>(({ size, config }) => {
         wind={data.wind}
       />
 
-      {size === 'large' && (
-        <WeatherForecast forecast={forecast} />
-      )}
+      {size === 'large' && <WeatherForecast forecast={forecast} />}
     </div>
   );
 });
 
-WeatherTile.displayName = 'WeatherTile'; 
+WeatherTile.displayName = 'WeatherTile';

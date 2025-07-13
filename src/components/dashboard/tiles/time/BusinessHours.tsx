@@ -37,7 +37,9 @@ export const BusinessHours = React.memo<BusinessHoursProps>(({ timeData, size })
 
   return (
     <div className="flex flex-col items-center space-y-1">
-      <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(timeData.businessStatus)}`}>
+      <div
+        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(timeData.businessStatus)}`}
+      >
         {getStatusText(timeData.businessStatus)}
       </div>
       {timeData.businessStatus === BUSINESS_STATUS.CLOSED && timeData.timeUntilNextDay && (
@@ -49,4 +51,4 @@ export const BusinessHours = React.memo<BusinessHoursProps>(({ timeData, size })
   );
 });
 
-BusinessHours.displayName = 'BusinessHours'; 
+BusinessHours.displayName = 'BusinessHours';

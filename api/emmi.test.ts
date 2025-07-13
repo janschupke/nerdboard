@@ -38,7 +38,7 @@ describe('EMMI API Proxy', () => {
     await handler(req as any, res as any);
     expect(mockFetch).toHaveBeenCalledWith(
       'https://www.emmi-benchmarks.eu/api/euribor-rates?period=1Y&format=json',
-      expect.objectContaining({ method: 'GET' })
+      expect.objectContaining({ method: 'GET' }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
@@ -63,4 +63,4 @@ describe('EMMI API Proxy', () => {
     const res = createMockResponse();
     await expect(handler(req as any, res as any)).rejects.toThrow('Network error');
   });
-}); 
+});

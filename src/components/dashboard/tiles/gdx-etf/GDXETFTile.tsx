@@ -8,9 +8,8 @@ import { GDX_UI_CONFIG, GDX_ERROR_MESSAGES, GDX_MARKET_MESSAGES } from './consta
 import type { GDXETFTileProps } from './types';
 
 export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
-  const { data, priceHistory, loading, error, selectedPeriod, refetch, changePeriod } = useGDXETFData(
-    config.refreshInterval,
-  );
+  const { data, priceHistory, loading, error, selectedPeriod, refetch, changePeriod } =
+    useGDXETFData(config.refreshInterval);
 
   // Memoize chart data to prevent unnecessary re-renders
   const chartData = useMemo(() => {
@@ -23,14 +22,14 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
   // Memoize the trading status display
   const tradingStatusDisplay = useMemo(() => {
     if (!data) return '';
-    
+
     const statusMap = {
-      'open': GDX_MARKET_MESSAGES.MARKET_OPEN,
-      'closed': GDX_MARKET_MESSAGES.MARKET_CLOSED,
+      open: GDX_MARKET_MESSAGES.MARKET_OPEN,
+      closed: GDX_MARKET_MESSAGES.MARKET_CLOSED,
       'pre-market': GDX_MARKET_MESSAGES.PRE_MARKET,
       'after-hours': GDX_MARKET_MESSAGES.AFTER_HOURS,
     };
-    
+
     return statusMap[data.tradingStatus];
   }, [data]);
 
@@ -69,13 +68,8 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
           </div>
         </div>
         <div className="text-right">
-          <PriceDisplay
-            price={data.currentPrice}
-            changePercentage={data.priceChangePercent}
-          />
-          <div className="text-xs text-theme-muted mt-1">
-            {tradingStatusDisplay}
-          </div>
+          <PriceDisplay price={data.currentPrice} changePercentage={data.priceChangePercent} />
+          <div className="text-xs text-theme-muted mt-1">{tradingStatusDisplay}</div>
         </div>
       </div>
 
@@ -116,9 +110,7 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div>
           <span className="text-theme-muted">Volume:</span>
-          <span className="ml-1 text-theme-primary">
-            {data.volume.toLocaleString()}
-          </span>
+          <span className="ml-1 text-theme-primary">{data.volume.toLocaleString()}</span>
         </div>
         <div>
           <span className="text-theme-muted">Market Cap:</span>
@@ -128,15 +120,11 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
         </div>
         <div>
           <span className="text-theme-muted">High:</span>
-          <span className="ml-1 text-theme-primary">
-            ${data.high.toFixed(2)}
-          </span>
+          <span className="ml-1 text-theme-primary">${data.high.toFixed(2)}</span>
         </div>
         <div>
           <span className="text-theme-muted">Low:</span>
-          <span className="ml-1 text-theme-primary">
-            ${data.low.toFixed(2)}
-          </span>
+          <span className="ml-1 text-theme-primary">${data.low.toFixed(2)}</span>
         </div>
       </div>
 
@@ -148,4 +136,4 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
   );
 });
 
-GDXETFTile.displayName = 'GDXETFTile'; 
+GDXETFTile.displayName = 'GDXETFTile';
