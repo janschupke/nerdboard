@@ -1,16 +1,21 @@
-import React from 'react';
+
 import { TileType } from '../../types/dashboard';
 import { Button } from '../ui/Button';
-import { Icon } from '../ui/Icon';
+import { SidebarItem } from './SidebarItem';
+import { useDashboard } from '../../hooks/useDashboard';
+import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
+import { useEffect, useMemo, useCallback, useState } from 'react';
+import { sidebarStorage } from '../../utils/sidebarStorage';
 
 interface SidebarProps {
-  isOpen: boolean;
   onToggle: () => void;
-  onTileSelect: (tileType: TileType) => void;
 }
 
-export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
-  const availableTiles = [
+export function Sidebar({ onToggle }: SidebarProps) {
+  const { isTileActive, addTile, removeTile, isInitialized } = useDashboard();
+  const [storageError, setStorageError] = useState<string | null>(null);
+
+  const availableTiles = useMemo(() => [
     {
       type: TileType.CRYPTOCURRENCY,
       name: 'Cryptocurrency',
@@ -83,87 +88,158 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
       description: 'Real-time uranium price tracking and market data',
       icon: 'chart',
     },
-  ];
+  ], []);
+
+  const itemIds = useMemo(() => availableTiles.map(tile => tile.type), [availableTiles]);
+
+  // Persist collapse state in localStorage
+  const getInitialCollapsed = () => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('sidebar-collapsed');
+      return stored === 'true' ? true : false;
+    }
+    return false;
+  };
+
+  const handleSidebarToggle = useCallback((collapse: boolean) => {
+    localStorage.setItem('sidebar-collapsed', collapse ? 'true' : 'false');
+    onToggle();
+  }, [onToggle]);
+
+  const handleTileToggle = useCallback(async (tileType: TileType) => {
+    if (isTileActive(tileType)) {
+      await removeTile(tileType);
+    } else {
+      await addTile(tileType);
+    }
+  }, [isTileActive, addTile, removeTile]);
+
+  const {
+    selectedIndex,
+    isSidebarCollapsed,
+  } = useKeyboardNavigation<TileType>(
+    itemIds,
+    handleTileToggle,
+    handleSidebarToggle,
+    getInitialCollapsed()
+  );
+
+  // Load sidebar collapse state on mount
+  useEffect(() => {
+    const loadCollapseState = async () => {
+      if (!isInitialized) return;
+      
+      try {
+        const savedState = await sidebarStorage.loadSidebarState();
+        if (savedState && savedState.isCollapsed !== isSidebarCollapsed) {
+          // Trigger sidebar toggle if state doesn't match
+          handleSidebarToggle(savedState.isCollapsed);
+        }
+      } catch (error) {
+        console.error('Failed to load sidebar collapse state:', error);
+        setStorageError('Failed to load sidebar preferences');
+      }
+    };
+
+    loadCollapseState();
+  }, [isInitialized, isSidebarCollapsed, handleSidebarToggle]);
+
+  // Save sidebar collapse state when it changes
+  useEffect(() => {
+    const saveCollapseState = async () => {
+      if (!isInitialized) return;
+      
+      try {
+        const currentState = await sidebarStorage.loadSidebarState();
+        if (currentState) {
+          await sidebarStorage.saveSidebarState({
+            ...currentState,
+            isCollapsed: isSidebarCollapsed,
+            lastUpdated: Date.now(),
+          });
+        }
+      } catch (error) {
+        console.error('Failed to save sidebar collapse state:', error);
+        setStorageError('Failed to save sidebar preferences');
+      }
+    };
+
+    saveCollapseState();
+  }, [isSidebarCollapsed, isInitialized]);
+
+  // Announce selection changes to screen readers
+  useEffect(() => {
+    const selectedItem = availableTiles[selectedIndex];
+    if (selectedItem) {
+      const announcement = `Selected ${selectedItem.name} tile`;
+      const liveRegion = document.getElementById('keyboard-announcements');
+      if (liveRegion) {
+        liveRegion.textContent = announcement;
+      }
+    }
+  }, [selectedIndex, availableTiles]);
 
   return (
-    <aside
-      role="complementary"
-      aria-label="Tile catalog sidebar"
-      className={`h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out flex-shrink-0
-        ${isOpen ? 'w-64' : 'w-0'}
-      `}
-    >
-      <div className="flex flex-col h-full w-64">
-        {/* Tile Catalog */}
-        <div className="flex-1 p-4 overflow-y-auto">
-          <h2 className="text-lg font-semibold text-theme-primary mb-4" id="tiles-heading">
-            Available Tiles
-          </h2>
-          <div
-            className="space-y-3"
-            role="listbox"
-            aria-labelledby="tiles-heading"
-            aria-label="Available dashboard tiles"
-          >
-            {availableTiles.map((tile) => (
-              <div
-                key={tile.type}
-                className="p-3 border border-theme-primary rounded-lg hover:border-accent-primary hover:bg-accent-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2"
-                onClick={() => {
-                  onTileSelect(tile.type);
-                }}
-                role="button"
-                aria-selected="false"
-                tabIndex={0}
-                data-tile-type={tile.type}
-                draggable={true}
-                onDragStart={(e) => {
-                  e.dataTransfer.setData('application/nerdboard-tile-type', tile.type);
-                  e.dataTransfer.effectAllowed = 'copy';
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onTileSelect(tile.type);
-                  }
-                }}
-                aria-label={`Add ${tile.name} tile to dashboard`}
-                title={`Add ${tile.name} tile to dashboard`}
-              >
-                <div className="flex items-center space-x-2">
-                  <div className="flex-shrink-0">
-                    <Icon
-                      name={tile.icon}
-                      size="sm"
-                      className="text-accent-primary"
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-theme-primary truncate">{tile.name}</h3>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <Icon name="add" size="sm" className="text-theme-tertiary" aria-hidden="true" />
-                  </div>
-                </div>
+    <>
+      <aside
+        role="complementary"
+        aria-label="Tile catalog sidebar"
+        className={`h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out flex-shrink-0 ${isSidebarCollapsed ? 'w-0' : 'w-64'}`}
+      >
+        <div className="flex flex-col h-full w-64">
+          {/* Tile Catalog */}
+          <div className="flex-1 p-4 overflow-y-auto">
+            <h2 className="text-lg font-semibold text-theme-primary mb-4" id="tiles-heading">
+              Available Tiles ({availableTiles.length})
+            </h2>
+            {storageError && (
+              <div className="mb-4 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                {storageError}
+                <button
+                  onClick={() => setStorageError(null)}
+                  className="ml-2 text-red-500 hover:text-red-700"
+                  aria-label="Dismiss error"
+                >
+                  ×
+                </button>
               </div>
-            ))}
+            )}
+            <div
+              className="space-y-3"
+              role="listbox"
+              aria-labelledby="tiles-heading"
+              aria-label="Available dashboard tiles"
+            >
+              {availableTiles.map((tile, idx) => (
+                <SidebarItem
+                  key={tile.type}
+                  tileType={tile.type}
+                  name={tile.name}
+                  icon={tile.icon}
+                  isActive={isTileActive(tile.type)}
+                  isSelected={selectedIndex === idx}
+                  onClick={() => handleTileToggle(tile.type)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="p-4 border-t border-theme-primary">
+            <Button
+              variant="primary"
+              size="sm"
+              className="w-full"
+              onClick={() => handleSidebarToggle(!isSidebarCollapsed)}
+              aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {isSidebarCollapsed ? 'Expand' : 'Close'}
+            </Button>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-theme-primary">
-          <Button
-            variant="primary"
-            size="sm"
-            className="w-full"
-            onClick={onToggle}
-            aria-label="Close sidebar"
-          >
-            Close
-          </Button>
-        </div>
-      </div>
-    </aside>
+      </aside>
+      {/* Live region for screen reader announcements */}
+      <div id="keyboard-announcements" className="sr-only" aria-live="polite" aria-atomic="true" />
+    </>
   );
 }

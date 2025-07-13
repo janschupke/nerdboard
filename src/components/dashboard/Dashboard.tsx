@@ -1,10 +1,8 @@
-import React, { useCallback } from 'react';
 import { DashboardProvider } from '../../contexts/DashboardContext';
 import { TileGrid } from './TileGrid';
 import { Sidebar } from './Sidebar';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { Icon } from '../ui/Icon';
-import { TileType } from '../../types/dashboard';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
 import { useContext } from 'react';
@@ -21,20 +19,9 @@ function DashboardContent() {
     throw new Error('DashboardContent must be used within DashboardProvider');
   }
 
-  const { state, addTile, toggleCollapse, refreshAllTiles, isRefreshing } = dashboardContext;
-  const { tiles = [], isCollapsed = false } = state?.layout || {};
+  const { state, toggleCollapse, refreshAllTiles, isRefreshing } = dashboardContext;
+  const { tiles = [] } = state?.layout || {};
   const { theme, toggleTheme } = useTheme();
-
-  /**
-   * Handles tile selection from the sidebar
-   * @param {TileType} tileType - The type of tile to add
-   */
-  const handleTileSelect = useCallback(
-    (tileType: TileType) => {
-      addTile(tileType);
-    },
-    [addTile],
-  );
 
   return (
     <div className="h-screen w-full flex flex-col bg-theme-primary overflow-hidden">
@@ -73,7 +60,7 @@ function DashboardContent() {
       {/* Main Content Area - Fixed positioning */}
       <div className="flex h-full pt-16 relative">
         {/* Fixed Sidebar */}
-        <Sidebar isOpen={!isCollapsed} onToggle={toggleCollapse} onTileSelect={handleTileSelect} />
+        <Sidebar onToggle={toggleCollapse} />
 
         {/* Scrollable Dashboard Content */}
         <main className="flex-1 overflow-auto relative">

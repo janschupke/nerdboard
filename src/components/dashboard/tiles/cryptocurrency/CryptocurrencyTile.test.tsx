@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { CryptocurrencyTile } from './CryptocurrencyTile';
 import { TileSize } from '../../../../types/dashboard';
 import * as coinGeckoApiModule from '../../../../services/coinGeckoApi';
+import { DashboardProvider } from '../../../../contexts/DashboardContext';
 
 type Coin = {
   id: string;
@@ -54,8 +55,12 @@ describe('CryptocurrencyTile', () => {
     vi.useRealTimers();
   });
 
+  const renderWithProvider = (component: React.ReactElement) => {
+    return render(<DashboardProvider>{component}</DashboardProvider>);
+  };
+
   it('renders loading state', () => {
-    render(<CryptocurrencyTile {...baseProps} />);
+    renderWithProvider(<CryptocurrencyTile {...baseProps} />);
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
@@ -81,7 +86,7 @@ describe('CryptocurrencyTile', () => {
         last_updated: '2024-07-12T23:00:00Z',
       },
     ];
-    const { container } = render(<CryptocurrencyTile {...baseProps} />);
+    const { container } = renderWithProvider(<CryptocurrencyTile {...baseProps} />);
     await waitFor(
       () => {
         expect(container.textContent?.toLowerCase()).toMatch(/bitcoin/);
@@ -93,7 +98,7 @@ describe('CryptocurrencyTile', () => {
 
   it('renders error state', async () => {
     mockRejectedValue = new Error('Failed to load cryptocurrency data');
-    const { container } = render(<CryptocurrencyTile {...baseProps} />);
+    const { container } = renderWithProvider(<CryptocurrencyTile {...baseProps} />);
     await waitFor(
       () => {
         expect(container.textContent?.toLowerCase()).toMatch(/failed to load cryptocurrency data/);

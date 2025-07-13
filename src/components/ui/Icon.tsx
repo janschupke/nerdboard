@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 interface IconProps {
   name: string;
@@ -34,6 +34,7 @@ export function Icon({ name, size = 'md', className = '' }: IconProps) {
     refresh: '↻',
     error: '⚠',
     success: '✓',
+    check: '✓',
     loading: '⟳',
     sun: '☀',
     moon: '🌙',

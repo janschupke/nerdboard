@@ -11,6 +11,8 @@ import { GDXETFTile } from './tiles/gdx-etf/GDXETFTile';
 import { TimeTile } from './tiles/time/TimeTile';
 import { UraniumTile } from './tiles/uranium/UraniumTile';
 import { getTileSpan } from '../../constants/gridSystem';
+import { useDashboard } from '../../hooks/useDashboard';
+import { useCallback } from 'react';
 
 interface TileProps {
   tile: DashboardTile;
@@ -31,6 +33,17 @@ export function Tile({
   error,
   className,
 }: TileProps) {
+  const { removeTile } = useDashboard();
+
+  const handleRemove = useCallback(async () => {
+    try {
+      onRemove?.(tile.id);
+      await removeTile(tile.id);
+    } catch {
+      // Optionally show a toast or error message
+    }
+  }, [tile.id, removeTile, onRemove]);
+
   const renderTileContent = () => {
     const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
     const config = tile.config || {};
@@ -201,7 +214,7 @@ export function Tile({
       {/* Close Button - Positioned in top right corner */}
       {onRemove && (
         <button
-          onClick={() => onRemove(tile.id)}
+          onClick={handleRemove}
           className="absolute top-1 right-1 p-1 text-theme-tertiary hover:text-theme-primary hover:bg-theme-tertiary rounded transition-colors cursor-pointer z-10"
           aria-label={`Remove ${getTileTitle()} tile`}
           onMouseDown={(e) => e.stopPropagation()}

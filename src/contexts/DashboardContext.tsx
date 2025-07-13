@@ -1,8 +1,9 @@
-import React, { createContext, useReducer, useCallback, useMemo } from 'react';
+import React, { createContext, useReducer, useCallback, useMemo, useEffect } from 'react';
 import type { DashboardTile, TileType } from '../types/dashboard';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Toast } from '../components/ui/Toast';
 import { getTileSpan } from '../constants/gridSystem';
+import { sidebarStorage } from '../utils/sidebarStorage';
 
 interface DashboardState {
   layout: {
@@ -25,14 +26,20 @@ type DashboardAction =
 
 interface DashboardContextType {
   state: DashboardState;
-  addTile: (tileType: TileType) => void;
-  removeTile: (id: string) => void;
+  addTile: (tileType: TileType) => Promise<void>;
+  removeTile: (id: string | TileType) => Promise<void>;
   updateTile: (id: string, updates: Partial<DashboardTile>) => void;
   moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
+  reorderTiles: (tiles: DashboardTile[]) => void;
   toggleCollapse: () => void;
   refreshAllTiles: () => void;
   isRefreshing: boolean;
   lastRefreshTime: Date | null;
+  isTileActive: (tileType: TileType) => boolean;
+  getActiveTileTypes: () => TileType[];
+  isInitialized: boolean;
+  saveSidebarState: () => Promise<void>;
+  loadSidebarState: () => Promise<void>;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -113,6 +120,9 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
     defaultState,
   );
 
+  // Add initialization state
+  const [isInitialized, setIsInitialized] = React.useState(false);
+
   // Validate and normalize stored state
   const validatedState: DashboardState = React.useMemo(() => {
     if (!storedState || typeof storedState !== 'object') {
@@ -155,19 +165,61 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
     visible: false,
   });
 
-  // Save state to localStorage whenever it changes
-  React.useEffect(() => {
-    setStoredState(state);
-  }, [state, setStoredState]);
-
   const showToast = useCallback((message: string) => {
     setToast({ message, visible: true });
   }, []);
 
   const hideToast = useCallback(() => setToast({ ...toast, visible: false }), [toast]);
 
+  // Load sidebar state on mount
+  useEffect(() => {
+    const initializeSidebarState = async () => {
+      try {
+        const savedSidebarState = await sidebarStorage.loadSidebarState();
+        if (savedSidebarState) {
+          // Note: We don't restore tiles here as they're managed by the dashboard state
+          // The sidebar will use this information for visual state
+        }
+      } catch (error) {
+        console.error('Failed to initialize sidebar state:', error);
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+
+    initializeSidebarState();
+  }, []);
+
+  // Save state to localStorage whenever it changes
+  React.useEffect(() => {
+    setStoredState(state);
+  }, [state, setStoredState]);
+
+  // Debounced save of sidebar state
+  React.useEffect(() => {
+    if (!isInitialized) return;
+
+    const saveSidebarState = async () => {
+      try {
+        const activeTileTypes = state.layout.tiles.map(tile => tile.type);
+        await sidebarStorage.saveSidebarState({
+          activeTiles: activeTileTypes,
+          isCollapsed: state.layout.isCollapsed,
+          lastUpdated: Date.now(),
+        });
+      } catch (error) {
+        console.error('Failed to save sidebar state:', error);
+        showToast('Failed to save sidebar preferences');
+      }
+    };
+
+    // Debounce save operations
+    const timeoutId = setTimeout(saveSidebarState, 500);
+    return () => clearTimeout(timeoutId);
+  }, [state.layout.tiles, state.layout.isCollapsed, isInitialized, showToast]);
+
   const addTile = useCallback(
-    (tileType: TileType) => {
+    async (tileType: TileType) => {
       // Prevent duplicate tiles of the same type
       const hasDuplicate = state.layout.tiles.some((tile) => tile.type === tileType);
 
@@ -237,70 +289,18 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
   );
 
   const removeTile = useCallback(
-    (id: string) => {
-      dispatch({ type: 'REMOVE_TILE', payload: id });
-
-      // Trigger compaction after removal
-      setTimeout(() => {
-        const updatedTiles = state.layout.tiles.filter((tile) => tile.id !== id);
-        if (updatedTiles.length > 0) {
-          // Reposition all remaining tiles to fill gaps
-          const GRID_ROWS = 12;
-          const GRID_COLUMNS = 8;
-          const grid = Array(GRID_ROWS)
-            .fill(null)
-            .map(() => Array(GRID_COLUMNS).fill(false));
-          const repositionedTiles: DashboardTile[] = [];
-
-          updatedTiles.forEach((tile) => {
-            const size = typeof tile.size === 'string' ? tile.size : 'medium';
-            const { colSpan, rowSpan } = getTileSpan(size);
-
-            // Find first available position
-            let newPosition = { x: 0, y: 0 };
-            outer: for (let y = 0; y <= GRID_ROWS - rowSpan; y++) {
-              for (let x = 0; x <= GRID_COLUMNS - colSpan; x++) {
-                let canPlace = true;
-                for (let i = y; i < y + rowSpan; i++) {
-                  for (let j = x; j < x + colSpan; j++) {
-                    if (grid[i] && grid[i][j]) {
-                      canPlace = false;
-                      break;
-                    }
-                  }
-                  if (!canPlace) break;
-                }
-                if (canPlace) {
-                  newPosition = { x, y };
-                  break outer;
-                }
-              }
-            }
-
-            // Mark position as occupied
-            for (let i = newPosition.y; i < newPosition.y + rowSpan; i++) {
-              for (let j = newPosition.x; j < newPosition.x + colSpan; j++) {
-                if (grid[i] && grid[i][j] !== undefined) {
-                  grid[i][j] = true;
-                }
-              }
-            }
-
-            repositionedTiles.push({
-              ...tile,
-              position: newPosition,
-            });
-          });
-
-          // Update all tiles with new positions
-          repositionedTiles.forEach((tile) => {
-            dispatch({
-              type: 'UPDATE_TILE',
-              payload: { id: tile.id, updates: { position: tile.position } },
-            });
-          });
-        }
-      }, 0);
+    async (tileTypeOrId: string | TileType) => {
+      // Accept either a tile id or a tile type
+      let tileId = tileTypeOrId;
+      if (typeof tileTypeOrId !== 'string') {
+        // Find the first tile with this type
+        const found = state.layout.tiles.find((tile) => tile.type === tileTypeOrId);
+        if (found) tileId = found.id;
+        else return;
+      }
+      dispatch({ type: 'REMOVE_TILE', payload: tileId });
+      // Optionally, add a small delay for smooth UX
+      await new Promise((resolve) => setTimeout(resolve, 100));
     },
     [state.layout.tiles],
   );
@@ -333,6 +333,41 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
     dispatch({ type: 'REORDER_TILES', payload: tiles });
   }, []);
 
+  const isTileActive = useCallback((tileType: TileType) => {
+    return state.layout.tiles.some((tile) => tile.type === tileType);
+  }, [state.layout.tiles]);
+
+  const getActiveTileTypes = useCallback(() => {
+    return state.layout.tiles.map((tile) => tile.type);
+  }, [state.layout.tiles]);
+
+  const saveSidebarState = useCallback(async () => {
+    try {
+      const activeTileTypes = state.layout.tiles.map(tile => tile.type);
+      await sidebarStorage.saveSidebarState({
+        activeTiles: activeTileTypes,
+        isCollapsed: state.layout.isCollapsed,
+        lastUpdated: Date.now(),
+      });
+    } catch (error) {
+      console.error('Failed to save sidebar state:', error);
+      throw error;
+    }
+  }, [state.layout.tiles, state.layout.isCollapsed]);
+
+  const loadSidebarState = useCallback(async () => {
+    try {
+      const savedState = await sidebarStorage.loadSidebarState();
+      if (savedState) {
+        // Note: We don't restore tiles here as they're managed by the dashboard state
+        // The sidebar will use this information for visual state
+      }
+    } catch (error) {
+      console.error('Failed to load sidebar state:', error);
+      throw error;
+    }
+  }, []);
+
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(
     () => ({
@@ -346,6 +381,11 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       refreshAllTiles,
       isRefreshing: state.isRefreshing,
       lastRefreshTime: state.lastRefreshTime,
+      isTileActive,
+      getActiveTileTypes,
+      isInitialized,
+      saveSidebarState,
+      loadSidebarState,
     }),
     [
       state,
@@ -356,6 +396,11 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       reorderTiles,
       toggleCollapse,
       refreshAllTiles,
+      isTileActive,
+      getActiveTileTypes,
+      isInitialized,
+      saveSidebarState,
+      loadSidebarState,
     ],
   );
 

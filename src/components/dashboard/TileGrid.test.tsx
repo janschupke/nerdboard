@@ -411,11 +411,15 @@ describe('TileGrid', () => {
       vi.spyOn(grid, 'getBoundingClientRect').mockReturnValue(gridRect as DOMRect);
       vi.spyOn(grid, 'querySelectorAll').mockReturnValue({
         length: 1,
-        item: (_index: number) => ({ getBoundingClientRect: () => tileRect as DOMRect } as Element),
+        item: () => ({ getBoundingClientRect: () => tileRect as DOMRect } as Element),
         [Symbol.iterator]: function* () {
           yield { getBoundingClientRect: () => tileRect as DOMRect } as Element;
-        }
-      } as NodeListOf<Element>);
+        },
+        forEach: () => {},
+        entries: () => [],
+        keys: () => [],
+        values: () => []
+      } as unknown as NodeListOf<Element>);
       
       // Simulate drag over at a specific Y position with a mock dataTransfer
       fireEvent.dragOver(grid, {

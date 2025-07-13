@@ -27,6 +27,7 @@ A modern dashboard application built with React 19, TypeScript, and Vite that di
 - **Performance**: Optimized components with React.memo and useMemo
 - **Theme Support**: Light and dark theme with custom Tailwind configuration
 - **Local Storage**: Automatic persistence of dashboard configuration
+- **Sidebar state persistence and tile count display**: Sidebar saves active tiles and collapse state to local storage, restores preferences, and displays total tile count with robust error handling and accessibility.
 
 ## Development
 
