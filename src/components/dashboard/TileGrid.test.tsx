@@ -1,19 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { TileGrid } from './TileGrid';
-
-// Mock useDashboard hook
-vi.mock('../../hooks/useDashboard', () => ({
-  useDashboard: () => ({
-    layout: {
-      tiles: [],
-      isCollapsed: false,
-      theme: 'light',
-    },
-    removeTile: vi.fn(),
-    addTile: vi.fn(),
-  }),
-}));
+import { DashboardProvider } from '../../contexts/DashboardContext';
 
 // Mock Tile component
 vi.mock('./Tile', () => ({
@@ -35,7 +23,11 @@ vi.mock('./DraggableTile', () => ({
 
 describe('TileGrid', () => {
   it('renders empty state when no tiles', () => {
-    render(<TileGrid />);
+    render(
+      <DashboardProvider>
+        <TileGrid />
+      </DashboardProvider>
+    );
 
     expect(screen.getByText('Welcome to Nerdboard')).toBeInTheDocument();
     expect(screen.getByText('Add tiles from the sidebar to get started')).toBeInTheDocument();
@@ -43,14 +35,22 @@ describe('TileGrid', () => {
   });
 
   it.skip('renders empty state with correct styling', () => {
-    render(<TileGrid />);
+    render(
+      <DashboardProvider>
+        <TileGrid />
+      </DashboardProvider>
+    );
 
     const container = screen.getByText('Welcome to Nerdboard').closest('div');
     expect(container).toHaveClass('flex', 'items-center', 'justify-center', 'h-full');
   });
 
   it('renders empty state with theme classes', () => {
-    render(<TileGrid />);
+    render(
+      <DashboardProvider>
+        <TileGrid />
+      </DashboardProvider>
+    );
 
     const heading = screen.getByText('Welcome to Nerdboard');
     expect(heading).toHaveClass('text-theme-primary');
@@ -60,7 +60,11 @@ describe('TileGrid', () => {
   });
 
   it('renders with correct layout structure', () => {
-    render(<TileGrid />);
+    render(
+      <DashboardProvider>
+        <TileGrid />
+      </DashboardProvider>
+    );
 
     const mainContainer = screen.getByText('Welcome to Nerdboard').closest('div')?.parentElement;
     expect(mainContainer).toHaveClass('flex', 'items-center', 'justify-center', 'h-full');

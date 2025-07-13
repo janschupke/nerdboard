@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Tile } from './Tile';
-import type { TileConfig, TileType } from '../../types/dashboard';
+import type { DashboardTile } from '../../types/dashboard';
 
 // Mock Icon component
 vi.mock('../ui/Icon', () => ({
@@ -26,7 +26,7 @@ vi.mock('./tiles/precious-metals/PreciousMetalsTile', () => ({
 }));
 
 describe('Tile', () => {
-  const mockTile: TileConfig = {
+  const mockTile: DashboardTile = {
     id: 'test-tile-1',
     type: 'cryptocurrency',
     position: { x: 0, y: 0 },
@@ -52,7 +52,7 @@ describe('Tile', () => {
   });
 
   it('renders precious metals tile correctly', () => {
-    const metalsTile: TileConfig = {
+    const metalsTile: DashboardTile = {
       id: 'test-tile-2',
       type: 'precious_metals',
       position: { x: 1, y: 0 },
@@ -68,7 +68,7 @@ describe('Tile', () => {
   });
 
   it('applies correct size styles', () => {
-    const largeTile: TileConfig = {
+    const largeTile: DashboardTile = {
       ...mockTile,
       size: 'large',
     };
@@ -118,11 +118,11 @@ describe('Tile', () => {
   });
 
   it('renders unknown tile type with loading state', () => {
-    const unknownTile: TileConfig = {
+    const unknownTile: DashboardTile = {
       id: 'test-tile-3',
-      type: 'unknown' as TileType,
-      position: { x: 2, y: 0 },
-      size: 'small',
+      type: 'unknown' as DashboardTile['type'],
+      position: { x: 0, y: 0 },
+      size: 'medium',
       config: {},
     };
 

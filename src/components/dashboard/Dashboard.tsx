@@ -1,12 +1,12 @@
 import { DashboardProvider } from '../../contexts/DashboardContext';
 import { TileGrid } from './TileGrid';
 import { Sidebar } from './Sidebar';
-import { useDashboard } from '../../hooks/useDashboard';
+import { DashboardContext } from '../../contexts/DashboardContext';
 import { Icon } from '../ui/Icon';
-import { UI_CONFIG } from '../../utils/constants';
 import { TileType } from '../../types/dashboard';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
+import { useContext } from 'react';
 
 /**
  * Main dashboard content component that renders the dashboard layout
@@ -15,7 +15,12 @@ import { useTheme } from '../../hooks/useTheme';
  * @returns {JSX.Element} The dashboard content component
  */
 function DashboardContent() {
-  const { layout, addTile, toggleCollapse } = useDashboard();
+  const dashboardContext = useContext(DashboardContext);
+  if (!dashboardContext) {
+    throw new Error('DashboardContent must be used within DashboardProvider');
+  }
+  
+  const { layout, addTile, toggleCollapse } = dashboardContext;
   const { tiles, isCollapsed } = layout;
   const { theme, toggleTheme } = useTheme();
 
@@ -28,11 +33,9 @@ function DashboardContent() {
   };
 
   return (
-    <div
-      className={`min-h-screen w-full flex flex-col bg-theme-primary transition-all duration-${UI_CONFIG.TRANSITION_DURATION}`}
-    >
-      {/* Header - Full Width */}
-      <header className="bg-surface-primary border-b border-theme-primary px-4 py-3 flex items-center justify-between w-full">
+    <div className="h-screen w-full flex flex-col bg-theme-primary overflow-hidden">
+      {/* Fixed Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-surface-primary border-b border-theme-primary px-4 py-3 flex items-center justify-between h-16">
         <div className="flex items-center space-x-3">
           <button
             onClick={toggleCollapse}
@@ -55,18 +58,14 @@ function DashboardContent() {
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex">
-        {/* Sidebar */}
+      {/* Main Content Area - Fixed positioning */}
+      <div className="flex h-full pt-16">
+        {/* Fixed Sidebar */}
         <Sidebar isOpen={!isCollapsed} onToggle={toggleCollapse} onTileSelect={handleTileSelect} />
 
-        {/* Tile Grid */}
-        <main
-          className={`flex-1 overflow-hidden relative transition-all duration-${UI_CONFIG.TRANSITION_DURATION}`}
-        >
-          <div className="h-full overflow-auto">
-            <TileGrid />
-          </div>
+        {/* Scrollable Dashboard Content */}
+        <main className="flex-1 overflow-auto">
+          <TileGrid />
         </main>
       </div>
     </div>

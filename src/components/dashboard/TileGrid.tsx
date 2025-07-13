@@ -1,24 +1,55 @@
-import { useDashboard } from '../../hooks/useDashboard';
+import { DashboardContext } from '../../contexts/DashboardContext';
 import { Tile } from './Tile';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 
 export function TileGrid() {
-  const { layout, removeTile, addTile } = useDashboard();
+  const dashboardContext = useContext(DashboardContext);
+  if (!dashboardContext) {
+    throw new Error('TileGrid must be used within DashboardProvider');
+  }
+  
+  const { layout, removeTile, addTile } = dashboardContext;
   const { tiles } = layout;
   const [isDragOver, setIsDragOver] = useState(false);
 
   if (tiles.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full" aria-label="Dashboard grid">
-        <div className="text-center">
-          <div className="text-6xl mb-4" role="img" aria-label="Dashboard icon">
-            📊
+      <div className="relative h-full" aria-label="Dashboard grid">
+        {/* Welcome Message */}
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="text-6xl mb-4" role="img" aria-label="Dashboard icon">
+              📊
+            </div>
+            <h2 className="text-xl font-semibold text-theme-primary mb-2">Welcome to Nerdboard</h2>
+            <p className="text-theme-secondary mb-4">Add tiles from the sidebar to get started</p>
+            <div className="text-sm text-theme-tertiary">
+              Click the menu button to open the sidebar
+            </div>
           </div>
-          <h2 className="text-xl font-semibold text-theme-primary mb-2">Welcome to Nerdboard</h2>
-          <p className="text-theme-secondary mb-4">Add tiles from the sidebar to get started</p>
-          <div className="text-sm text-theme-tertiary">
-            Click the menu button to open the sidebar
-          </div>
+        </div>
+        
+        {/* Full-size drag target overlay */}
+        <div
+          className="absolute inset-0 z-10"
+          onDragOver={(e) => {
+            if (e.dataTransfer.types.includes('application/nerdboard-tile-type')) {
+              e.preventDefault();
+              setIsDragOver(true);
+            }
+          }}
+          onDrop={(e) => {
+            setIsDragOver(false);
+            const tileType = e.dataTransfer.getData('application/nerdboard-tile-type');
+            if (tileType) {
+              addTile(tileType as import('../../types/dashboard').TileType);
+            }
+          }}
+          onDragLeave={() => setIsDragOver(false)}
+        >
+          {isDragOver && (
+            <div className="absolute inset-0 bg-accent-muted opacity-30 pointer-events-none z-10 rounded-lg ring-4 ring-accent-primary" />
+          )}
         </div>
       </div>
     );
@@ -45,7 +76,7 @@ export function TileGrid() {
 
   return (
     <div
-      className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 auto-rows-min relative ${isDragOver ? 'ring-4 ring-accent-primary' : ''}`}
+      className={`h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 auto-rows-min relative ${isDragOver ? 'ring-4 ring-accent-primary' : ''}`}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onDragLeave={handleDragLeave}

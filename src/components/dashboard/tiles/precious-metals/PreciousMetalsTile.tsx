@@ -34,7 +34,8 @@ export const PreciousMetalsTile = React.memo<PreciousMetalsTileProps>(({ size, c
   }, [selectedMetal]);
 
   if (loading) {
-    return <LoadingSkeleton tileSize={size} />;
+    const tileSize = typeof size === 'string' ? size : 'medium';
+    return <LoadingSkeleton tileSize={tileSize as 'small' | 'medium' | 'large'} />;
   }
 
   if (error) {

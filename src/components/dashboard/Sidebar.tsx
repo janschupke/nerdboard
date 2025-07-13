@@ -1,7 +1,6 @@
 import { TileType } from '../../types/dashboard';
 import { Button } from '../ui/Button';
 import { Icon } from '../ui/Icon';
-import { UI_CONFIG } from '../../utils/constants';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -29,7 +28,7 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
     <aside
       role="complementary"
       aria-label="Tile catalog sidebar"
-      className={`h-screen bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-${UI_CONFIG.TRANSITION_DURATION} ease-in-out w-64 flex-shrink-0
+      className={`h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out w-64 flex-shrink-0
         ${isOpen ? 'translate-x-0' : '-translate-x-64'}
       `}
       style={{ minWidth: isOpen ? 256 : 0, width: isOpen ? 256 : 0, overflow: 'hidden' }}

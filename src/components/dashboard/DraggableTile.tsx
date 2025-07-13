@@ -1,12 +1,13 @@
 import { useRef } from 'react';
-import type { TileConfig, TileSize } from '../../types/dashboard';
+import type { DashboardTile, TileSize } from '../../types/dashboard';
 import { Icon } from '../ui/Icon';
 import { useTileResize } from '../../hooks/useTileResize';
-import { useDashboard } from '../../hooks/useDashboard';
+import { DashboardContext } from '../../contexts/DashboardContext';
 import { Tile } from './Tile';
+import { useContext } from 'react';
 
 interface DraggableTileProps {
-  tile: TileConfig;
+  tile: DashboardTile;
   index: number;
   children: React.ReactNode;
   onMove: (from: number, to: number) => void;
@@ -14,9 +15,14 @@ interface DraggableTileProps {
 
 export function DraggableTile({ tile, index, children, onMove }: DraggableTileProps) {
   const tileRef = useRef<HTMLDivElement>(null);
-  const { updateTileConfig } = useDashboard();
+  const dashboardContext = useContext(DashboardContext);
+  if (!dashboardContext) {
+    throw new Error('DraggableTile must be used within DashboardProvider');
+  }
+  
+  const { updateTile } = dashboardContext;
   const { startResize, updateResize, endResize } = useTileResize((tileId, newSize) => {
-    updateTileConfig(tileId, { size: newSize });
+    updateTile(tileId, { size: newSize as 'small' | 'medium' | 'large' });
   });
 
   // Drag and drop for reordering
@@ -45,7 +51,8 @@ export function DraggableTile({ tile, index, children, onMove }: DraggableTilePr
   // --- Resize logic ---
   const handleResizeMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
-    startResize(tile.id, 'both', tile.size);
+    const size = typeof tile.size === 'string' ? tile.size : 'medium';
+    startResize(tile.id, 'both', size);
     window.addEventListener('mousemove', handleResizeMouseMove);
     window.addEventListener('mouseup', handleResizeMouseUp);
   };

@@ -25,7 +25,8 @@ export const CryptocurrencyTile = React.memo<CryptocurrencyTileProps>(({ size, c
   }, [data, selectedCoin]);
 
   if (loading) {
-    return <LoadingSkeleton tileSize={size} />;
+    const tileSize = typeof size === 'string' ? size : 'medium';
+    return <LoadingSkeleton tileSize={tileSize as 'small' | 'medium' | 'large'} />;
   }
 
   if (error) {

@@ -1,10 +1,10 @@
-import type { TileConfig } from '../../types/dashboard';
+import type { DashboardTile } from '../../types/dashboard';
 import { Icon } from '../ui/Icon';
 import { CryptocurrencyTile } from './tiles/cryptocurrency/CryptocurrencyTile';
 import { PreciousMetalsTile } from './tiles/precious-metals/PreciousMetalsTile';
 
 interface TileProps {
-  tile: TileConfig;
+  tile: DashboardTile;
   onRemove?: (id: string) => void;
   children?: React.ReactNode;
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
@@ -12,11 +12,14 @@ interface TileProps {
 
 export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
   const renderTileContent = () => {
+    const size = typeof tile.size === 'string' ? tile.size : 'medium';
+    const config = tile.config || {};
+    
     switch (tile.type) {
       case 'cryptocurrency':
-        return <CryptocurrencyTile id={tile.id} size={tile.size} config={tile.config} />;
+        return <CryptocurrencyTile id={tile.id} size={size} config={config} />;
       case 'precious_metals':
-        return <PreciousMetalsTile id={tile.id} size={tile.size} config={tile.config} />;
+        return <PreciousMetalsTile id={tile.id} size={size} config={config} />;
       default:
         return (
           <div className="flex items-center justify-center h-32 text-theme-muted">
@@ -41,7 +44,8 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
       medium: { gridColumn: 'span 1', gridRow: 'span 1' },
       large: { gridColumn: 'span 2', gridRow: 'span 2' },
     };
-    return sizeStyles[tile.size];
+    const size = typeof tile.size === 'string' ? tile.size : 'medium';
+    return sizeStyles[size as keyof typeof sizeStyles] || sizeStyles.medium;
   };
 
   const getTileTitle = () => {
@@ -49,7 +53,7 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
       cryptocurrency: 'Cryptocurrency',
       precious_metals: 'Precious Metals',
     };
-    return titles[tile.type] || 'Tile';
+    return titles[tile.type as keyof typeof titles] || 'Tile';
   };
 
   const getTileIcon = () => {
@@ -57,7 +61,7 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
       cryptocurrency: 'crypto',
       precious_metals: 'metals',
     };
-    return icons[tile.type] || 'settings';
+    return icons[tile.type as keyof typeof icons] || 'settings';
   };
 
   const handleRemoveKeyDown = (e: React.KeyboardEvent) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import type { ThemeProviderProps, ThemeContextType } from '../theme/types';
 import { THEME_TOKENS } from '../theme/tokens';
 import { ThemeContext } from './ThemeContextDef';
@@ -7,16 +7,28 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
   initialTheme = 'light',
 }) => {
-  const [theme, setTheme] = useState<'light' | 'dark'>(initialTheme);
+  const getInitialTheme = (): 'light' | 'dark' => {
+    if (typeof document !== 'undefined') {
+      const attr = document.documentElement.getAttribute('data-theme');
+      if (attr === 'dark' || attr === 'light') return attr;
+    }
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('nerdboard-theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+    }
+    return initialTheme;
+  };
 
-  useEffect(() => {
+  const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme());
+
+  useLayoutEffect(() => {
     const savedTheme = localStorage.getItem('nerdboard-theme') as 'light' | 'dark';
     if (savedTheme) {
       setTheme(savedTheme);
     }
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     localStorage.setItem('nerdboard-theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
     if (theme === 'dark') {
