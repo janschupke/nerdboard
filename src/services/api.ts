@@ -1,26 +1,32 @@
 // API service for the Nerdboard dashboard application
 
-import type { ApiResponse, MarketData, NewsItem, WeatherData } from '../types';
+import type { ApiResponse } from '../types';
 
-import { API_CONFIG } from '../utils/constants';
+export class ApiService {
+  private baseUrl: string;
+  private apiKey?: string;
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+  constructor(baseUrl: string, apiKey?: string) {
+    this.baseUrl = baseUrl;
+    this.apiKey = apiKey;
+  }
 
-class ApiService {
-  private async request<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+  private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+    const url = `${this.baseUrl}${endpoint}`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string>),
+    };
+
+    if (this.apiKey) {
+      headers['Authorization'] = `Bearer ${this.apiKey}`;
+    }
+
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.DEFAULT_TIMEOUT);
-
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal,
+      const response = await fetch(url, {
         ...options,
+        headers,
       });
-
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -29,40 +35,39 @@ class ApiService {
       const data = await response.json();
       return {
         data,
-        status: 'success',
-        timestamp: new Date().toISOString(),
+        error: null,
+        loading: false,
       };
     } catch (error) {
       return {
-        data: null as T,
-        status: 'error',
-        message: error instanceof Error ? error.message : 'Unknown error occurred',
-        timestamp: new Date().toISOString(),
+        data: null,
+        error: error instanceof Error ? error : new Error('Unknown error'),
+        loading: false,
       };
     }
   }
 
-  async getMarketData(symbols: string[]): Promise<ApiResponse<MarketData[]>> {
-    const symbolsParam = symbols.join(',');
-    return this.request<MarketData[]>(`/api/market-data?symbols=${symbolsParam}`);
+  async get<T>(endpoint: string): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>(endpoint);
   }
 
-  async getNews(category?: string, limit: number = 10): Promise<ApiResponse<NewsItem[]>> {
-    const params = new URLSearchParams();
-    if (category) params.append('category', category);
-    params.append('limit', limit.toString());
-
-    return this.request<NewsItem[]>(`/api/news?${params.toString()}`);
+  async post<T>(endpoint: string, data: unknown): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 
-  async getWeather(location: string): Promise<ApiResponse<WeatherData>> {
-    return this.request<WeatherData>(`/api/weather?location=${encodeURIComponent(location)}`);
+  async put<T>(endpoint: string, data: unknown): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   }
 
-  async getCustomData(endpoint: string): Promise<ApiResponse<unknown>> {
-    return this.request<unknown>(endpoint);
+  async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>(endpoint, {
+      method: 'DELETE',
+    });
   }
 }
-
-export const apiService = new ApiService();
-export default apiService;

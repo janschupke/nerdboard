@@ -1,26 +1,26 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { ApiService } from './api';
 
 describe('ApiService', () => {
+  let apiService: ApiService;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset environment variable
-    delete import.meta.env.VITE_API_BASE_URL;
+    apiService = new ApiService('http://localhost:3000');
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('should make successful API request', async () => {
+  it('should make successful GET request', async () => {
     const mockResponse = { data: 'test data' };
     const mockFetch = vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     } as Response);
 
-    const { apiService } = await import('./api');
-
-    const result = await apiService.getCustomData('/test-endpoint');
+    const result = await apiService.get('/test-endpoint');
 
     expect(mockFetch).toHaveBeenCalledWith(
       'http://localhost:3000/test-endpoint',
@@ -33,8 +33,8 @@ describe('ApiService', () => {
 
     expect(result).toEqual({
       data: mockResponse,
-      status: 'success',
-      timestamp: expect.any(String),
+      error: null,
+      loading: false,
     });
   });
 
@@ -44,164 +44,128 @@ describe('ApiService', () => {
       status: 404,
     } as Response);
 
-    const { apiService } = await import('./api');
-
-    const result = await apiService.getCustomData('/test-endpoint');
+    const result = await apiService.get('/test-endpoint');
 
     expect(result).toEqual({
       data: null,
-      status: 'error',
-      message: 'HTTP error! status: 404',
-      timestamp: expect.any(String),
+      error: expect.any(Error),
+      loading: false,
     });
   });
 
   it('should handle network errors', async () => {
     vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
 
-    const { apiService } = await import('./api');
-
-    const result = await apiService.getCustomData('/test-endpoint');
+    const result = await apiService.get('/test-endpoint');
 
     expect(result).toEqual({
       data: null,
-      status: 'error',
-      message: 'Network error',
-      timestamp: expect.any(String),
+      error: expect.any(Error),
+      loading: false,
     });
   });
 
-  it('should handle unknown errors', async () => {
-    vi.mocked(fetch).mockRejectedValueOnce('Unknown error');
-
-    const { apiService } = await import('./api');
-
-    const result = await apiService.getCustomData('/test-endpoint');
-
-    expect(result).toEqual({
-      data: null,
-      status: 'error',
-      message: 'Unknown error occurred',
-      timestamp: expect.any(String),
-    });
-  });
-
-  it('should get market data with symbols', async () => {
-    const mockResponse = [{ symbol: 'AAPL', price: 150 }];
+  it('should make successful POST request', async () => {
+    const mockResponse = { success: true };
     const mockFetch = vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     } as Response);
 
-    const { apiService } = await import('./api');
-
-    const result = await apiService.getMarketData(['AAPL', 'GOOGL']);
+    const postData = { name: 'test' };
+    const result = await apiService.post('/test-endpoint', postData);
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'http://localhost:3000/api/market-data?symbols=AAPL,GOOGL',
-      expect.any(Object),
+      'http://localhost:3000/test-endpoint',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify(postData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }),
     );
 
     expect(result).toEqual({
       data: mockResponse,
-      status: 'success',
-      timestamp: expect.any(String),
+      error: null,
+      loading: false,
     });
   });
 
-  it('should get news with category and limit', async () => {
-    const mockResponse = [{ title: 'Test News', content: 'Test content' }];
+  it('should make successful PUT request', async () => {
+    const mockResponse = { success: true };
     const mockFetch = vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     } as Response);
 
-    const { apiService } = await import('./api');
-
-    const result = await apiService.getNews('technology', 5);
+    const putData = { name: 'test' };
+    const result = await apiService.put('/test-endpoint', putData);
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'http://localhost:3000/api/news?category=technology&limit=5',
-      expect.any(Object),
+      'http://localhost:3000/test-endpoint',
+      expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify(putData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }),
     );
 
     expect(result).toEqual({
       data: mockResponse,
-      status: 'success',
-      timestamp: expect.any(String),
+      error: null,
+      loading: false,
     });
   });
 
-  it('should get news without category', async () => {
-    const mockResponse = [{ title: 'Test News', content: 'Test content' }];
+  it('should make successful DELETE request', async () => {
+    const mockResponse = { success: true };
     const mockFetch = vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     } as Response);
 
-    const { apiService } = await import('./api');
-
-    const result = await apiService.getNews();
+    const result = await apiService.delete('/test-endpoint');
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'http://localhost:3000/api/news?limit=10',
-      expect.any(Object),
+      'http://localhost:3000/test-endpoint',
+      expect.objectContaining({
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }),
     );
 
     expect(result).toEqual({
       data: mockResponse,
-      status: 'success',
-      timestamp: expect.any(String),
+      error: null,
+      loading: false,
     });
   });
 
-  it('should get weather data', async () => {
-    const mockResponse = { temperature: 25, condition: 'sunny' };
+  it('should include API key in headers when provided', async () => {
+    const apiServiceWithKey = new ApiService('http://localhost:3000', 'test-api-key');
+    const mockResponse = { data: 'test' };
     const mockFetch = vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     } as Response);
 
-    const { apiService } = await import('./api');
-
-    const result = await apiService.getWeather('New York');
+    await apiServiceWithKey.get('/test-endpoint');
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'http://localhost:3000/api/weather?location=New%20York',
-      expect.any(Object),
+      'http://localhost:3000/test-endpoint',
+      expect.objectContaining({
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer test-api-key',
+        },
+      }),
     );
-
-    expect(result).toEqual({
-      data: mockResponse,
-      status: 'success',
-      timestamp: expect.any(String),
-    });
-  });
-
-  it('should use custom API base URL from environment', async () => {
-    // This test is skipped because environment variables are not easily testable
-    // in the current test setup
-    expect(true).toBe(true);
-  });
-
-  it('should handle request timeout', async () => {
-    vi.mocked(fetch).mockImplementation(() => {
-      return new Promise((_, reject) => {
-        // Use immediate rejection instead of setTimeout
-        reject(new Error('Aborted'));
-      });
-    });
-
-    const { apiService } = await import('./api');
-
-    const result = await apiService.getCustomData('/test');
-
-    expect(result).toEqual({
-      data: null,
-      status: 'error',
-      message: 'Aborted',
-      timestamp: expect.any(String),
-    });
   });
 
   it('should handle JSON parsing errors', async () => {
@@ -212,15 +176,12 @@ describe('ApiService', () => {
       },
     } as unknown as Response);
 
-    const { apiService } = await import('./api');
-
-    const result = await apiService.getCustomData('/test');
+    const result = await apiService.get('/test');
 
     expect(result).toEqual({
       data: null,
-      status: 'error',
-      message: 'Invalid JSON',
-      timestamp: expect.any(String),
+      error: expect.any(Error),
+      loading: false,
     });
   });
 });

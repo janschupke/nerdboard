@@ -10,6 +10,11 @@ export interface CryptocurrencyData {
   last_updated: string;
 }
 
+export interface PriceHistory {
+  timestamp: number;
+  price: number;
+}
+
 export interface CryptocurrencyApiResponse {
   data: CryptocurrencyData[];
   timestamp: number;

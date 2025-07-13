@@ -4,7 +4,6 @@ import type { Mock } from 'vitest';
 import { useFederalFundsRateData } from './useFederalFundsRateData';
 
 declare global {
-  // eslint-disable-next-line no-var
   var __mockGetFederalFundsRateData: Mock;
 }
 

@@ -3,6 +3,11 @@ import { Icon } from '../ui/Icon';
 import { CryptocurrencyTile } from './tiles/cryptocurrency/CryptocurrencyTile';
 import { PreciousMetalsTile } from './tiles/precious-metals/PreciousMetalsTile';
 import { FederalFundsRateTile } from './tiles/federal-funds-rate/FederalFundsRateTile';
+import { EuriborRateTile } from './tiles/euribor-rate/EuriborRateTile';
+import { WeatherTile } from './tiles/weather/WeatherTile';
+import { GDXETFTile } from './tiles/gdx-etf/GDXETFTile';
+import { TimeTile } from './tiles/time/TimeTile';
+import { UraniumTile } from './tiles/uranium/UraniumTile';
 
 interface TileProps {
   tile: DashboardTile;
@@ -23,6 +28,24 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
         return <PreciousMetalsTile id={tile.id} size={size} config={config} />;
       case 'federal_funds_rate':
         return <FederalFundsRateTile id={tile.id} size={size} config={config} />;
+      case 'euribor_rate':
+        return <EuriborRateTile />;
+      case 'weather_helsinki':
+        return <WeatherTile size={size} config={{ city: 'helsinki', country: 'Finland', refreshInterval: 300000 }} />;
+      case 'weather_prague':
+        return <WeatherTile size={size} config={{ city: 'prague', country: 'Czech Republic', refreshInterval: 300000 }} />;
+      case 'weather_taipei':
+        return <WeatherTile size={size} config={{ city: 'taipei', country: 'Taiwan', refreshInterval: 300000 }} />;
+      case 'gdx_etf':
+        return <GDXETFTile id={tile.id} size={size} config={config} />;
+      case 'time_helsinki':
+        return <TimeTile id={tile.id} size={size} config={{ city: 'helsinki', showBusinessHours: true }} />;
+      case 'time_prague':
+        return <TimeTile id={tile.id} size={size} config={{ city: 'prague', showBusinessHours: true }} />;
+      case 'time_taipei':
+        return <TimeTile id={tile.id} size={size} config={{ city: 'taipei', showBusinessHours: true }} />;
+      case 'uranium':
+        return <UraniumTile id={tile.id} size={size} config={config} />;
       default:
         return (
           <div className="flex items-center justify-center h-32 text-theme-muted">
@@ -56,6 +79,15 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
       cryptocurrency: 'Cryptocurrency',
       precious_metals: 'Precious Metals',
       federal_funds_rate: 'Federal Funds Rate',
+      euribor_rate: 'Euribor Rate',
+      weather_helsinki: 'Helsinki Weather',
+      weather_prague: 'Prague Weather',
+      weather_taipei: 'Taipei Weather',
+      gdx_etf: 'GDX ETF',
+      time_helsinki: 'Helsinki Time',
+      time_prague: 'Prague Time',
+      time_taipei: 'Taipei Time',
+      uranium: 'Uranium Price',
     };
     return titles[tile.type as keyof typeof titles] || 'Tile';
   };
@@ -65,6 +97,15 @@ export function Tile({ tile, onRemove, children, dragHandleProps }: TileProps) {
       cryptocurrency: 'crypto',
       precious_metals: 'metals',
       federal_funds_rate: 'chart',
+      euribor_rate: 'chart',
+      weather_helsinki: 'weather',
+      weather_prague: 'weather',
+      weather_taipei: 'weather',
+      gdx_etf: 'chart',
+      time_helsinki: 'clock',
+      time_prague: 'clock',
+      time_taipei: 'clock',
+      uranium: 'chart',
     };
     return icons[tile.type as keyof typeof icons] || 'settings';
   };

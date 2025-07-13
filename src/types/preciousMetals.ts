@@ -1,24 +1,24 @@
 import type { BaseComponentProps } from './index';
 
-export interface PreciousMetalsData {
-  id: string;
-  name: string;
-  symbol: string;
+export interface MetalData {
   price: number;
-  change: number;
-  changePercent: number;
-  unit: string;
-  lastUpdated: string;
+  change_24h: number;
+  change_percentage_24h: number;
+}
+
+export interface PreciousMetalsData {
+  gold: MetalData;
+  silver: MetalData;
 }
 
 export interface PreciousMetalsApiResponse {
-  data: PreciousMetalsData[];
+  data: PreciousMetalsData;
   timestamp: number;
   success: boolean;
 }
 
 export interface PreciousMetalsTileProps extends BaseComponentProps {
-  data?: PreciousMetalsData[];
+  data?: PreciousMetalsData;
   loading?: boolean;
   error?: Error | null;
   refreshInterval?: number;
@@ -32,7 +32,7 @@ export interface PreciousMetalsConfig {
 }
 
 export interface PreciousMetalsHookResult {
-  data: PreciousMetalsData[] | null;
+  data: PreciousMetalsData | null;
   loading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;

@@ -2,7 +2,7 @@ import type { BaseComponentProps } from './index';
 
 export interface DashboardTile {
   id: string;
-  type: 'cryptocurrency' | 'precious-metals' | 'precious_metals' | 'chart' | 'federal_funds_rate';
+  type: 'cryptocurrency' | 'precious-metals' | 'precious_metals' | 'chart' | 'federal_funds_rate' | 'euribor_rate' | 'weather_helsinki' | 'weather_prague' | 'weather_taipei' | 'gdx_etf' | 'time_helsinki' | 'time_prague' | 'time_taipei' | 'uranium';
   position: {
     x: number;
     y: number;
@@ -58,6 +58,15 @@ export const TileTypeEnum = {
   PRECIOUS_METALS: 'precious-metals',
   CHART: 'chart',
   FEDERAL_FUNDS_RATE: 'federal_funds_rate',
+  EURIBOR_RATE: 'euribor_rate',
+  WEATHER_HELSINKI: 'weather_helsinki',
+  WEATHER_PRAGUE: 'weather_prague',
+  WEATHER_TAIPEI: 'weather_taipei',
+  GDX_ETF: 'gdx_etf',
+  TIME_HELSINKI: 'time_helsinki',
+  TIME_PRAGUE: 'time_prague',
+  TIME_TAIPEI: 'time_taipei',
+  URANIUM: 'uranium',
 } as const;
 
 export type TileType =
@@ -67,7 +76,16 @@ export type TileType =
   | 'precious-metals'
   | 'chart'
   | 'precious_metals'
-  | 'federal_funds_rate';
+  | 'federal_funds_rate'
+  | 'euribor_rate'
+  | 'weather_helsinki'
+  | 'weather_prague'
+  | 'weather_taipei'
+  | 'gdx_etf'
+  | 'time_helsinki'
+  | 'time_prague'
+  | 'time_taipei'
+  | 'uranium';
 
 export const TileSizeEnum = {
   SMALL: 'small',
