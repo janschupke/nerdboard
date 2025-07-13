@@ -212,8 +212,12 @@ describe('Date reconstruction', () => {
     expect(retrieved?.historicalData[0].date).toBeInstanceOf(Date);
     expect(retrieved?.historicalData[1].date).toBeInstanceOf(Date);
     expect(retrieved?.lastUpdate.getTime()).toBe(new Date('2024-01-01T12:00:00Z').getTime());
-    expect(retrieved?.historicalData[0].date.getTime()).toBe(new Date('2024-01-01T00:00:00Z').getTime());
-    expect(retrieved?.historicalData[1].date.getTime()).toBe(new Date('2024-01-15T00:00:00Z').getTime());
+    expect(retrieved?.historicalData[0].date.getTime()).toBe(
+      new Date('2024-01-01T00:00:00Z').getTime(),
+    );
+    expect(retrieved?.historicalData[1].date.getTime()).toBe(
+      new Date('2024-01-15T00:00:00Z').getTime(),
+    );
   });
 });
 

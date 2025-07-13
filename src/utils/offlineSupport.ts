@@ -81,4 +81,4 @@ export class OfflineSupport {
   }
 }
 
-export const offlineSupport = OfflineSupport.getInstance(); 
+export const offlineSupport = OfflineSupport.getInstance();

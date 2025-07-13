@@ -20,18 +20,12 @@ export function useCryptocurrencyData(
   const [isCached, setIsCached] = useState(false);
 
   const refreshInterval = config.refreshInterval ?? REFRESH_INTERVALS.TILE_DATA;
-  
+
   // Memoize service instance to prevent recreation on every render
-  const memoizedService = useMemo(() => 
-    service || new CoinGeckoApiService(), 
-    [service]
-  );
+  const memoizedService = useMemo(() => service || new CoinGeckoApiService(), [service]);
 
   // Memoize storageKey to prevent recreation on every render
-  const storageKey = useMemo(() => 
-    `${STORAGE_KEYS.TILE_DATA_PREFIX}cryptocurrency`, 
-    []
-  );
+  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}cryptocurrency`, []);
 
   const fetchData = useCallback(
     async (forceRefresh = false) => {

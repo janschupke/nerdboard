@@ -53,11 +53,14 @@ export function useDragAndDrop(
   }, []);
 
   // Memoize return value to prevent unnecessary re-renders
-  return useMemo(() => ({
-    dragState,
-    startDrag,
-    updateDrag,
-    endDrag,
-    cancelDrag,
-  }), [dragState, startDrag, updateDrag, endDrag, cancelDrag]);
+  return useMemo(
+    () => ({
+      dragState,
+      startDrag,
+      updateDrag,
+      endDrag,
+      cancelDrag,
+    }),
+    [dragState, startDrag, updateDrag, endDrag, cancelDrag],
+  );
 }

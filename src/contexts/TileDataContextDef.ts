@@ -12,4 +12,4 @@ interface TileDataContextType {
   getTileData: (tileType: TileType) => TileData;
 }
 
-export const TileDataContext = createContext<TileDataContextType | null>(null); 
+export const TileDataContext = createContext<TileDataContextType | null>(null);

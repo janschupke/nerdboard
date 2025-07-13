@@ -16,16 +16,10 @@ export function usePreciousMetalsData(
   const [isCached, setIsCached] = useState(false);
 
   // Memoize service instance to prevent recreation on every render
-  const memoizedService = useMemo(() => 
-    service || new PreciousMetalsApiService(), 
-    [service]
-  );
+  const memoizedService = useMemo(() => service || new PreciousMetalsApiService(), [service]);
 
   // Memoize storageKey to prevent recreation on every render
-  const storageKey = useMemo(() => 
-    `${STORAGE_KEYS.TILE_DATA_PREFIX}precious-metals`, 
-    []
-  );
+  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}precious-metals`, []);
 
   const fetchData = useCallback(
     async (forceRefresh = false) => {

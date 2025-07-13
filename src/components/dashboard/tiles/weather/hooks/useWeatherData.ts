@@ -27,10 +27,7 @@ export const useWeatherData = (
   const [isCached, setIsCached] = useState(false);
 
   // Memoize storageKey to prevent recreation on every render
-  const storageKey = useMemo(() => 
-    `${STORAGE_KEYS.TILE_DATA_PREFIX}weather-${city}`, 
-    [city]
-  );
+  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}weather-${city}`, [city]);
 
   // Memoize transform functions to prevent recreation on every render
   const transformApiResponse = useCallback(

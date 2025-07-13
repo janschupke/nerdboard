@@ -14,40 +14,19 @@ describe('PriceDisplay', () => {
   });
 
   it('renders with positive change', () => {
-    render(
-      <PriceDisplay 
-        price={100} 
-        showChange={true}
-        changeValue={5.5}
-        changePercent={5.5}
-      />
-    );
+    render(<PriceDisplay price={100} showChange={true} changeValue={5.5} changePercent={5.5} />);
     expect(screen.getByText('$100.00')).toBeInTheDocument();
     expect(screen.getByText('+5.50 (+5.50%)')).toBeInTheDocument();
   });
 
   it('renders with negative change', () => {
-    render(
-      <PriceDisplay 
-        price={100} 
-        showChange={true}
-        changeValue={-3.2}
-        changePercent={-3.2}
-      />
-    );
+    render(<PriceDisplay price={100} showChange={true} changeValue={-3.2} changePercent={-3.2} />);
     expect(screen.getByText('$100.00')).toBeInTheDocument();
     expect(screen.getByText('-3.20 (-3.20%)')).toBeInTheDocument();
   });
 
   it('renders without change when showChange is false', () => {
-    render(
-      <PriceDisplay 
-        price={100} 
-        showChange={false}
-        changeValue={5.5}
-        changePercent={5.5}
-      />
-    );
+    render(<PriceDisplay price={100} showChange={false} changeValue={5.5} changePercent={5.5} />);
     expect(screen.getByText('$100.00')).toBeInTheDocument();
     expect(screen.queryByText('+5.50')).not.toBeInTheDocument();
   });
@@ -59,14 +38,7 @@ describe('PriceDisplay', () => {
   });
 
   it('handles zero change values', () => {
-    render(
-      <PriceDisplay 
-        price={100} 
-        showChange={true}
-        changeValue={0}
-        changePercent={0}
-      />
-    );
+    render(<PriceDisplay price={100} showChange={true} changeValue={0} changePercent={0} />);
     expect(screen.getByText('$100.00')).toBeInTheDocument();
     expect(screen.getByText('+0.00 (+0.00%)')).toBeInTheDocument();
   });

@@ -37,26 +37,29 @@ export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
     }));
   }, [data]);
 
-  const CustomTooltip = React.useCallback(({
-    active,
-    payload,
-    label,
-  }: {
-    active?: boolean;
-    payload?: Array<{ value: number }>;
-    label?: string;
-  }) => {
-    if (active && payload && payload.length) {
-      const dataPoint = payload[0];
-      return (
-        <div className="custom-tooltip">
-          <p className="tooltip-date">{label}</p>
-          <p className="tooltip-rate">Rate: {dataPoint.value.toFixed(2)}%</p>
-        </div>
-      );
-    }
-    return null;
-  }, []);
+  const CustomTooltip = React.useCallback(
+    ({
+      active,
+      payload,
+      label,
+    }: {
+      active?: boolean;
+      payload?: Array<{ value: number }>;
+      label?: string;
+    }) => {
+      if (active && payload && payload.length) {
+        const dataPoint = payload[0];
+        return (
+          <div className="custom-tooltip">
+            <p className="tooltip-date">{label}</p>
+            <p className="tooltip-rate">Rate: {dataPoint.value.toFixed(2)}%</p>
+          </div>
+        );
+      }
+      return null;
+    },
+    [],
+  );
 
   if (loading) {
     return (

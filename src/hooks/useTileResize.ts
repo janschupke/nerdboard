@@ -53,11 +53,14 @@ export function useTileResize(
   }, []);
 
   // Memoize return value to prevent unnecessary re-renders
-  return useMemo(() => ({
-    resizeState,
-    startResize,
-    updateResize,
-    endResize,
-    cancelResize,
-  }), [resizeState, startResize, updateResize, endResize, cancelResize]);
+  return useMemo(
+    () => ({
+      resizeState,
+      startResize,
+      updateResize,
+      endResize,
+      cancelResize,
+    }),
+    [resizeState, startResize, updateResize, endResize, cancelResize],
+  );
 }

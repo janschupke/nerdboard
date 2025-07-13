@@ -1,3 +1,4 @@
+import React from 'react';
 import type { DashboardTile } from '../../types/dashboard';
 import { TileType, TileSize } from '../../types/dashboard';
 import { Icon } from '../ui/Icon';
@@ -14,25 +15,9 @@ interface TileProps {
   tile: DashboardTile;
   onRemove?: (id: string) => void;
   children?: React.ReactNode;
-  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
-  loading?: boolean;
-  error?: string | null;
-  lastUpdated?: Date;
-  isCached?: boolean;
-  className?: string;
 }
 
-export function Tile({
-  tile,
-  onRemove,
-  children,
-  dragHandleProps,
-  loading = false,
-  error = null,
-  lastUpdated,
-  isCached = false,
-  className = '',
-}: TileProps) {
+export function Tile({ tile, onRemove, children }: TileProps) {
   const renderTileContent = () => {
     const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
     const config = tile.config || {};
@@ -89,11 +74,8 @@ export function Tile({
         return <UraniumTile id={tile.id} size={size} config={config} />;
       default:
         return (
-          <div className="flex items-center justify-center h-32 text-theme-muted">
-            <div className="text-center">
-              <Icon name="loading" size="lg" className="animate-spin mb-2" />
-              <p className="text-sm">Loading...</p>
-            </div>
+          <div className="flex items-center justify-center h-full text-theme-secondary">
+            <p>Unknown tile type: {tile.type}</p>
           </div>
         );
     }
@@ -101,22 +83,25 @@ export function Tile({
 
   const getTileClasses = () => {
     const baseClasses =
-      'relative bg-surface-primary rounded-lg shadow-md border border-theme-primary overflow-hidden focus-within:ring-2 focus-within:ring-accent-primary focus-within:ring-offset-2';
-    return baseClasses;
+      'bg-surface-primary border border-theme-primary rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200';
+    const sizeClasses = {
+      small: 'col-span-1 row-span-1',
+      medium: 'col-span-1 row-span-1 md:col-span-2',
+      large: 'col-span-1 row-span-1 md:col-span-2 lg:col-span-3',
+    };
+    const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
+    return `${baseClasses} ${sizeClasses[size] || sizeClasses.medium}`;
   };
 
   const getTileStyles = () => {
-    const sizeStyles = {
-      small: { gridColumn: 'span 1', gridRow: 'span 1' },
-      medium: { gridColumn: 'span 1', gridRow: 'span 1' },
-      large: { gridColumn: 'span 2', gridRow: 'span 2' },
+    return {
+      gridColumn: tile.position ? `span ${tile.position.x + 1}` : undefined,
+      gridRow: tile.position ? `span ${tile.position.y + 1}` : undefined,
     };
-    const size = typeof tile.size === 'string' ? tile.size : 'medium';
-    return sizeStyles[size as keyof typeof sizeStyles] || sizeStyles.medium;
   };
 
   const getTileTitle = () => {
-    const titles = {
+    const titles: Record<TileType, string> = {
       [TileType.CRYPTOCURRENCY]: 'Cryptocurrency',
       [TileType.PRECIOUS_METALS]: 'Precious Metals',
       [TileType.FEDERAL_FUNDS_RATE]: 'Federal Funds Rate',
@@ -130,11 +115,11 @@ export function Tile({
       [TileType.TIME_TAIPEI]: 'Taipei Time',
       [TileType.URANIUM]: 'Uranium Price',
     };
-    return titles[tile.type] || 'Tile';
+    return titles[tile.type] || 'Unknown Tile';
   };
 
   const getTileIcon = () => {
-    const icons = {
+    const icons: Record<TileType, string> = {
       [TileType.CRYPTOCURRENCY]: 'crypto',
       [TileType.PRECIOUS_METALS]: 'metals',
       [TileType.FEDERAL_FUNDS_RATE]: 'chart',
@@ -148,117 +133,39 @@ export function Tile({
       [TileType.TIME_TAIPEI]: 'clock',
       [TileType.URANIUM]: 'chart',
     };
-    return icons[tile.type] || 'settings';
-  };
-
-  const handleRemoveKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onRemove?.(tile.id);
-    }
-  };
-
-  const formatLastUpdated = (date: Date) => {
-    const now = new Date();
-    const diffInSeconds = (now.getTime() - date.getTime()) / 1000;
-
-    if (diffInSeconds < 60) {
-      return `${Math.round(diffInSeconds)}s ago`;
-    } else if (diffInSeconds < 3600) {
-      return `${Math.round(diffInSeconds / 60)}m ago`;
-    } else if (diffInSeconds < 86400) {
-      return `${Math.round(diffInSeconds / 3600)}h ago`;
-    } else {
-      return `${Math.round(diffInSeconds / 86400)}d ago`;
-    }
+    return icons[tile.type] || 'chart';
   };
 
   return (
     <div
-      className={`${getTileClasses()} ${className}`}
+      className={getTileClasses()}
       style={getTileStyles()}
       data-tile-id={tile.id}
       data-tile-type={tile.type}
-      role="article"
+      role="gridcell"
       aria-label={`${getTileTitle()} tile`}
-      tabIndex={0}
     >
       {/* Tile Header */}
-      <div className="flex items-center justify-between p-3 border-b border-theme-primary bg-surface-secondary">
-        {/* Drag Handle */}
-        <div
-          className="flex items-center justify-center w-6 h-6 mr-2 cursor-grab text-theme-secondary hover:text-theme-primary focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-1 rounded"
-          aria-label={`Drag ${getTileTitle()} tile`}
-          tabIndex={0}
-          {...dragHandleProps}
-        >
-          <Icon name="drag" size="sm" />
-        </div>
-        {/* Title and Icon */}
-        <div className="flex-1 flex items-center space-x-2 min-w-0">
+      <div className="flex items-center justify-between p-3 border-b border-theme-primary">
+        <div className="flex items-center space-x-2">
           <Icon name={getTileIcon()} size="sm" className="text-accent-primary" aria-hidden="true" />
           <h3 className="text-sm font-medium text-theme-primary truncate">{getTileTitle()}</h3>
-        </div>
-        {/* Cached/Fresh Indicator & Last Updated */}
-        <div className="flex items-center space-x-2">
-          {isCached && (
-            <span
-              className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400"
-              tabIndex={0}
-              aria-label="Data is cached"
-              title="This data is loaded from cache. It may not be the most recent."
-            >
-              <Icon name="database" className="w-3 h-3" />
-              <span>Cached</span>
-            </span>
-          )}
-          {lastUpdated && (
-            <span
-              className="text-xs text-gray-500 dark:text-gray-400"
-              tabIndex={0}
-              aria-label={`Last updated ${lastUpdated.toLocaleString()}`}
-              title={`Last updated: ${lastUpdated.toLocaleString()}`}
-            >
-              Updated {formatLastUpdated(lastUpdated)}
-            </span>
-          )}
         </div>
         {/* Close Button */}
         {onRemove && (
           <button
             onClick={() => onRemove(tile.id)}
-            onKeyDown={handleRemoveKeyDown}
-            className="p-1 text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary rounded transition-colors ml-2 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-1"
+            className="p-1 text-theme-tertiary hover:text-theme-primary hover:bg-theme-tertiary rounded transition-colors"
             aria-label={`Remove ${getTileTitle()} tile`}
-            title={`Remove ${getTileTitle()} tile`}
           >
             <Icon name="close" size="sm" />
           </button>
         )}
       </div>
+
       {/* Tile Content */}
       <div className="flex-1 p-4" role="region" aria-label={`${getTileTitle()} content`}>
-        {loading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-              <Icon name="loading" className="w-5 h-5 animate-spin" />
-              <span>Loading...</span>
-            </div>
-          </div>
-        )}
-        {error && (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <Icon name="alert-circle" className="w-8 h-8 text-red-500 mx-auto mb-2" />
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Unable to load data</p>
-              <p className="text-xs text-gray-500 dark:text-gray-500">{error}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                Showing cached data if available
-              </p>
-            </div>
-          </div>
-        )}
-        {!loading && !error && (children || renderTileContent())}
+        {children || renderTileContent()}
       </div>
     </div>
   );

@@ -24,7 +24,10 @@ export const useUraniumData = (
   const [isCached, setIsCached] = useState(false);
 
   // Memoize storageKey to prevent recreation on every render
-  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}uranium-${timeRange}`, [timeRange]);
+  const storageKey = useMemo(
+    () => `${STORAGE_KEYS.TILE_DATA_PREFIX}uranium-${timeRange}`,
+    [timeRange],
+  );
 
   const fetchUraniumData = useCallback(
     async (forceRefresh = false) => {

@@ -14,15 +14,18 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     }
   });
 
-  const setValue = useCallback((value: T | ((val: T) => T)) => {
-    try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      setStoredValue(valueToStore);
-      window.localStorage.setItem(memoizedKey, JSON.stringify(valueToStore));
-    } catch (error) {
-      console.error(`Error setting localStorage key "${memoizedKey}":`, error);
-    }
-  }, [memoizedKey, storedValue]);
+  const setValue = useCallback(
+    (value: T | ((val: T) => T)) => {
+      try {
+        const valueToStore = value instanceof Function ? value(storedValue) : value;
+        setStoredValue(valueToStore);
+        window.localStorage.setItem(memoizedKey, JSON.stringify(valueToStore));
+      } catch (error) {
+        console.error(`Error setting localStorage key "${memoizedKey}":`, error);
+      }
+    },
+    [memoizedKey, storedValue],
+  );
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {

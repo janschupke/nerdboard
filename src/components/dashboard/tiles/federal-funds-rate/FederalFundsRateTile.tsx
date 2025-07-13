@@ -18,10 +18,8 @@ export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(({ siz
   // Helper to create a deep content hash for historical data
   function historicalDataContentHash(historicalData: HistoricalRateData[] | undefined): string {
     if (!historicalData || historicalData.length === 0) return '';
-    return historicalData.map(item => `${item.date.getTime()}:${item.rate}`).join('|');
+    return historicalData.map((item) => `${item.date.getTime()}:${item.rate}`).join('|');
   }
-
-
 
   // Memoize chart data to prevent unnecessary re-renders
   const chartData = useMemo(() => {

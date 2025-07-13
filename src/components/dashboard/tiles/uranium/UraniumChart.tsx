@@ -55,25 +55,28 @@ export const UraniumChart = React.memo<UraniumChartProps>(({ uraniumData, size }
     }
   }, [size]);
 
-  const CustomTooltip = React.useCallback(({
-    active,
-    payload,
-    label,
-  }: {
-    active?: boolean;
-    payload?: Array<{ value: number }>;
-    label?: string;
-  }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-surface-primary border border-theme-primary rounded-lg p-2 shadow-lg">
-          <p className="text-sm font-medium text-theme-primary">{label}</p>
-          <p className="text-sm text-theme-secondary">Price: ${payload[0].value.toFixed(2)}</p>
-        </div>
-      );
-    }
-    return null;
-  }, []);
+  const CustomTooltip = React.useCallback(
+    ({
+      active,
+      payload,
+      label,
+    }: {
+      active?: boolean;
+      payload?: Array<{ value: number }>;
+      label?: string;
+    }) => {
+      if (active && payload && payload.length) {
+        return (
+          <div className="bg-surface-primary border border-theme-primary rounded-lg p-2 shadow-lg">
+            <p className="text-sm font-medium text-theme-primary">{label}</p>
+            <p className="text-sm text-theme-secondary">Price: ${payload[0].value.toFixed(2)}</p>
+          </div>
+        );
+      }
+      return null;
+    },
+    [],
+  );
 
   return (
     <div className="w-full" style={{ height: getChartHeight() }}>

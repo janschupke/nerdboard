@@ -70,7 +70,7 @@ export const CryptocurrencyTile = React.memo<CryptocurrencyTileProps>(({ size, c
                 <div className="flex items-center space-x-2">
                   <span className="font-medium text-theme-primary">{selectedCoinData.name}</span>
                 </div>
-                <PriceDisplay 
+                <PriceDisplay
                   price={selectedCoinData.current_price}
                   showChange={true}
                   changeValue={selectedCoinData.price_change_percentage_24h}

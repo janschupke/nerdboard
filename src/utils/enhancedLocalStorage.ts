@@ -218,4 +218,4 @@ export class SmartStorageManager {
   }
 }
 
-export const smartStorage = SmartStorageManager.getInstance(); 
+export const smartStorage = SmartStorageManager.getInstance();

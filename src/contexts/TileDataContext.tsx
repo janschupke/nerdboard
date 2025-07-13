@@ -20,37 +20,39 @@ export const TileDataProvider = React.memo<{ children: React.ReactNode }>(({ chi
   const [tileData, setTileData] = useState<Record<string, TileData>>({});
 
   const updateTileData = useCallback((tileId: string, data: TileData) => {
-    setTileData(prev => ({
+    setTileData((prev) => ({
       ...prev,
       [tileId]: data,
     }));
   }, []);
 
   const removeTileData = useCallback((tileId: string) => {
-    setTileData(prev => {
+    setTileData((prev) => {
       const newData = { ...prev };
       delete newData[tileId];
       return newData;
     });
   }, []);
 
-  const getTileData = useCallback((tileId: string) => {
-    return tileData[tileId];
-  }, [tileData]);
+  const getTileData = useCallback(
+    (tileId: string) => {
+      return tileData[tileId];
+    },
+    [tileData],
+  );
 
   // Memoize context value to prevent unnecessary re-renders
-  const contextValue = useMemo(() => ({
-    tileData,
-    updateTileData,
-    removeTileData,
-    getTileData,
-  }), [tileData, updateTileData, removeTileData, getTileData]);
-
-  return (
-    <TileDataContext.Provider value={contextValue}>
-      {children}
-    </TileDataContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      tileData,
+      updateTileData,
+      removeTileData,
+      getTileData,
+    }),
+    [tileData, updateTileData, removeTileData, getTileData],
   );
+
+  return <TileDataContext.Provider value={contextValue}>{children}</TileDataContext.Provider>;
 });
 
-export { TileDataContext }; 
+export { TileDataContext };

@@ -154,4 +154,4 @@ export class SmartDataFetcher {
     // No cached data, fetch immediately
     return this.fetchWithRetry(fetchFunction, storageKey, options);
   }
-} 
+}

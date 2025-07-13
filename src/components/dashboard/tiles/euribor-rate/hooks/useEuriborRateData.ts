@@ -16,7 +16,10 @@ export const useEuriborRateData = () => {
   const [isCached, setIsCached] = useState(false);
 
   // Memoize storageKey to prevent recreation on every render
-  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}euribor-rate-${timeRange}`, [timeRange]);
+  const storageKey = useMemo(
+    () => `${STORAGE_KEYS.TILE_DATA_PREFIX}euribor-rate-${timeRange}`,
+    [timeRange],
+  );
 
   const loadData = useCallback(
     async (range: TimeRange, forceRefresh = false) => {

@@ -17,10 +17,7 @@ export function useGDXETFData(refreshInterval: number = REFRESH_INTERVALS.TILE_D
   const [isCached, setIsCached] = useState(false);
 
   // Memoize storageKey to prevent recreation on every render
-  const storageKey = useMemo(() => 
-    `${STORAGE_KEYS.TILE_DATA_PREFIX}gdx-etf`, 
-    []
-  );
+  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}gdx-etf`, []);
 
   const fetchData = useCallback(
     async (forceRefresh = false) => {

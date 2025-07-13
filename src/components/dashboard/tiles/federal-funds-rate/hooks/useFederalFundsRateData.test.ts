@@ -44,7 +44,7 @@ describe('useFederalFundsRateData', () => {
 
   it('should fetch data successfully', async () => {
     const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
-    
+
     // Mock the smart data fetcher to return success
     vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValueOnce({
       data: mockData,
@@ -67,7 +67,7 @@ describe('useFederalFundsRateData', () => {
   it('should handle API errors', async () => {
     const errorMessage = 'API request failed';
     const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
-    
+
     // Mock the smart data fetcher to return an error
     vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValueOnce({
       data: null,
@@ -88,7 +88,7 @@ describe('useFederalFundsRateData', () => {
 
   it('should update time range and refetch data', async () => {
     const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
-    
+
     // Mock the smart data fetcher to return success
     vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
       data: mockData,
@@ -120,7 +120,7 @@ describe('useFederalFundsRateData', () => {
 
   it('should refetch data when refetch is called', async () => {
     const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
-    
+
     // Mock the smart data fetcher to return success
     vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
       data: mockData,
@@ -149,7 +149,7 @@ describe('useFederalFundsRateData', () => {
 
   it('should use custom refresh interval', async () => {
     const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
-    
+
     // Mock the smart data fetcher to return success
     vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
       data: mockData,
@@ -171,7 +171,7 @@ describe('useFederalFundsRateData', () => {
   it('should handle network errors', async () => {
     const networkError = 'Network error';
     const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
-    
+
     // Mock the smart data fetcher to return an error
     vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValueOnce({
       data: null,
@@ -192,7 +192,7 @@ describe('useFederalFundsRateData', () => {
 
   it('should maintain state between re-renders', async () => {
     const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
-    
+
     // Mock the smart data fetcher to return success
     vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
       data: mockData,
@@ -217,7 +217,7 @@ describe('useFederalFundsRateData', () => {
 
   it('should handle default time range', async () => {
     const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
-    
+
     // Mock the smart data fetcher to return success
     vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
       data: mockData,

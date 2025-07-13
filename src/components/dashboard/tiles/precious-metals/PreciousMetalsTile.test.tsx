@@ -28,7 +28,7 @@ describe('PreciousMetalsTile', () => {
 
   it('renders data when loaded', async () => {
     const { SmartDataFetcher } = await import('../../../../utils/smartDataFetcher');
-    
+
     // Mock the smart data fetcher to return success
     vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
       data: {
@@ -50,7 +50,7 @@ describe('PreciousMetalsTile', () => {
 
   it('renders error state', async () => {
     const { SmartDataFetcher } = await import('../../../../utils/smartDataFetcher');
-    
+
     // Mock the smart data fetcher to return an error
     vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
       data: null,

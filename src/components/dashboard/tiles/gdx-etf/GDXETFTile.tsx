@@ -14,7 +14,7 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
   // Helper to create a deep content hash for priceHistory
   function priceHistoryContentHash(arr: typeof priceHistory): string {
     if (!arr || arr.length === 0) return '';
-    return arr.map(item => `${item.timestamp}:${item.price}`).join('|');
+    return arr.map((item) => `${item.timestamp}:${item.price}`).join('|');
   }
 
   // Memoize chart data to prevent unnecessary re-renders
@@ -74,8 +74,8 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
           </div>
         </div>
         <div className="text-right">
-          <PriceDisplay 
-            price={data.currentPrice} 
+          <PriceDisplay
+            price={data.currentPrice}
             showChange={true}
             changeValue={data.priceChangePercent}
             changePercent={data.priceChangePercent}

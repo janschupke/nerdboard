@@ -29,9 +29,13 @@ describe('TileGrid', () => {
       </DashboardProvider>,
     );
 
-    expect(screen.getByText('Welcome to Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Add tiles from the sidebar to get started')).toBeInTheDocument();
-    expect(screen.getByText('Click the menu button to open the sidebar')).toBeInTheDocument();
+    expect(screen.getByText('No tiles yet')).toBeInTheDocument();
+    expect(
+      screen.getByText('Add tiles from the sidebar to start building your dashboard'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Drag tiles from the sidebar or click to add them'),
+    ).toBeInTheDocument();
   });
 
   it.skip('renders empty state with correct styling', () => {
@@ -41,7 +45,7 @@ describe('TileGrid', () => {
       </DashboardProvider>,
     );
 
-    const container = screen.getByText('Welcome to Dashboard').closest('div');
+    const container = screen.getByText('No tiles yet').closest('div');
     expect(container).toHaveClass('flex', 'items-center', 'justify-center', 'h-full');
   });
 
@@ -52,10 +56,12 @@ describe('TileGrid', () => {
       </DashboardProvider>,
     );
 
-    const heading = screen.getByText('Welcome to Dashboard');
+    const heading = screen.getByText('No tiles yet');
     expect(heading).toHaveClass('text-theme-primary');
 
-    const paragraph = screen.getByText('Add tiles from the sidebar to get started');
+    const paragraph = screen.getByText(
+      'Add tiles from the sidebar to start building your dashboard',
+    );
     expect(paragraph).toHaveClass('text-theme-secondary');
   });
 
@@ -66,7 +72,7 @@ describe('TileGrid', () => {
       </DashboardProvider>,
     );
 
-    const mainContainer = screen.getByText('Welcome to Dashboard').closest('div')?.parentElement;
+    const mainContainer = screen.getByText('No tiles yet').closest('div')?.parentElement;
     expect(mainContainer).toHaveClass('flex', 'items-center', 'justify-center', 'h-full');
   });
 });

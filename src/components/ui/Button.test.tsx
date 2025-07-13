@@ -33,7 +33,7 @@ describe('Button', () => {
   it('handles click events', () => {
     const handleClick = vi.fn();
     render(<Button onClick={handleClick}>Click me</Button>);
-    
+
     screen.getByRole('button', { name: 'Click me' }).click();
     expect(handleClick).toHaveBeenCalledTimes(1);
   });

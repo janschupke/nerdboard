@@ -10,4 +10,4 @@ export const useTileData = () => {
 
   // Memoize return value to prevent unnecessary re-renders
   return useMemo(() => context, [context]);
-}; 
+};

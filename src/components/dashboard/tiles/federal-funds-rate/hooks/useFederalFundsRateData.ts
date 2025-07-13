@@ -17,7 +17,10 @@ export function useFederalFundsRateData(refreshInterval: number = REFRESH_INTERV
   const [retryCount, setRetryCount] = useState(0);
 
   // Memoize storageKey to prevent recreation on every render
-  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}federal-funds-rate-${timeRange}`, [timeRange]);
+  const storageKey = useMemo(
+    () => `${STORAGE_KEYS.TILE_DATA_PREFIX}federal-funds-rate-${timeRange}`,
+    [timeRange],
+  );
 
   const fetchData = useCallback(
     async (forceRefresh = false) => {

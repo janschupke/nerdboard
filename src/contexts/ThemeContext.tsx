@@ -39,18 +39,17 @@ export const ThemeProvider = React.memo<{ children: React.ReactNode }>(({ childr
   }, []);
 
   // Memoize context value to prevent unnecessary re-renders
-  const contextValue = useMemo(() => ({
-    theme,
-    toggleTheme,
-    setTheme: setThemeMode,
-    tokens: THEME_TOKENS,
-  }), [theme, toggleTheme, setThemeMode]);
-
-  return (
-    <ThemeContext.Provider value={contextValue}>
-      {children}
-    </ThemeContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      theme,
+      toggleTheme,
+      setTheme: setThemeMode,
+      tokens: THEME_TOKENS,
+    }),
+    [theme, toggleTheme, setThemeMode],
   );
+
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 });
 
 export { ThemeContext };
