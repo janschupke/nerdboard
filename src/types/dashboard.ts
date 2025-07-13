@@ -9,6 +9,7 @@ export interface DashboardTile {
   };
   size: TileSize;
   config?: Record<string, unknown>;
+  createdAt?: number;
 }
 
 export interface DashboardLayout {
@@ -22,6 +23,7 @@ export interface DashboardContextType {
   addTile: (tileOrType: DashboardTile | TileType) => void;
   removeTile: (id: string) => void;
   updateTile: (id: string, updates: Partial<DashboardTile>) => void;
+  reorderTiles: (tiles: DashboardTile[]) => void;
   toggleCollapse: () => void;
   setTheme: (theme: 'light' | 'dark') => void;
   refreshAllTiles: () => Promise<void>;

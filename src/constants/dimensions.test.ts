@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  GRID_CONFIG, 
-  TILE_SIZE_CONFIG, 
-  getTileSpan, 
-  calculateGridPosition, 
-  calculateExistingTilePosition, 
-  calculateDropZoneStyle, 
+import {
+  GRID_CONFIG,
+  TILE_SIZE_CONFIG,
+  getTileSpan,
+  calculateGridPosition,
+  calculateExistingTilePosition,
+  calculateDropZoneStyle,
   isPositionValid,
-  getGridTemplateStyle
+  getGridTemplateStyle,
 } from './dimensions';
 
 describe('Grid Configuration', () => {
@@ -64,7 +64,7 @@ describe('calculateGridPosition', () => {
   it('handles different tile sizes correctly', () => {
     const smallPosition = calculateGridPosition(100, 50, mockRect, 'small');
     const largePosition = calculateGridPosition(100, 50, mockRect, 'large');
-    
+
     expect(smallPosition.x).toBe(0);
     expect(largePosition.x).toBe(0); // Large tiles span 4 columns
   });
@@ -78,9 +78,9 @@ describe('calculateExistingTilePosition', () => {
     height: 600,
   } as DOMRect;
 
-  it('calculates position using single-column increments', () => {
-    const position = calculateExistingTilePosition(100, 50, mockRect);
-    expect(position.x).toBe(1); // 100px / (800px/8cols) = 1
+  it('calculates position using tile-sized increments', () => {
+    const position = calculateExistingTilePosition(100, 50, mockRect, 'medium');
+    expect(position.x).toBe(0); // 100px / (800px/8cols) = 1.25, floor(1.25/2)*2 = 0
     expect(position.y).toBe(1); // 50px / (600px/12rows) = 1
   });
 
@@ -142,7 +142,7 @@ describe('isPositionValid', () => {
 describe('getGridTemplateStyle', () => {
   it('returns correct CSS grid template style', () => {
     const style = getGridTemplateStyle();
-    
+
     expect(style.display).toBe('grid');
     expect(style.gridTemplateColumns).toBe('repeat(8, 1fr)');
     expect(style.gridTemplateRows).toBe('repeat(12, 1fr)');
@@ -155,9 +155,14 @@ describe('getGridTemplateStyle', () => {
 describe('Configuration Integration', () => {
   it('ensures grid dimensions are consistent across functions', () => {
     const style = getGridTemplateStyle();
-    const position = calculateGridPosition(100, 50, { left: 0, top: 0, width: 800, height: 600 } as DOMRect);
+    const position = calculateGridPosition(100, 50, {
+      left: 0,
+      top: 0,
+      width: 800,
+      height: 600,
+    } as DOMRect);
     const dropZone = calculateDropZoneStyle(position, 'medium');
-    
+
     // All functions should use the same grid configuration
     expect(style.gridTemplateColumns).toBe('repeat(8, 1fr)');
     expect(dropZone.width).toBe('25%'); // Based on 8 columns
@@ -166,9 +171,9 @@ describe('Configuration Integration', () => {
   it('ensures tile spans are consistent across functions', () => {
     const span = getTileSpan('large');
     const dropZone = calculateDropZoneStyle({ x: 0, y: 0 }, 'large');
-    
+
     // Drop zone width should match tile span
     const expectedWidth = `${(100 / GRID_CONFIG.columns) * span.colSpan}%`;
     expect(dropZone.width).toBe(expectedWidth);
   });
-}); 
+});

@@ -8,7 +8,7 @@ import { TileType } from '../../types/dashboard';
 // Mock Tile component
 vi.mock('./Tile', () => ({
   Tile: ({ tile, children }: { tile: Record<string, unknown>; children?: React.ReactNode }) => (
-    <div data-testid={`draggable-tile-${tile.id as string}`}>{children}</div>
+    <div data-testid={`tile-${tile.type as string}-${tile.id as string}`}>{children}</div>
   ),
 }));
 
@@ -20,7 +20,7 @@ vi.mock('./DraggableTile', () => ({
   }: {
     children: React.ReactNode;
     tile: Record<string, unknown>;
-  }) => <div data-testid={`draggable-tile-${tile.id as string}`}>{children}</div>,
+  }) => <div data-testid={`tile-${tile.type as string}-${tile.id as string}`}>{children}</div>,
 }));
 
 // Mock the dimensions module with all exports
@@ -53,12 +53,51 @@ vi.mock('../../constants/dimensions', () => ({
 function TestDashboardActions() {
   const ctx = React.useContext(DashboardContext);
   if (!ctx) throw new Error('DashboardContext is undefined');
+  
+  const moveTileByType = (tileType: TileType, position: { x: number; y: number }) => {
+    const tile = ctx.state.layout.tiles.find(t => t.type === tileType);
+    if (tile) {
+      ctx.moveTile(tile.id, position);
+    }
+  };
+
+  const reorderTileToEnd = (tileType: TileType) => {
+    const tiles = ctx.state.layout.tiles;
+    const tile = tiles.find(t => t.type === tileType);
+    if (tile) {
+      const newOrder = tiles.filter(t => t.id !== tile.id);
+      newOrder.push(tile);
+      ctx.reorderTiles(newOrder);
+    }
+  };
+
+  const reorderTileToPosition = (tileType: TileType, insertIndex: number) => {
+    const tiles = ctx.state.layout.tiles;
+    const tile = tiles.find(t => t.type === tileType);
+    if (tile) {
+      const newOrder = tiles.filter(t => t.id !== tile.id);
+      newOrder.splice(insertIndex, 0, tile);
+      ctx.reorderTiles(newOrder);
+    }
+  };
+  
   return (
     <div>
       <button onClick={() => ctx.addTile('cryptocurrency' as TileType)} data-testid="add-crypto">Add Crypto</button>
       <button onClick={() => ctx.addTile('precious-metals' as TileType)} data-testid="add-metals">Add Metals</button>
-      <button onClick={() => ctx.addTile('weather-helsinki' as TileType)} data-testid="add-weather">Add Weather</button>
-      <button onClick={() => ctx.removeTile('cryptocurrency')} data-testid="remove-crypto">Remove Crypto</button>
+      <button onClick={() => ctx.addTile('weather_helsinki' as TileType)} data-testid="add-weather">Add Weather</button>
+      <button onClick={() => {
+        const tile = ctx.state.layout.tiles.find(t => t.type === 'cryptocurrency');
+        if (tile) ctx.removeTile(tile.id);
+      }} data-testid="remove-crypto">Remove Crypto</button>
+      <button onClick={() => moveTileByType('cryptocurrency', { x: 2, y: 0 })} data-testid="move-crypto-right">Move Crypto Right</button>
+      <button onClick={() => moveTileByType('cryptocurrency', { x: 0, y: 1 })} data-testid="move-crypto-down">Move Crypto Down</button>
+      <button onClick={() => moveTileByType('cryptocurrency', { x: 6, y: 0 })} data-testid="move-crypto-far-right">Move Crypto Far Right</button>
+      <button onClick={() => moveTileByType('cryptocurrency', { x: 0, y: 2 })} data-testid="move-crypto-far-down">Move Crypto Far Down</button>
+      <button onClick={() => moveTileByType('precious-metals', { x: 4, y: 0 })} data-testid="move-metals-right">Move Metals Right</button>
+      <button onClick={() => moveTileByType('weather_helsinki', { x: 6, y: 0 })} data-testid="move-weather-right">Move Weather Right</button>
+      <button onClick={() => reorderTileToEnd('cryptocurrency')} data-testid="reorder-crypto-to-end">Reorder Crypto To End</button>
+      <button onClick={() => reorderTileToPosition('weather_helsinki', 0)} data-testid="reorder-weather-to-first">Reorder Weather To First</button>
     </div>
   );
 }
@@ -73,14 +112,16 @@ describe('TileGrid', () => {
       <DashboardProvider>
         <TestDashboardActions />
         <TileGrid />
-      </DashboardProvider>
+      </DashboardProvider>,
     );
   }
 
   it('renders empty state when no tiles', () => {
     setup();
     expect(screen.getByText('No tiles yet')).toBeInTheDocument();
-    expect(screen.getByText('Add tiles from the sidebar to start building your dashboard')).toBeInTheDocument();
+    expect(
+      screen.getByText('Add tiles from the sidebar to start building your dashboard'),
+    ).toBeInTheDocument();
   });
 
   it('adds a tile and removes empty state', () => {
@@ -106,5 +147,251 @@ describe('TileGrid', () => {
     expect(screen.queryByText('No tiles yet')).not.toBeInTheDocument();
   });
 
-  // You can add more tests for compaction, drop zone, etc., using the same pattern
+  describe('Drag and Drop Scenarios', () => {
+    it('compacts tiles when dragging first tile to valid position on same row', () => {
+      setup();
+      // Add three tiles
+      fireEvent.click(screen.getByTestId('add-crypto'));
+      fireEvent.click(screen.getByTestId('add-metals'));
+      fireEvent.click(screen.getByTestId('add-weather'));
+
+      // Get the actual tile IDs from the rendered tiles
+      const tileElements = screen.getAllByTestId(/^tile-/);
+      expect(tileElements).toHaveLength(3);
+
+      // Move first tile to the right (valid position)
+      fireEvent.click(screen.getByTestId('move-crypto-right'));
+
+      // All tiles should still be present
+      const remainingTiles = screen.getAllByTestId(/^tile-/);
+      expect(remainingTiles).toHaveLength(3);
+    });
+
+    it('compacts tiles when dragging tile to invalid position', () => {
+      setup();
+      // Add three tiles
+      fireEvent.click(screen.getByTestId('add-crypto'));
+      fireEvent.click(screen.getByTestId('add-metals'));
+      fireEvent.click(screen.getByTestId('add-weather'));
+
+      // Get the actual tile IDs from the rendered tiles
+      const tileElements = screen.getAllByTestId(/^tile-/);
+      expect(tileElements).toHaveLength(3);
+
+      // Move first tile to far right (invalid position)
+      fireEvent.click(screen.getByTestId('move-crypto-far-right'));
+
+      // All tiles should still be present and compacted
+      const remainingTiles = screen.getAllByTestId(/^tile-/);
+      expect(remainingTiles).toHaveLength(3);
+    });
+
+    it('compacts tiles when dragging tile to different row', () => {
+      setup();
+      // Add three tiles
+      fireEvent.click(screen.getByTestId('add-crypto'));
+      fireEvent.click(screen.getByTestId('add-metals'));
+      fireEvent.click(screen.getByTestId('add-weather'));
+
+      // Get the actual tile IDs from the rendered tiles
+      const tileElements = screen.getAllByTestId(/^tile-/);
+      expect(tileElements).toHaveLength(3);
+
+      // Move first tile down to different row
+      fireEvent.click(screen.getByTestId('move-crypto-down'));
+
+      // All tiles should still be present
+      const remainingTiles = screen.getAllByTestId(/^tile-/);
+      expect(remainingTiles).toHaveLength(3);
+    });
+
+    it('compacts tiles when dragging tile to invalid far down position', () => {
+      setup();
+      // Add three tiles
+      fireEvent.click(screen.getByTestId('add-crypto'));
+      fireEvent.click(screen.getByTestId('add-metals'));
+      fireEvent.click(screen.getByTestId('add-weather'));
+
+      // Get the actual tile IDs from the rendered tiles
+      const tileElements = screen.getAllByTestId(/^tile-/);
+      expect(tileElements).toHaveLength(3);
+
+      // Move first tile far down (invalid position)
+      fireEvent.click(screen.getByTestId('move-crypto-far-down'));
+
+      // All tiles should still be present and compacted
+      const remainingTiles = screen.getAllByTestId(/^tile-/);
+      expect(remainingTiles).toHaveLength(3);
+    });
+
+    it('compacts floating tiles when another tile is dragged', () => {
+      setup();
+      // Add three tiles
+      fireEvent.click(screen.getByTestId('add-crypto'));
+      fireEvent.click(screen.getByTestId('add-metals'));
+      fireEvent.click(screen.getByTestId('add-weather'));
+
+      // Get the actual tile IDs from the rendered tiles
+      const tileElements = screen.getAllByTestId(/^tile-/);
+      expect(tileElements).toHaveLength(3);
+
+      // Move first tile to invalid position (creates floating tile)
+      fireEvent.click(screen.getByTestId('move-crypto-far-right'));
+
+      // Move second tile to trigger compaction
+      fireEvent.click(screen.getByTestId('move-metals-right'));
+
+      // All tiles should still be present
+      const remainingTiles = screen.getAllByTestId(/^tile-/);
+      expect(remainingTiles).toHaveLength(3);
+    });
+
+    it('compacts tiles when re-dragging multiple times', () => {
+      setup();
+      // Add three tiles
+      fireEvent.click(screen.getByTestId('add-crypto'));
+      fireEvent.click(screen.getByTestId('add-metals'));
+      fireEvent.click(screen.getByTestId('add-weather'));
+
+      // Get the actual tile IDs from the rendered tiles
+      const tileElements = screen.getAllByTestId(/^tile-/);
+      expect(tileElements).toHaveLength(3);
+
+      // First drag - move crypto to invalid position
+      fireEvent.click(screen.getByTestId('move-crypto-far-right'));
+
+      // Second drag - move metals to trigger compaction
+      fireEvent.click(screen.getByTestId('move-metals-right'));
+
+      // Third drag - move weather to trigger another compaction
+      fireEvent.click(screen.getByTestId('move-weather-right'));
+
+      // All tiles should still be present
+      const remainingTiles = screen.getAllByTestId(/^tile-/);
+      expect(remainingTiles).toHaveLength(3);
+    });
+
+    it('preserves tile order during compaction', () => {
+      setup();
+      // Add tiles in specific order
+      fireEvent.click(screen.getByTestId('add-crypto'));
+      fireEvent.click(screen.getByTestId('add-metals'));
+      fireEvent.click(screen.getByTestId('add-weather'));
+
+      // Get the actual tile IDs from the rendered tiles
+      const tileElements = screen.getAllByTestId(/^tile-/);
+      expect(tileElements).toHaveLength(3);
+
+      // Move tiles around to trigger compaction
+      fireEvent.click(screen.getByTestId('move-crypto-far-right'));
+      fireEvent.click(screen.getByTestId('move-metals-right'));
+
+      // All tiles should still be present (order preserved)
+      const remainingTiles = screen.getAllByTestId(/^tile-/);
+      expect(remainingTiles).toHaveLength(3);
+    });
+
+    it('handles dragging when tiles are already in invalid positions', () => {
+      setup();
+      // Add three tiles
+      fireEvent.click(screen.getByTestId('add-crypto'));
+      fireEvent.click(screen.getByTestId('add-metals'));
+      fireEvent.click(screen.getByTestId('add-weather'));
+
+      // Get the actual tile IDs from the rendered tiles
+      const tileElements = screen.getAllByTestId(/^tile-/);
+      expect(tileElements).toHaveLength(3);
+
+      // Move all tiles to invalid positions
+      fireEvent.click(screen.getByTestId('move-crypto-far-right'));
+      fireEvent.click(screen.getByTestId('move-metals-right'));
+      fireEvent.click(screen.getByTestId('move-weather-right'));
+
+      // Try dragging again - should still compact
+      fireEvent.click(screen.getByTestId('move-crypto-down'));
+
+      // All tiles should still be present
+      const remainingTiles = screen.getAllByTestId(/^tile-/);
+      expect(remainingTiles).toHaveLength(3);
+    });
+
+    it('compacts tiles after removal', () => {
+      setup();
+      // Add three tiles
+      fireEvent.click(screen.getByTestId('add-crypto'));
+      fireEvent.click(screen.getByTestId('add-metals'));
+      fireEvent.click(screen.getByTestId('add-weather'));
+
+      // Get the actual tile IDs from the rendered tiles
+      const tileElements = screen.getAllByTestId(/^tile-/);
+      expect(tileElements).toHaveLength(3);
+
+      // Move tiles to spread them out
+      fireEvent.click(screen.getByTestId('move-crypto-far-right'));
+      fireEvent.click(screen.getByTestId('move-metals-right'));
+
+      // Remove middle tile
+      fireEvent.click(screen.getByTestId('remove-crypto'));
+
+      // Remaining tiles should still be present
+      const remainingTiles = screen.getAllByTestId(/^tile-/);
+      expect(remainingTiles).toHaveLength(2);
+    });
+
+    it('moves tile to the end if dropped on last tile or empty space', () => {
+      setup();
+      // Add three tiles
+      fireEvent.click(screen.getByTestId('add-crypto'));
+      fireEvent.click(screen.getByTestId('add-metals'));
+      fireEvent.click(screen.getByTestId('add-weather'));
+      
+      // Get initial order
+      const initialTiles = screen.getAllByTestId(/^tile-/);
+      expect(initialTiles).toHaveLength(3);
+      
+      // Move first tile (crypto) to the end using reorder helper
+      fireEvent.click(screen.getByTestId('reorder-crypto-to-end'));
+      
+      // Get tiles after move
+      const tilesAfterMove = screen.getAllByTestId(/^tile-/);
+      expect(tilesAfterMove).toHaveLength(3);
+      
+      // Debug: log the actual tile types
+      const tileTypes = tilesAfterMove.map(el => el.getAttribute('data-testid')?.split('-')[1]);
+      console.log('Actual tile types:', tileTypes);
+      
+      // Verify that crypto tile is now last in the order
+      expect(tileTypes[0]).toBe('precious'); // first should be precious-metals
+      expect(tileTypes[1]).toBe('weather_helsinki'); // second should be weather_helsinki  
+      expect(tileTypes[2]).toBe('cryptocurrency'); // last should be crypto
+    });
+
+    it('inserts tile at correct position and shifts others', () => {
+      setup();
+      // Add three tiles
+      fireEvent.click(screen.getByTestId('add-crypto'));
+      fireEvent.click(screen.getByTestId('add-metals'));
+      fireEvent.click(screen.getByTestId('add-weather'));
+      
+      // Get initial order
+      const initialTiles = screen.getAllByTestId(/^tile-/);
+      expect(initialTiles).toHaveLength(3);
+      
+      // Move last tile (weather) to the first position using reorder helper
+      fireEvent.click(screen.getByTestId('reorder-weather-to-first'));
+      
+      // Get tiles after move
+      const tilesAfterMove = screen.getAllByTestId(/^tile-/);
+      expect(tilesAfterMove).toHaveLength(3);
+      
+      // Debug: log the actual tile types
+      const tileTypes = tilesAfterMove.map(el => el.getAttribute('data-testid')?.split('-')[1]);
+      console.log('Actual tile types:', tileTypes);
+      
+      // Verify that weather tile is now first in the order
+      expect(tileTypes[0]).toBe('weather_helsinki'); // first should be weather_helsinki
+      expect(tileTypes[1]).toBe('cryptocurrency'); // second should be crypto
+      expect(tileTypes[2]).toBe('precious'); // third should be precious-metals
+    });
+  });
 });

@@ -22,7 +22,15 @@ interface TileProps {
   className?: string;
 }
 
-export function Tile({ tile, onRemove, children, dragHandleProps, loading, error, className }: TileProps) {
+export function Tile({
+  tile,
+  onRemove,
+  children,
+  dragHandleProps,
+  loading,
+  error,
+  className,
+}: TileProps) {
   const renderTileContent = () => {
     const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
     const config = tile.config || {};
@@ -179,7 +187,7 @@ export function Tile({ tile, onRemove, children, dragHandleProps, loading, error
       aria-label={`${getTileTitle()} tile`}
     >
       {/* Tile Header - Grabbable */}
-      <div 
+      <div
         className="flex items-center justify-between px-4 py-2 border-b border-theme-primary bg-surface-secondary cursor-grab active:cursor-grabbing relative min-h-[2.5rem]"
         style={{ minHeight: '2.5rem' }}
         {...dragHandleProps}

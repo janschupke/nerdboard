@@ -17,6 +17,7 @@ type DashboardAction =
   | { type: 'ADD_TILE'; payload: DashboardTile }
   | { type: 'REMOVE_TILE'; payload: string }
   | { type: 'UPDATE_TILE'; payload: { id: string; updates: Partial<DashboardTile> } }
+  | { type: 'REORDER_TILES'; payload: DashboardTile[] }
   | { type: 'TOGGLE_COLLAPSE' }
   | { type: 'SET_REFRESHING'; payload: boolean }
   | { type: 'SET_LAST_REFRESH'; payload: Date }
@@ -62,6 +63,14 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
           tiles: state.layout.tiles.map((tile: DashboardTile) =>
             tile.id === action.payload.id ? { ...tile, ...action.payload.updates } : tile,
           ),
+        },
+      };
+    case 'REORDER_TILES':
+      return {
+        ...state,
+        layout: {
+          ...state.layout,
+          tiles: action.payload,
         },
       };
     case 'TOGGLE_COLLAPSE':
@@ -117,8 +126,22 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       isCollapsed: typeof layout.isCollapsed === 'boolean' ? layout.isCollapsed : false,
     };
 
+    // Migrate existing tiles to have createdAt property
+    const migratedTiles = validatedLayout.tiles.map((tile: DashboardTile, index: number) => {
+      if (!tile.createdAt) {
+        // Try to extract timestamp from tile ID, or use index as fallback
+        const idMatch = tile.id.match(/tile-(\d+)-/);
+        const timestamp = idMatch ? parseInt(idMatch[1], 10) : Date.now() - index * 1000;
+        return { ...tile, createdAt: timestamp };
+      }
+      return tile;
+    });
+
     return {
-      layout: validatedLayout,
+      layout: {
+        ...validatedLayout,
+        tiles: migratedTiles,
+      },
       isRefreshing:
         typeof storedState.isRefreshing === 'boolean' ? storedState.isRefreshing : false,
       lastRefreshTime:
@@ -156,15 +179,17 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       // Find first available position using unified tile size system
       const GRID_ROWS = 12;
       const GRID_COLUMNS = 8;
-      const grid = Array(GRID_ROWS).fill(null).map(() => Array(GRID_COLUMNS).fill(false));
-      
+      const grid = Array(GRID_ROWS)
+        .fill(null)
+        .map(() => Array(GRID_COLUMNS).fill(false));
+
       // Mark occupied positions
       state.layout.tiles.forEach((tile) => {
         if (tile.position) {
           const { x, y } = tile.position;
           const size = typeof tile.size === 'string' ? tile.size : 'medium';
           const { colSpan, rowSpan } = getTileSpan(size);
-          
+
           for (let i = y; i < Math.min(y + rowSpan, GRID_ROWS); i++) {
             for (let j = x; j < Math.min(x + colSpan, GRID_COLUMNS); j++) {
               if (grid[i] && grid[i][j] !== undefined) {
@@ -174,11 +199,11 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
           }
         }
       });
-      
+
       // Find first available position for medium tile
       const { colSpan, rowSpan } = getTileSpan('medium');
       let newPosition = { x: 0, y: 0 };
-      
+
       outer: for (let y = 0; y <= GRID_ROWS - rowSpan; y++) {
         for (let x = 0; x <= GRID_COLUMNS - colSpan; x++) {
           let canPlace = true;
@@ -203,6 +228,7 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
         type: tileType,
         position: newPosition,
         size: 'medium',
+        createdAt: Date.now(),
       };
 
       dispatch({ type: 'ADD_TILE', payload: newTile });
@@ -210,66 +236,74 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
     [state.layout.tiles, showToast],
   );
 
-  const removeTile = useCallback((id: string) => {
-    dispatch({ type: 'REMOVE_TILE', payload: id });
-    
-    // Trigger compaction after removal
-    setTimeout(() => {
-      const updatedTiles = state.layout.tiles.filter(tile => tile.id !== id);
-      if (updatedTiles.length > 0) {
-        // Reposition all remaining tiles to fill gaps
-        const GRID_ROWS = 12;
-        const GRID_COLUMNS = 8;
-        const grid = Array(GRID_ROWS).fill(null).map(() => Array(GRID_COLUMNS).fill(false));
-        const repositionedTiles: DashboardTile[] = [];
-        
-        updatedTiles.forEach((tile) => {
-          const size = typeof tile.size === 'string' ? tile.size : 'medium';
-          const { colSpan, rowSpan } = getTileSpan(size);
-          
-          // Find first available position
-          let newPosition = { x: 0, y: 0 };
-          outer: for (let y = 0; y <= GRID_ROWS - rowSpan; y++) {
-            for (let x = 0; x <= GRID_COLUMNS - colSpan; x++) {
-              let canPlace = true;
-              for (let i = y; i < y + rowSpan; i++) {
-                for (let j = x; j < x + colSpan; j++) {
-                  if (grid[i] && grid[i][j]) {
-                    canPlace = false;
-                    break;
+  const removeTile = useCallback(
+    (id: string) => {
+      dispatch({ type: 'REMOVE_TILE', payload: id });
+
+      // Trigger compaction after removal
+      setTimeout(() => {
+        const updatedTiles = state.layout.tiles.filter((tile) => tile.id !== id);
+        if (updatedTiles.length > 0) {
+          // Reposition all remaining tiles to fill gaps
+          const GRID_ROWS = 12;
+          const GRID_COLUMNS = 8;
+          const grid = Array(GRID_ROWS)
+            .fill(null)
+            .map(() => Array(GRID_COLUMNS).fill(false));
+          const repositionedTiles: DashboardTile[] = [];
+
+          updatedTiles.forEach((tile) => {
+            const size = typeof tile.size === 'string' ? tile.size : 'medium';
+            const { colSpan, rowSpan } = getTileSpan(size);
+
+            // Find first available position
+            let newPosition = { x: 0, y: 0 };
+            outer: for (let y = 0; y <= GRID_ROWS - rowSpan; y++) {
+              for (let x = 0; x <= GRID_COLUMNS - colSpan; x++) {
+                let canPlace = true;
+                for (let i = y; i < y + rowSpan; i++) {
+                  for (let j = x; j < x + colSpan; j++) {
+                    if (grid[i] && grid[i][j]) {
+                      canPlace = false;
+                      break;
+                    }
                   }
+                  if (!canPlace) break;
                 }
-                if (!canPlace) break;
-              }
-              if (canPlace) {
-                newPosition = { x, y };
-                break outer;
-              }
-            }
-          }
-          
-          // Mark position as occupied
-          for (let i = newPosition.y; i < newPosition.y + rowSpan; i++) {
-            for (let j = newPosition.x; j < newPosition.x + colSpan; j++) {
-              if (grid[i] && grid[i][j] !== undefined) {
-                grid[i][j] = true;
+                if (canPlace) {
+                  newPosition = { x, y };
+                  break outer;
+                }
               }
             }
-          }
-          
-          repositionedTiles.push({
-            ...tile,
-            position: newPosition
+
+            // Mark position as occupied
+            for (let i = newPosition.y; i < newPosition.y + rowSpan; i++) {
+              for (let j = newPosition.x; j < newPosition.x + colSpan; j++) {
+                if (grid[i] && grid[i][j] !== undefined) {
+                  grid[i][j] = true;
+                }
+              }
+            }
+
+            repositionedTiles.push({
+              ...tile,
+              position: newPosition,
+            });
           });
-        });
-        
-        // Update all tiles with new positions
-        repositionedTiles.forEach((tile) => {
-          dispatch({ type: 'UPDATE_TILE', payload: { id: tile.id, updates: { position: tile.position } } });
-        });
-      }
-    }, 0);
-  }, [state.layout.tiles]);
+
+          // Update all tiles with new positions
+          repositionedTiles.forEach((tile) => {
+            dispatch({
+              type: 'UPDATE_TILE',
+              payload: { id: tile.id, updates: { position: tile.position } },
+            });
+          });
+        }
+      }, 0);
+    },
+    [state.layout.tiles],
+  );
 
   const updateTile = useCallback((id: string, updates: Partial<DashboardTile>) => {
     dispatch({ type: 'UPDATE_TILE', payload: { id, updates } });
@@ -295,6 +329,10 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
     }, 1000);
   }, []);
 
+  const reorderTiles = useCallback((tiles: DashboardTile[]) => {
+    dispatch({ type: 'REORDER_TILES', payload: tiles });
+  }, []);
+
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(
     () => ({
@@ -303,12 +341,22 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       removeTile,
       updateTile,
       moveTile,
+      reorderTiles,
       toggleCollapse,
       refreshAllTiles,
       isRefreshing: state.isRefreshing,
       lastRefreshTime: state.lastRefreshTime,
     }),
-    [state, addTile, removeTile, updateTile, moveTile, toggleCollapse, refreshAllTiles],
+    [
+      state,
+      addTile,
+      removeTile,
+      updateTile,
+      moveTile,
+      reorderTiles,
+      toggleCollapse,
+      refreshAllTiles,
+    ],
   );
 
   return (

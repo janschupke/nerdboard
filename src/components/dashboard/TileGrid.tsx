@@ -1,25 +1,17 @@
-import React, { useState, useCallback, useMemo, useContext, useRef } from 'react';
+import React, { useState, useCallback, useContext, useRef } from 'react';
 import { Tile } from './Tile';
 import type { DashboardTile } from '../../types/dashboard';
 import { TileType } from '../../types/dashboard';
 import { useDragAndDrop } from '../../hooks/useDragAndDrop';
 import { DashboardContext } from '../../contexts/DashboardContext';
-import { 
-  GRID_CONFIG, 
-  calculateGridPosition, 
-  calculateExistingTilePosition, 
-  calculateDropZoneStyle, 
-  isPositionValid,
+import {
+  GRID_CONFIG,
+  calculateGridPosition,
+  calculateExistingTilePosition,
+  calculateDropZoneStyle,
   getGridTemplateStyle,
-  getTileSpan
+  getTileSpan,
 } from '../../constants/dimensions';
-
-interface GridCell {
-  x: number;
-  y: number;
-  occupied: boolean;
-  tileId?: string;
-}
 
 export function TileGrid() {
   const dashboardContext = useContext(DashboardContext);
@@ -27,166 +19,195 @@ export function TileGrid() {
     throw new Error('TileGrid must be used within DashboardProvider');
   }
 
-  const { state, removeTile, addTile, moveTile } = dashboardContext;
+  const { state, removeTile, addTile, moveTile, updateTile, reorderTiles } = dashboardContext;
   const { tiles = [] } = state?.layout || {};
   const [isDragOver, setIsDragOver] = useState(false);
-  const [dragTargetPosition, setDragTargetPosition] = useState<{ x: number; y: number } | null>(null);
+  const [dragTargetPosition, setDragTargetPosition] = useState<{ x: number; y: number } | null>(
+    null,
+  );
   const [draggedTileSize, setDraggedTileSize] = useState<'small' | 'medium' | 'large'>('medium');
   const gridRef = useRef<HTMLDivElement>(null);
 
-  // Create grid representation
-  const grid = useMemo(() => {
-    const gridCells: GridCell[][] = Array(GRID_CONFIG.rows).fill(null).map((_, i) =>
-      Array(GRID_CONFIG.columns).fill(null).map((_, j) => ({
-        x: j,
-        y: i,
-        occupied: false,
-      }))
-    );
+  // Compact tiles to fill empty spaces from left to right, top to bottom
+  const compactTiles = useCallback(
+    (orderedTiles?: DashboardTile[]) => {
+      // Use provided order or default to creation order
+      const tilesInOrder = orderedTiles
+        ? [...orderedTiles]
+        : [...tiles].sort((a, b) => {
+            const aCreated = a.createdAt || 0;
+            const bCreated = b.createdAt || 0;
+            return aCreated - bCreated;
+          });
 
-    // Place tiles in grid
-    tiles.forEach((tile: DashboardTile) => {
-      if (tile.position) {
-        const { x, y } = tile.position;
+      const newPositions = new Map<string, { x: number; y: number }>();
+      const occupiedCells = new Set<string>();
+
+      tilesInOrder.forEach((tile) => {
         const size = typeof tile.size === 'string' ? tile.size : 'medium';
         const { colSpan, rowSpan } = getTileSpan(size);
 
-        // Mark cells as occupied
-        for (let i = y; i < Math.min(y + rowSpan, GRID_CONFIG.rows); i++) {
-          for (let j = x; j < Math.min(x + colSpan, GRID_CONFIG.columns); j++) {
-            if (gridCells[i] && gridCells[i][j]) {
-              gridCells[i][j].occupied = true;
-              gridCells[i][j].tileId = tile.id;
+        // Find first available position for this tile
+        let found = false;
+        for (let y = 0; y <= GRID_CONFIG.rows - rowSpan && !found; y++) {
+          for (let x = 0; x <= GRID_CONFIG.columns - colSpan && !found; x++) {
+            let canPlace = true;
+
+            // Check if all required cells are free
+            for (let i = y; i < y + rowSpan; i++) {
+              for (let j = x; j < x + colSpan; j++) {
+                const cellKey = `${i},${j}`;
+                if (occupiedCells.has(cellKey)) {
+                  canPlace = false;
+                  break;
+                }
+              }
+              if (!canPlace) break;
+            }
+
+            if (canPlace) {
+              newPositions.set(tile.id, { x, y });
+              // Mark cells as occupied
+              for (let i = y; i < y + rowSpan; i++) {
+                for (let j = x; j < x + colSpan; j++) {
+                  occupiedCells.add(`${i},${j}`);
+                }
+              }
+              found = true;
             }
           }
         }
-      }
-    });
+      });
 
-    return gridCells;
-  }, [tiles]);
+      // Apply new positions in a single batch
+      newPositions.forEach((position, tileId) => {
+        updateTile(tileId, { position });
+      });
+    },
+    [tiles, updateTile],
+  );
 
-  // Find first available position for a tile
-  const findFirstAvailablePosition = useCallback((tileSize: 'small' | 'medium' | 'large' = 'medium') => {
-    const { colSpan, rowSpan } = getTileSpan(tileSize);
+  // Handle tile movement - always compact after any move
+  const handleTileMove = useCallback(
+    (tileId: string, dropPosition?: { x: number; y: number }) => {
+      const tile = tiles.find((t: DashboardTile) => t.id === tileId);
+      if (!tile) return;
 
-    // Find first available position
-    for (let y = 0; y <= GRID_CONFIG.rows - rowSpan; y++) {
-      for (let x = 0; x <= GRID_CONFIG.columns - colSpan; x++) {
-        let canPlace = true;
-        
-        // Check if all required cells are free
-        for (let i = y; i < y + rowSpan; i++) {
-          for (let j = x; j < x + colSpan; j++) {
-            if (grid[i][j].occupied) {
-              canPlace = false;
-              break;
-            }
-          }
-          if (!canPlace) break;
-        }
-
-        if (canPlace) {
-          return { x, y };
-        }
-      }
-    }
-    
-    return { x: 0, y: 0 };
-  }, [grid]);
-
-  // Handle tile movement - existing tiles stay where dropped, new tiles compact
-  const handleTileMove = useCallback((tileId: string, dropPosition?: { x: number; y: number }) => {
-    const tile = tiles.find((t: DashboardTile) => t.id === tileId);
-    if (!tile) return;
-
-    // For existing tiles, use the drop position if valid
-    if (dropPosition) {
-      const size = typeof tile.size === 'string' ? tile.size : 'medium';
-      
-      // Check if the drop position is valid
-      if (isPositionValid(dropPosition, size as 'small' | 'medium' | 'large')) {
-        
-        // Check if the target area is free
+      let newOrder = [...tiles];
+      if (dropPosition) {
+        const size = typeof tile.size === 'string' ? tile.size : 'medium';
         const { colSpan, rowSpan } = getTileSpan(size);
+        // Check if drop position is valid and not occupied
         let canPlace = true;
         for (let i = dropPosition.y; i < dropPosition.y + rowSpan; i++) {
           for (let j = dropPosition.x; j < dropPosition.x + colSpan; j++) {
-            if (grid[i] && grid[i][j] && grid[i][j].occupied && grid[i][j].tileId !== tileId) {
+            if (i >= GRID_CONFIG.rows || j >= GRID_CONFIG.columns) {
               canPlace = false;
               break;
             }
           }
           if (!canPlace) break;
         }
-        
         if (canPlace) {
+          // Place the dragged tile at the drop position
           moveTile(tileId, dropPosition);
+          // Find if dropPosition is on top of an existing tile
+          let insertIndex = -1;
+          for (let idx = 0; idx < tiles.length; idx++) {
+            const t = tiles[idx];
+            if (t.id === tileId) continue;
+            const tSize = typeof t.size === 'string' ? t.size : 'medium';
+            const { colSpan: tCol, rowSpan: tRow } = getTileSpan(tSize);
+            const tX = t.position?.x ?? 0;
+            const tY = t.position?.y ?? 0;
+            if (
+              dropPosition.x >= tX &&
+              dropPosition.x < tX + tCol &&
+              dropPosition.y >= tY &&
+              dropPosition.y < tY + tRow
+            ) {
+              insertIndex = idx;
+              break;
+            }
+          }
+          // Remove dragged tile from current order
+          newOrder = tiles.filter((t) => t.id !== tileId);
+          if (insertIndex === -1) {
+            // Not on top of any tile: move to end
+            newOrder.push(tile);
+          } else {
+            // Insert at found index
+            newOrder.splice(insertIndex, 0, tile);
+          }
+          reorderTiles(newOrder);
+          compactTiles(newOrder);
           return;
         }
       }
-    }
-    
-    // If drop position is invalid or not provided, keep tile in current position
-    if (tile.position) {
-      // Tile already has a position, don't change it
-      return;
-    }
-    
-    // Only compact to first available position for new tiles without position
-    const firstAvailable = findFirstAvailablePosition(tile.size as 'small' | 'medium' | 'large');
-    moveTile(tileId, firstAvailable);
-  }, [tiles, grid, findFirstAvailablePosition, moveTile]);
+      // Always compact all tiles after any move, regardless of drop position validity
+      compactTiles();
+    },
+    [tiles, moveTile, compactTiles, reorderTiles],
+  );
 
   // Drag and drop hook
   const { startDrag, endDrag } = useDragAndDrop(handleTileMove);
 
   // Handle drag over grid
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    
-    if (!gridRef.current) return;
-    const rect = gridRef.current.getBoundingClientRect();
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
 
-    if (e.dataTransfer.types.includes('application/nerdboard-tile-type')) {
-      setIsDragOver(true);
-      setDraggedTileSize('medium'); // Default to medium for new tiles
-      const position = calculateGridPosition(e.clientX, e.clientY, rect, 'medium');
-      setDragTargetPosition(position);
-    } else if (e.dataTransfer.types.includes('application/nerdboard-tile-move')) {
-      setIsDragOver(true);
-      
-      // Get the tile ID from the drag event
-      const tileId = e.dataTransfer.getData('application/nerdboard-tile-move');
-      let tileSize: 'small' | 'medium' | 'large' = 'medium';
-      if (tileId) {
-        const tile = tiles.find((t: DashboardTile) => t.id === tileId);
-        if (tile) {
-          tileSize = (typeof tile.size === 'string' ? tile.size : 'medium') as 'small' | 'medium' | 'large';
+      if (!gridRef.current) return;
+      const rect = gridRef.current.getBoundingClientRect();
+
+      if (e.dataTransfer.types.includes('application/nerdboard-tile-type')) {
+        setIsDragOver(true);
+        setDraggedTileSize('medium'); // Default to medium for new tiles
+        const position = calculateGridPosition(e.clientX, e.clientY, rect, 'medium');
+        setDragTargetPosition(position);
+      } else if (e.dataTransfer.types.includes('application/nerdboard-tile-move')) {
+        setIsDragOver(true);
+
+        // Get the tile ID from the drag event
+        const tileId = e.dataTransfer.getData('application/nerdboard-tile-move');
+        let tileSize: 'small' | 'medium' | 'large' = 'medium';
+        if (tileId) {
+          const tile = tiles.find((t: DashboardTile) => t.id === tileId);
+          if (tile) {
+            tileSize = (typeof tile.size === 'string' ? tile.size : 'medium') as
+              | 'small'
+              | 'medium'
+              | 'large';
+          }
         }
+        setDraggedTileSize(tileSize);
+        const position = calculateExistingTilePosition(e.clientX, e.clientY, rect, tileSize);
+        setDragTargetPosition(position);
       }
-      setDraggedTileSize(tileSize);
-      const position = calculateExistingTilePosition(e.clientX, e.clientY, rect, tileSize);
-      setDragTargetPosition(position);
-    }
-  }, [tiles]);
+    },
+    [tiles],
+  );
 
   // Handle drop
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    setIsDragOver(false);
-    const dropPosition = dragTargetPosition;
-    setDragTargetPosition(null);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      setIsDragOver(false);
+      const dropPosition = dragTargetPosition;
+      setDragTargetPosition(null);
 
-    const tileType = e.dataTransfer.getData('application/nerdboard-tile-type');
-    if (tileType) {
-      addTile(tileType as TileType);
-    }
+      const tileType = e.dataTransfer.getData('application/nerdboard-tile-type');
+      if (tileType) {
+        addTile(tileType as TileType);
+      }
 
-    const tileId = e.dataTransfer.getData('application/nerdboard-tile-move');
-    if (tileId && dropPosition) {
-      handleTileMove(tileId, dropPosition);
-    }
-  }, [addTile, dragTargetPosition, handleTileMove]);
+      const tileId = e.dataTransfer.getData('application/nerdboard-tile-move');
+      if (tileId && dropPosition) {
+        handleTileMove(tileId, dropPosition);
+      }
+    },
+    [addTile, dragTargetPosition, handleTileMove],
+  );
 
   // Handle drag leave
   const handleDragLeave = useCallback(() => {
@@ -240,15 +261,11 @@ export function TileGrid() {
       onDragLeave={handleDragLeave}
     >
       {/* Grid container using CSS Grid */}
-      <div 
-        ref={gridRef}
-        className="relative min-h-full"
-        style={getGridTemplateStyle()}
-      >
+      <div ref={gridRef} className="relative min-h-full" style={getGridTemplateStyle()}>
         {tiles.map((tile: DashboardTile) => (
-          <Tile 
-            key={tile.id} 
-            tile={tile} 
+          <Tile
+            key={tile.id}
+            tile={tile}
             onRemove={removeTile}
             dragHandleProps={{
               draggable: true,
@@ -260,7 +277,7 @@ export function TileGrid() {
                 startDrag(tile.id, tile.position || { x: 0, y: 0 });
               },
               onDragEnd: endDrag,
-              className: 'cursor-grab active:cursor-grabbing'
+              className: 'cursor-grab active:cursor-grabbing',
             }}
           />
         ))}

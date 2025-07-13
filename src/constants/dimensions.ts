@@ -24,19 +24,19 @@ export function calculateGridPosition(
   clientX: number,
   clientY: number,
   rect: DOMRect,
-  tileSize: 'small' | 'medium' | 'large' = 'medium'
+  tileSize: 'small' | 'medium' | 'large' = 'medium',
 ): { x: number; y: number } {
   const { colSpan, rowSpan } = getTileSpan(tileSize);
   const gridCellWidth = rect.width / GRID_CONFIG.columns;
   const gridCellHeight = rect.height / GRID_CONFIG.rows;
-  
+
   const rawX = (clientX - rect.left) / gridCellWidth;
   const rawY = (clientY - rect.top) / gridCellHeight;
-  
+
   // For new tiles, snap to tile-sized grid positions
   const x = Math.floor(rawX / colSpan) * colSpan;
   const y = Math.floor(rawY / rowSpan) * rowSpan;
-  
+
   return { x, y };
 }
 
@@ -44,28 +44,28 @@ export function calculateExistingTilePosition(
   clientX: number,
   clientY: number,
   rect: DOMRect,
-  tileSize: 'small' | 'medium' | 'large' = 'medium'
+  tileSize: 'small' | 'medium' | 'large' = 'medium',
 ): { x: number; y: number } {
   const { colSpan, rowSpan } = getTileSpan(tileSize);
   const gridCellWidth = rect.width / GRID_CONFIG.columns;
   const gridCellHeight = rect.height / GRID_CONFIG.rows;
-  
+
   const rawX = (clientX - rect.left) / gridCellWidth;
   const rawY = (clientY - rect.top) / gridCellHeight;
-  
+
   // For existing tiles, snap to tile-sized grid positions (same as new tiles)
   const x = Math.floor(rawX / colSpan) * colSpan;
   const y = Math.floor(rawY / rowSpan) * rowSpan;
-  
+
   return { x, y };
 }
 
 export function calculateDropZoneStyle(
   position: { x: number; y: number },
-  tileSize: 'small' | 'medium' | 'large' = 'medium'
+  tileSize: 'small' | 'medium' | 'large' = 'medium',
 ): React.CSSProperties {
   const { colSpan, rowSpan } = getTileSpan(tileSize);
-  
+
   return {
     left: `${position.x * (100 / GRID_CONFIG.columns)}%`,
     top: `${position.y * (100 / GRID_CONFIG.rows)}%`,
@@ -76,10 +76,10 @@ export function calculateDropZoneStyle(
 
 export function isPositionValid(
   position: { x: number; y: number },
-  tileSize: 'small' | 'medium' | 'large' = 'medium'
+  tileSize: 'small' | 'medium' | 'large' = 'medium',
 ): boolean {
   const { colSpan, rowSpan } = getTileSpan(tileSize);
-  
+
   return (
     position.x >= 0 &&
     position.x <= GRID_CONFIG.columns - colSpan &&
