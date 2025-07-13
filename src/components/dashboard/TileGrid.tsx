@@ -12,7 +12,6 @@ export function TileGrid() {
     return (
       <div 
         className="flex items-center justify-center h-full"
-        role="main"
         aria-label="Dashboard grid"
       >
         <div className="text-center">

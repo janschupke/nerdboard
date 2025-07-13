@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock fetch globally
-(globalThis as typeof globalThis & { fetch: ReturnType<typeof vi.fn> }).fetch = vi.fn();
-
 describe('ApiService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -190,7 +187,8 @@ describe('ApiService', () => {
   it('should handle request timeout', async () => {
     vi.mocked(fetch).mockImplementation(() => {
       return new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Aborted')), 100);
+        // Use immediate rejection instead of setTimeout
+        reject(new Error('Aborted'));
       });
     });
 

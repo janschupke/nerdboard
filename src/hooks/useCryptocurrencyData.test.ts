@@ -1,58 +1,106 @@
 import { renderHook } from '@testing-library/react';
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { useCryptocurrencyData } from './useCryptocurrencyData';
-import { waitFor } from '@testing-library/react';
+import { createCryptocurrencyListMockData, createCryptocurrencyMockData } from '../test/mocks/factories/cryptocurrencyFactory';
 import { CoinGeckoApiService } from '../services/coinGeckoApi';
 
 describe('useCryptocurrencyData', () => {
+  let service: CoinGeckoApiService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    service = new CoinGeckoApiService();
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
   it('returns loading initially', () => {
-    const { result } = renderHook(() => useCryptocurrencyData());
+    vi.spyOn(service, 'getTopCryptocurrencies').mockResolvedValue([]);
+    const { result } = renderHook(() => useCryptocurrencyData(30000, service));
     expect(result.current.loading).toBe(true);
   });
 
   it('returns data after loading', async () => {
-    const mockService = {
-      getTopCryptocurrencies: vi.fn().mockResolvedValue([
-        {
-          id: 'bitcoin',
-          symbol: 'btc',
-          name: 'Bitcoin',
-          current_price: 50000,
-          market_cap: 1000000000000,
-          market_cap_rank: 1,
-          price_change_percentage_24h: 2.5,
-          price_change_24h: 1000,
-          total_volume: 50000000,
-          circulating_supply: 19000000,
-          total_supply: 21000000,
-          max_supply: 21000000,
-          ath: 69000,
-          ath_change_percentage: -27.5,
-          atl: 67.81,
-          atl_change_percentage: 73600,
-          last_updated: '2024-07-12T23:00:00Z',
-        },
-      ]),
-    } as unknown as CoinGeckoApiService;
-    const { result } = renderHook(() => useCryptocurrencyData(30000, mockService));
-    await waitFor(() => {
+    const mockData = createCryptocurrencyListMockData(5);
+    vi.spyOn(service, 'getTopCryptocurrencies').mockResolvedValue(mockData);
+    const { result } = renderHook(() => useCryptocurrencyData(30000, service));
+    await vi.waitFor(() => {
       expect(result.current.data.length).toBeGreaterThan(0);
+      expect(result.current.loading).toBe(false);
+    });
+    expect(result.current.error).toBeNull();
+  });
+
+  it('returns error on fetch failure', async () => {
+    vi.spyOn(service, 'getTopCryptocurrencies').mockRejectedValue(new Error('Network error: Failed to fetch'));
+    const { result } = renderHook(() => useCryptocurrencyData(30000, service));
+    await vi.waitFor(() => {
+      expect(result.current.error).toBe('Network error: Failed to fetch');
       expect(result.current.loading).toBe(false);
     });
   });
 
-  it('returns error on fetch failure', async () => {
-    const mockService = {
-      getTopCryptocurrencies: vi.fn().mockRejectedValue(new Error('Failed to load cryptocurrency data')),
-    } as unknown as CoinGeckoApiService;
-    const { result } = renderHook(() => useCryptocurrencyData(30000, mockService));
-    await waitFor(() => {
-      expect(result.current.error).toBe('Failed to load cryptocurrency data');
+  it('handles API errors correctly', async () => {
+    vi.spyOn(service, 'getTopCryptocurrencies').mockRejectedValue(new Error('API error: 500 Internal Server Error'));
+    const { result } = renderHook(() => useCryptocurrencyData(30000, service));
+    await vi.waitFor(() => {
+      expect(result.current.error).toBe('API error: 500 Internal Server Error');
       expect(result.current.loading).toBe(false);
+    });
+  });
+
+  it('handles timeout errors correctly', async () => {
+    vi.spyOn(service, 'getTopCryptocurrencies').mockRejectedValue(new Error('Request timeout'));
+    const { result } = renderHook(() => useCryptocurrencyData(30000, service));
+    await vi.waitFor(() => {
+      expect(result.current.error).toBe('Request timeout');
+      expect(result.current.loading).toBe(false);
+    });
+  });
+
+  it('handles malformed response errors', async () => {
+    vi.spyOn(service, 'getTopCryptocurrencies').mockRejectedValue(new Error('Invalid JSON response'));
+    const { result } = renderHook(() => useCryptocurrencyData(30000, service));
+    await vi.waitFor(() => {
+      expect(result.current.error).toBe('Invalid JSON response');
+      expect(result.current.loading).toBe(false);
+    });
+  });
+
+  it('increments retry count on error', async () => {
+    vi.spyOn(service, 'getTopCryptocurrencies').mockRejectedValue(new Error('Network error'));
+    const { result } = renderHook(() => useCryptocurrencyData(30000, service));
+    await vi.waitFor(() => {
+      expect(result.current.error).toBe('Network error');
+      expect(result.current.retryCount).toBe(1);
+    });
+  });
+
+  it('resets retry count on successful fetch', async () => {
+    const mockData = createCryptocurrencyListMockData(5);
+    vi.spyOn(service, 'getTopCryptocurrencies').mockResolvedValue(mockData);
+    const { result } = renderHook(() => useCryptocurrencyData(30000, service));
+    await vi.waitFor(() => {
+      expect(result.current.data).toEqual(mockData);
+      expect(result.current.retryCount).toBe(0);
+    });
+  });
+
+  it('provides refetch function', async () => {
+    const mockData = createCryptocurrencyListMockData(5);
+    const spy = vi.spyOn(service, 'getTopCryptocurrencies').mockResolvedValue(mockData);
+    const { result } = renderHook(() => useCryptocurrencyData(30000, service));
+    await vi.waitFor(() => {
+      expect(result.current.data).toEqual(mockData);
+    });
+    expect(typeof result.current.refetch).toBe('function');
+    const newCoin = createCryptocurrencyMockData({ id: 'new-coin', name: 'New Coin' });
+    spy.mockResolvedValueOnce([...mockData, newCoin]);
+    result.current.refetch();
+    await vi.waitFor(() => {
+      expect(result.current.retryCount).toBe(0);
     });
   });
 }); 

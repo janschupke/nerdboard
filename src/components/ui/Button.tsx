@@ -25,9 +25,9 @@ export function Button({
   };
 
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    sm: 'px-3 py-1.5 text-sm h-8',
+    md: 'px-4 py-2 text-base h-10',
+    lg: 'px-6 py-3 text-lg h-12',
   };
 
   const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;

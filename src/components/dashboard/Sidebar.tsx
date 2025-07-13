@@ -51,7 +51,7 @@ export function Sidebar({ isOpen, onToggle, onTileSelect }: SidebarProps) {
                 key={tile.type}
                 className="p-4 border border-theme-primary rounded-lg hover:border-accent-primary hover:bg-accent-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2"
                 onClick={() => onTileSelect(tile.type)}
-                role="option"
+                role="button"
                 aria-selected="false"
                 tabIndex={0}
                 data-tile-type={tile.type}
