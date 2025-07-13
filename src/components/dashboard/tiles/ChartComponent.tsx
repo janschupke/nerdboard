@@ -77,6 +77,7 @@ export function ChartComponent({
             strokeWidth={CHART_CONFIG.STROKE_WIDTH}
             dot={false}
             activeDot={{ r: CHART_CONFIG.ACTIVE_DOT_RADIUS, fill: color }}
+            isAnimationActive={false}
           />
         </LineChart>
       </ResponsiveContainer>

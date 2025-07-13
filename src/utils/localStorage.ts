@@ -28,12 +28,45 @@ export const getCachedData = <T>(key: string): T | null => {
       return null;
     }
 
-    return cached.data;
+    // Reconstruct Date objects in the data
+    const reconstructedData = reconstructDates(cached.data);
+    return reconstructedData as T;
   } catch (error) {
     console.warn('Failed to retrieve cached data:', error);
     return null;
   }
 };
+
+// Helper function to recursively reconstruct Date objects
+function reconstructDates(obj: unknown): unknown {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (typeof obj === 'string') {
+    // Check if this string looks like a date
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(obj)) {
+      return new Date(obj);
+    }
+    return obj;
+  }
+
+  if (typeof obj === 'object') {
+    if (Array.isArray(obj)) {
+      return obj.map(reconstructDates);
+    }
+
+    const reconstructed: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      reconstructed[key] = reconstructDates(value);
+    }
+    return reconstructed;
+  }
+
+  return obj;
+}
+
+
 
 export const setCachedData = <T>(key: string, data: T): void => {
   try {

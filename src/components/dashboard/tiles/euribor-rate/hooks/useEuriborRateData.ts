@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { EuriborRateApiService } from '../services/euriborRateApi';
 import { EURIBOR_RATE_UI_CONFIG } from '../constants';
 import type { EuriborRateData, TimeRange } from '../types';
@@ -15,7 +15,8 @@ export const useEuriborRateData = () => {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isCached, setIsCached] = useState(false);
 
-  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}euribor-rate-${timeRange}`;
+  // Memoize storageKey to prevent recreation on every render
+  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}euribor-rate-${timeRange}`, [timeRange]);
 
   const loadData = useCallback(
     async (range: TimeRange, forceRefresh = false) => {

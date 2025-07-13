@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -24,6 +24,24 @@ export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
   const formatYAxis = (tickItem: number) => {
     return `${tickItem.toFixed(2)}%`;
   };
+
+  // Helper to create a content hash for data
+  function dataContentHash(data: EuriborRatePoint[]): string {
+    if (!data || data.length === 0) return '';
+    return data.map(point => `${point.date.getTime()}:${point.rate}`).join('|');
+  }
+
+  // Memoize chart data transformation to prevent unnecessary re-renders
+  const chartData = useMemo(() => {
+    return data.map((point) => ({
+      date: point.date,
+      rate: point.rate,
+      formattedDate: point.date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: '2-digit',
+      }),
+    }));
+  }, [dataContentHash(data)]);
 
   const CustomTooltip = ({
     active,
@@ -62,16 +80,6 @@ export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
     );
   }
 
-  // Transform data for Recharts
-  const chartData = data.map((point) => ({
-    date: point.date,
-    rate: point.rate,
-    formattedDate: point.date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: '2-digit',
-    }),
-  }));
-
   return (
     <div className="euribor-rate-chart">
       <ResponsiveContainer width="100%" height={200}>
@@ -106,6 +114,7 @@ export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
               r: EURIBOR_RATE_CHART_CONFIG.STYLES.ACTIVE_DOT_RADIUS,
               fill: EURIBOR_RATE_CHART_CONFIG.COLORS.SECONDARY,
             }}
+            isAnimationActive={false}
           />
         </LineChart>
       </ResponsiveContainer>

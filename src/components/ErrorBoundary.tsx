@@ -81,8 +81,7 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
             <Icon name="warning" size="lg" className="text-error-500 mx-auto mb-3" />
             <h2 className="text-lg font-semibold text-error-600 mb-2">Something went wrong</h2>
             <p className="text-theme-secondary mb-4 text-sm">
-              We're sorry, but there was an error loading this component. This has been
-              automatically reported to our team.
+              There was an error loading this component.
             </p>
             {this.state.error && (
               <details className="text-xs text-theme-tertiary mb-4">

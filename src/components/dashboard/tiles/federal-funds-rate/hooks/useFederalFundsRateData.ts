@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { FederalFundsRateApiService } from '../services/federalFundsRateApi';
 import { FEDERAL_FUNDS_ERROR_MESSAGES } from '../constants';
 import type { FederalFundsRateData, TimeRange } from '../types';
@@ -16,7 +16,8 @@ export function useFederalFundsRateData(refreshInterval: number = REFRESH_INTERV
   const [isCached, setIsCached] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}federal-funds-rate-${timeRange}`;
+  // Memoize storageKey to prevent recreation on every render
+  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}federal-funds-rate-${timeRange}`, [timeRange]);
 
   const fetchData = useCallback(
     async (forceRefresh = false) => {

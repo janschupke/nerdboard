@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -36,7 +36,10 @@ const generateChartData = (basePrice: number) => {
 };
 
 export const UraniumChart = React.memo<UraniumChartProps>(({ uraniumData, size }) => {
-  const chartData = generateChartData(uraniumData.spotPrice);
+  // Memoize chart data to prevent unnecessary re-renders
+  const chartData = useMemo(() => {
+    return generateChartData(uraniumData.spotPrice);
+  }, [uraniumData.spotPrice]);
 
   const getChartHeight = () => {
     switch (size) {
@@ -98,6 +101,7 @@ export const UraniumChart = React.memo<UraniumChartProps>(({ uraniumData, size }
             strokeWidth={URANIUM_CHART_CONFIG.STYLES.STROKE_WIDTH}
             dot={{ r: URANIUM_CHART_CONFIG.STYLES.ACTIVE_DOT_RADIUS }}
             activeDot={{ r: URANIUM_CHART_CONFIG.STYLES.ACTIVE_DOT_RADIUS * 1.5 }}
+            isAnimationActive={false}
           />
         </LineChart>
       </ResponsiveContainer>

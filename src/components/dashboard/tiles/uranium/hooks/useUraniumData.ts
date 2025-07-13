@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { uraniumApi } from '../services/uraniumApi';
 import type { UraniumPriceData, UraniumTimeRange } from '../types';
 import { getCachedData, setCachedData } from '../../../../../utils/localStorage';
@@ -23,7 +23,8 @@ export const useUraniumData = (
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isCached, setIsCached] = useState(false);
 
-  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}uranium-${timeRange}`;
+  // Memoize storageKey to prevent recreation on every render
+  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}uranium-${timeRange}`, [timeRange]);
 
   const fetchUraniumData = useCallback(
     async (forceRefresh = false) => {

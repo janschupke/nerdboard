@@ -190,3 +190,61 @@ describe('Local Storage Utilities', () => {
     });
   });
 });
+
+describe('Date reconstruction', () => {
+  it('should reconstruct Date objects from JSON strings', () => {
+    const testData = {
+      currentRate: 5.25,
+      lastUpdate: new Date('2024-01-01T12:00:00Z'),
+      historicalData: [
+        { date: new Date('2024-01-01T00:00:00Z'), rate: 5.0 },
+        { date: new Date('2024-01-15T00:00:00Z'), rate: 5.25 },
+      ],
+    };
+
+    // Simulate storing and retrieving data
+    const key = 'test-date-reconstruction';
+    setCachedData(key, testData);
+    const retrieved = getCachedData<typeof testData>(key);
+
+    expect(retrieved).toBeDefined();
+    expect(retrieved?.lastUpdate).toBeInstanceOf(Date);
+    expect(retrieved?.historicalData[0].date).toBeInstanceOf(Date);
+    expect(retrieved?.historicalData[1].date).toBeInstanceOf(Date);
+    expect(retrieved?.lastUpdate.getTime()).toBe(new Date('2024-01-01T12:00:00Z').getTime());
+    expect(retrieved?.historicalData[0].date.getTime()).toBe(new Date('2024-01-01T00:00:00Z').getTime());
+    expect(retrieved?.historicalData[1].date.getTime()).toBe(new Date('2024-01-15T00:00:00Z').getTime());
+  });
+});
+
+describe('FederalFundsRateTile specific scenario', () => {
+  it('should handle FederalFundsRateData with Date objects correctly', () => {
+    const federalFundsData = {
+      currentRate: 5.25,
+      lastUpdate: new Date('2024-01-01T12:00:00Z'),
+      historicalData: [
+        { date: new Date('2024-01-01T00:00:00Z'), rate: 5.0 },
+        { date: new Date('2024-01-15T00:00:00Z'), rate: 5.25 },
+      ],
+    };
+
+    // Simulate storing and retrieving data like in the FederalFundsRateTile
+    const key = 'federal-funds-rate-1Y';
+    setCachedData(key, federalFundsData);
+    const retrieved = getCachedData<typeof federalFundsData>(key);
+
+    expect(retrieved).toBeDefined();
+    expect(retrieved?.historicalData).toBeDefined();
+    expect(retrieved?.historicalData.length).toBe(2);
+
+    // This is the specific line that was causing the error
+    const timestamp = retrieved?.historicalData[0].date.getTime();
+    expect(timestamp).toBe(new Date('2024-01-01T00:00:00Z').getTime());
+    expect(typeof timestamp).toBe('number');
+
+    // Test the second item as well
+    const timestamp2 = retrieved?.historicalData[1].date.getTime();
+    expect(timestamp2).toBe(new Date('2024-01-15T00:00:00Z').getTime());
+    expect(typeof timestamp2).toBe('number');
+  });
+});
