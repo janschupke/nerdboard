@@ -15,12 +15,16 @@
     "prettier:write": "prettier --write ."
   },
   "dependencies": {
-    "canvas": "^3.1.2",
+    "@reduxjs/toolkit": "^2.8.2",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^15.0.7",
+    "@testing-library/user-event": "^14.6.2",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-is": "^19.1.0",
-    "recharts": "^3.1.0",
-    "sharp": "^0.34.3"
+    "recharts": "^3.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
