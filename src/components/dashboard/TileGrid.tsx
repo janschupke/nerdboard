@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useContext } from 'react';
+import React, { useState, useCallback, useMemo, useContext, useRef } from 'react';
 import { Tile } from './Tile';
 import type { DashboardTile } from '../../types/dashboard';
 import { TileType } from '../../types/dashboard';
@@ -32,6 +32,7 @@ export function TileGrid() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragTargetPosition, setDragTargetPosition] = useState<{ x: number; y: number } | null>(null);
   const [draggedTileSize, setDraggedTileSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const gridRef = useRef<HTMLDivElement>(null);
 
   // Create grid representation
   const grid = useMemo(() => {
@@ -144,21 +145,31 @@ export function TileGrid() {
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     
+    if (!gridRef.current) return;
+    const rect = gridRef.current.getBoundingClientRect();
+
     if (e.dataTransfer.types.includes('application/nerdboard-tile-type')) {
       setIsDragOver(true);
       setDraggedTileSize('medium'); // Default to medium for new tiles
-      
-      const rect = e.currentTarget.getBoundingClientRect();
       const position = calculateGridPosition(e.clientX, e.clientY, rect, 'medium');
       setDragTargetPosition(position);
     } else if (e.dataTransfer.types.includes('application/nerdboard-tile-move')) {
       setIsDragOver(true);
       
-      const rect = e.currentTarget.getBoundingClientRect();
-      const position = calculateExistingTilePosition(e.clientX, e.clientY, rect);
+      // Get the tile ID from the drag event
+      const tileId = e.dataTransfer.getData('application/nerdboard-tile-move');
+      let tileSize: 'small' | 'medium' | 'large' = 'medium';
+      if (tileId) {
+        const tile = tiles.find((t: DashboardTile) => t.id === tileId);
+        if (tile) {
+          tileSize = (typeof tile.size === 'string' ? tile.size : 'medium') as 'small' | 'medium' | 'large';
+        }
+      }
+      setDraggedTileSize(tileSize);
+      const position = calculateExistingTilePosition(e.clientX, e.clientY, rect, tileSize);
       setDragTargetPosition(position);
     }
-  }, []);
+  }, [tiles]);
 
   // Handle drop
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -230,6 +241,7 @@ export function TileGrid() {
     >
       {/* Grid container using CSS Grid */}
       <div 
+        ref={gridRef}
         className="relative min-h-full"
         style={getGridTemplateStyle()}
       >
