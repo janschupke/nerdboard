@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PreciousMetalsApiService } from '../services/preciousMetalsApi';
 import { PRECIOUS_METALS_API_CONFIG, PRECIOUS_METALS_ERROR_MESSAGES } from '../constants';
+import { STORAGE_KEYS } from '../../../../../utils/constants';
+import { SmartDataFetcher } from '../../../../../utils/smartDataFetcher';
 import type { PreciousMetalsData } from '../types';
 
 const apiService = new PreciousMetalsApiService();
@@ -13,44 +15,77 @@ export function usePreciousMetalsData(
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isCached, setIsCached] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await apiService.getPreciousMetalsData();
-      setData(result);
-      setLastUpdated(new Date());
-      setIsCached(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : PRECIOUS_METALS_ERROR_MESSAGES.FETCH_FAILED);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}precious-metals`;
+
+  const fetchData = useCallback(
+    async (forceRefresh = false) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const result = await SmartDataFetcher.fetchWithBackgroundRefresh(
+          () => apiService.getPreciousMetalsData(),
+          storageKey,
+          {
+            forceRefresh,
+            fallbackToCache: true,
+          },
+        );
+
+        setData(result.data);
+        setLastUpdated(result.lastUpdated);
+        setIsCached(result.isCached);
+        setRetryCount(result.retryCount);
+
+        if (result.error && !result.isCached) {
+          setError(result.error);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : PRECIOUS_METALS_ERROR_MESSAGES.FETCH_FAILED);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [storageKey],
+  );
 
   // Listen for global refresh events
   useEffect(() => {
     const handleGlobalRefresh = () => {
-      fetchData();
+      fetchData(true);
+    };
+
+    const handleBackgroundRefresh = (event: CustomEvent) => {
+      if (event.detail.key === storageKey) {
+        fetchData(true);
+      }
     };
 
     window.addEventListener('refresh-all-tiles', handleGlobalRefresh);
+    window.addEventListener('background-refresh', handleBackgroundRefresh as EventListener);
 
     return () => {
       window.removeEventListener('refresh-all-tiles', handleGlobalRefresh);
+      window.removeEventListener('background-refresh', handleBackgroundRefresh as EventListener);
     };
-  }, [fetchData]);
+  }, [fetchData, storageKey]);
 
   useEffect(() => {
     fetchData();
+  }, [fetchData]);
 
-    const interval = setInterval(fetchData, refreshInterval);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchData();
+    }, refreshInterval);
+
     return () => clearInterval(interval);
   }, [fetchData, refreshInterval]);
 
   const refetch = useCallback(() => {
-    fetchData();
+    fetchData(true);
   }, [fetchData]);
 
   return {
@@ -59,6 +94,7 @@ export function usePreciousMetalsData(
     error,
     lastUpdated,
     isCached,
+    retryCount,
     refetch,
   };
 }

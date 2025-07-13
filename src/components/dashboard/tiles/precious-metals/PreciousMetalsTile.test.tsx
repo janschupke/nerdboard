@@ -2,7 +2,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { PreciousMetalsTile } from './PreciousMetalsTile';
 import { TileSize } from '../../../../types/dashboard';
-import * as preciousMetalsApiModule from './services/preciousMetalsApi';
+
+// Mock the smart data fetcher
+vi.mock('../../../../utils/smartDataFetcher', () => ({
+  SmartDataFetcher: {
+    fetchWithBackgroundRefresh: vi.fn(),
+  },
+}));
 
 describe('PreciousMetalsTile', () => {
   const baseProps = {
@@ -21,13 +27,20 @@ describe('PreciousMetalsTile', () => {
   });
 
   it('renders data when loaded', async () => {
-    vi.spyOn(
-      preciousMetalsApiModule.PreciousMetalsApiService.prototype,
-      'getPreciousMetalsData',
-    ).mockResolvedValue({
-      gold: { price: 1950.5, change_24h: 12.3, change_percentage_24h: 0.63 },
-      silver: { price: 24.75, change_24h: -0.15, change_percentage_24h: -0.6 },
+    const { SmartDataFetcher } = await import('../../../../utils/smartDataFetcher');
+    
+    // Mock the smart data fetcher to return success
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
+      data: {
+        gold: { price: 1950.5, change_24h: 12.3, change_percentage_24h: 0.63 },
+        silver: { price: 24.75, change_24h: -0.15, change_percentage_24h: -0.6 },
+      },
+      isCached: false,
+      error: null,
+      lastUpdated: new Date(),
+      retryCount: 0,
     });
+
     render(<PreciousMetalsTile {...baseProps} />);
     await waitFor(() => {
       expect(screen.getByText('Silver')).toBeInTheDocument();
@@ -36,10 +49,17 @@ describe('PreciousMetalsTile', () => {
   });
 
   it('renders error state', async () => {
-    vi.spyOn(
-      preciousMetalsApiModule.PreciousMetalsApiService.prototype,
-      'getPreciousMetalsData',
-    ).mockRejectedValue(new Error('Failed to load precious metals data'));
+    const { SmartDataFetcher } = await import('../../../../utils/smartDataFetcher');
+    
+    // Mock the smart data fetcher to return an error
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
+      data: null,
+      isCached: false,
+      error: 'Failed to load precious metals data',
+      lastUpdated: null,
+      retryCount: 0,
+    });
+
     render(<PreciousMetalsTile {...baseProps} />);
     await waitFor(() => {
       expect(screen.getByText(/failed to load precious metals data/i)).toBeInTheDocument();

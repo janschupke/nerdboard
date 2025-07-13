@@ -10,6 +10,7 @@ A modern dashboard application built with React 19, TypeScript, and Vite that di
 - **Testing**: Vitest with React Testing Library
 - **State Management**: React hooks and context API
 - **Data Fetching**: Fetch API with comprehensive error handling
+- **Smart Storage**: Intelligent local storage manager for offline and cache
 - **Charts**: Recharts library for data visualization
 - **Deployment**: Vercel-ready configuration
 
@@ -18,6 +19,9 @@ A modern dashboard application built with React 19, TypeScript, and Vite that di
 - **Real-time Market Data**: Cryptocurrency, precious metals, and Federal Funds rate tracking
 - **Interactive Dashboard**: Drag-and-drop tile layout with responsive design
 - **Data Visualization**: Interactive charts with historical price and rate data
+- **Smart Data Management**: Local storage caching, background refresh, and storage cleanup
+- **Offline Support**: Dashboard works with cached data when offline
+- **Enhanced Refresh Controls**: Countdown timer and manual refresh for all tiles
 - **Accessibility**: WCAG 2.1 AA compliance with full keyboard navigation
 - **Error Handling**: Comprehensive error boundaries and recovery mechanisms
 - **Performance**: Optimized components with React.memo and useMemo

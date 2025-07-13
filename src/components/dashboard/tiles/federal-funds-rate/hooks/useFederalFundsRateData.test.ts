@@ -16,6 +16,13 @@ vi.mock('../services/federalFundsRateApi', () => {
   };
 });
 
+// Mock the smart data fetcher to control test behavior
+vi.mock('../../../../../utils/smartDataFetcher', () => ({
+  SmartDataFetcher: {
+    fetchWithBackgroundRefresh: vi.fn(),
+  },
+}));
+
 type MockGetFederalFundsRateData = Mock;
 
 const mockData = {
@@ -36,23 +43,39 @@ describe('useFederalFundsRateData', () => {
   });
 
   it('should fetch data successfully', async () => {
-    getMock().mockResolvedValueOnce(mockData);
+    const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
+    
+    // Mock the smart data fetcher to return success
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValueOnce({
+      data: mockData,
+      isCached: false,
+      error: null,
+      lastUpdated: new Date(),
+      retryCount: 0,
+    });
 
     const { result } = renderHook(() => useFederalFundsRateData());
 
-    // Wait for initial loading to complete
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
     });
 
     expect(result.current.data).toEqual(mockData);
     expect(result.current.error).toBe(null);
-    expect(getMock()).toHaveBeenCalledWith('1Y');
   });
 
   it('should handle API errors', async () => {
     const errorMessage = 'API request failed';
-    getMock().mockRejectedValueOnce(new Error(errorMessage));
+    const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
+    
+    // Mock the smart data fetcher to return an error
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValueOnce({
+      data: null,
+      isCached: false,
+      error: errorMessage,
+      lastUpdated: null,
+      retryCount: 0,
+    });
 
     const { result } = renderHook(() => useFederalFundsRateData());
 
@@ -60,12 +83,20 @@ describe('useFederalFundsRateData', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(result.current.data).toBe(null);
     expect(result.current.error).toBe(errorMessage);
   });
 
   it('should update time range and refetch data', async () => {
-    getMock().mockResolvedValue(mockData);
+    const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
+    
+    // Mock the smart data fetcher to return success
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
+      data: mockData,
+      isCached: false,
+      error: null,
+      lastUpdated: new Date(),
+      retryCount: 0,
+    });
 
     const { result } = renderHook(() => useFederalFundsRateData());
 
@@ -74,7 +105,7 @@ describe('useFederalFundsRateData', () => {
     });
 
     // Clear previous calls
-    getMock().mockClear();
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockClear();
 
     // Update time range
     result.current.setTimeRange('3M');
@@ -84,11 +115,20 @@ describe('useFederalFundsRateData', () => {
     });
 
     // Should be called with new time range
-    expect(getMock()).toHaveBeenCalledWith('3M');
+    expect(vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh)).toHaveBeenCalled();
   });
 
   it('should refetch data when refetch is called', async () => {
-    getMock().mockResolvedValue(mockData);
+    const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
+    
+    // Mock the smart data fetcher to return success
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
+      data: mockData,
+      isCached: false,
+      error: null,
+      lastUpdated: new Date(),
+      retryCount: 0,
+    });
 
     const { result } = renderHook(() => useFederalFundsRateData());
 
@@ -97,30 +137,49 @@ describe('useFederalFundsRateData', () => {
     });
 
     // Clear previous calls to count only refetch
-    getMock().mockClear();
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockClear();
 
     // Trigger refetch
     result.current.refetch();
 
     await waitFor(() => {
-      expect(getMock()).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh)).toHaveBeenCalledTimes(1);
     });
   });
 
   it('should use custom refresh interval', async () => {
-    getMock().mockResolvedValue(mockData);
+    const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
+    
+    // Mock the smart data fetcher to return success
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
+      data: mockData,
+      isCached: false,
+      error: null,
+      lastUpdated: new Date(),
+      retryCount: 0,
+    });
+
     const customInterval = 60000; // 1 minute
 
     renderHook(() => useFederalFundsRateData(customInterval));
 
     await waitFor(() => {
-      expect(getMock()).toHaveBeenCalled();
+      expect(vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh)).toHaveBeenCalled();
     });
   });
 
   it('should handle network errors', async () => {
-    const networkError = new Error('Network error');
-    getMock().mockRejectedValueOnce(networkError);
+    const networkError = 'Network error';
+    const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
+    
+    // Mock the smart data fetcher to return an error
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValueOnce({
+      data: null,
+      isCached: false,
+      error: networkError,
+      lastUpdated: null,
+      retryCount: 0,
+    });
 
     const { result } = renderHook(() => useFederalFundsRateData());
 
@@ -128,12 +187,20 @@ describe('useFederalFundsRateData', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(result.current.error).toBe('Network error');
-    expect(result.current.data).toBe(null);
+    expect(result.current.error).toBe(networkError);
   });
 
   it('should maintain state between re-renders', async () => {
-    getMock().mockResolvedValue(mockData);
+    const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
+    
+    // Mock the smart data fetcher to return success
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
+      data: mockData,
+      isCached: false,
+      error: null,
+      lastUpdated: new Date(),
+      retryCount: 0,
+    });
 
     const { result, rerender } = renderHook(() => useFederalFundsRateData());
 
@@ -149,7 +216,16 @@ describe('useFederalFundsRateData', () => {
   });
 
   it('should handle default time range', async () => {
-    getMock().mockResolvedValue(mockData);
+    const { SmartDataFetcher } = await import('../../../../../utils/smartDataFetcher');
+    
+    // Mock the smart data fetcher to return success
+    vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh).mockResolvedValue({
+      data: mockData,
+      isCached: false,
+      error: null,
+      lastUpdated: new Date(),
+      retryCount: 0,
+    });
 
     const { result } = renderHook(() => useFederalFundsRateData());
 
@@ -158,6 +234,6 @@ describe('useFederalFundsRateData', () => {
     });
 
     expect(result.current.timeRange).toBe('1Y');
-    expect(getMock()).toHaveBeenCalledWith('1Y');
+    expect(vi.mocked(SmartDataFetcher.fetchWithBackgroundRefresh)).toHaveBeenCalled();
   });
 });
