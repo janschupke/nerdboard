@@ -10,6 +10,7 @@ import { WeatherTile } from './tiles/weather/WeatherTile';
 import { GDXETFTile } from './tiles/gdx-etf/GDXETFTile';
 import { TimeTile } from './tiles/time/TimeTile';
 import { UraniumTile } from './tiles/uranium/UraniumTile';
+import { getTileSpan } from '../../constants/dimensions';
 
 interface TileProps {
   tile: DashboardTile;
@@ -111,35 +112,25 @@ export function Tile({ tile, onRemove, children, dragHandleProps, loading, error
 
   const getTileClasses = () => {
     const baseClasses =
-      'bg-surface-primary border border-theme-primary rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200';
-    const sizeClasses = {
-      small: 'col-span-1 row-span-1',
-      medium: 'col-span-1 row-span-1 md:col-span-2',
-      large: 'col-span-1 row-span-1 md:col-span-2 lg:col-span-3',
-    };
+      'bg-surface-primary border border-theme-primary rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 relative';
     const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
-    return `${baseClasses} ${sizeClasses[size] || sizeClasses.medium}`;
+    const { colSpan, rowSpan } = getTileSpan(size);
+    // Tailwind col-span-X and row-span-X classes (for fallback, not used in grid, but for responsive)
+    const sizeClass = `col-span-${colSpan} row-span-${rowSpan}`;
+    return `${baseClasses} ${sizeClass}`;
   };
 
   const getTileStyles = () => {
     const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
-    const sizeStyles = {
-      small: { gridColumn: 'span 1', gridRow: 'span 1' },
-      medium: { gridColumn: 'span 2', gridRow: 'span 2' },
-      large: { gridColumn: 'span 3', gridRow: 'span 3' },
-    };
-    
-    // Use position if available, otherwise use size-based styles
+    const { colSpan, rowSpan } = getTileSpan(size);
+    // Use position if available, otherwise use span only
     if (tile.position) {
-      const spanX = size === 'large' ? 3 : 2;
-      const spanY = size === 'large' ? 3 : 2;
       return {
-        gridColumn: `${tile.position.x + 1} / span ${spanX}`,
-        gridRow: `${tile.position.y + 1} / span ${spanY}`,
+        gridColumn: `${tile.position.x + 1} / span ${colSpan}`,
+        gridRow: `${tile.position.y + 1} / span ${rowSpan}`,
       };
     }
-    
-    return sizeStyles[size] || sizeStyles.medium;
+    return { gridColumn: `span ${colSpan}`, gridRow: `span ${rowSpan}` };
   };
 
   const getTileTitle = () => {
@@ -189,29 +180,31 @@ export function Tile({ tile, onRemove, children, dragHandleProps, loading, error
     >
       {/* Tile Header - Grabbable */}
       <div 
-        className="flex items-center justify-between p-3 border-b border-theme-primary bg-surface-secondary cursor-grab active:cursor-grabbing"
+        className="flex items-center justify-between px-4 py-2 border-b border-theme-primary bg-surface-secondary cursor-grab active:cursor-grabbing relative min-h-[2.5rem]"
+        style={{ minHeight: '2.5rem' }}
         {...dragHandleProps}
       >
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
           <Icon name={getTileIcon()} size="sm" className="text-accent-primary" aria-hidden="true" />
-          <h3 className="text-sm font-medium text-theme-primary truncate">{getTileTitle()}</h3>
+          <h3 className="text-base font-semibold text-theme-primary truncate">{getTileTitle()}</h3>
         </div>
-        {/* Close Button - Not grabbable */}
-        {onRemove && (
-          <button
-            onClick={() => onRemove(tile.id)}
-            className="p-1 text-theme-tertiary hover:text-theme-primary hover:bg-theme-tertiary rounded transition-colors cursor-pointer"
-            aria-label={`Remove ${getTileTitle()} tile`}
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-          >
-            <Icon name="close" size="sm" />
-          </button>
-        )}
       </div>
 
+      {/* Close Button - Positioned in top right corner */}
+      {onRemove && (
+        <button
+          onClick={() => onRemove(tile.id)}
+          className="absolute top-1 right-1 p-1 text-theme-tertiary hover:text-theme-primary hover:bg-theme-tertiary rounded transition-colors cursor-pointer z-10"
+          aria-label={`Remove ${getTileTitle()} tile`}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+        >
+          <Icon name="close" size="sm" />
+        </button>
+      )}
+
       {/* Tile Content */}
-      <div className="flex-1 p-4" role="region" aria-label={`${getTileTitle()} content`}>
+      <div className="flex-1 p-2" role="region" aria-label={`${getTileTitle()} content`}>
         {children || renderTileContent()}
       </div>
     </div>

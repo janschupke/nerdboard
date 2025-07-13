@@ -152,17 +152,49 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
         return;
       }
 
-      // Find next available position
-      const existingPositions = state.layout.tiles
-        .filter(tile => tile.position)
-        .map(tile => tile.position!);
+      // Find first available position
+      const grid = Array(4).fill(null).map(() => Array(6).fill(false));
       
+      // Mark occupied positions
+      state.layout.tiles.forEach((tile) => {
+        if (tile.position) {
+          const { x, y } = tile.position;
+          const size = typeof tile.size === 'string' ? tile.size : 'medium';
+          const spanX = size === 'large' ? 3 : 2;
+          const spanY = size === 'large' ? 3 : 2;
+          
+          for (let i = y; i < Math.min(y + spanY, 4); i++) {
+            for (let j = x; j < Math.min(x + spanX, 6); j++) {
+              if (grid[i] && grid[i][j] !== undefined) {
+                grid[i][j] = true;
+              }
+            }
+          }
+        }
+      });
+      
+      // Find first available position
       let newPosition = { x: 0, y: 0 };
-      if (existingPositions.length > 0) {
-        // Find the next available position
-        const maxX = Math.max(...existingPositions.map(p => p.x));
-        const maxY = Math.max(...existingPositions.map(p => p.y));
-        newPosition = { x: maxX + 1, y: maxY };
+      const spanX = 2; // Default medium size
+      const spanY = 2;
+      
+      outer: for (let y = 0; y <= 4 - spanY; y++) {
+        for (let x = 0; x <= 6 - spanX; x++) {
+          let canPlace = true;
+          for (let i = y; i < y + spanY; i++) {
+            for (let j = x; j < x + spanX; j++) {
+              if (grid[i][j]) {
+                canPlace = false;
+                break;
+              }
+            }
+            if (!canPlace) break;
+          }
+          if (canPlace) {
+            newPosition = { x, y };
+            break outer;
+          }
+        }
       }
 
       const newTile: DashboardTile = {
@@ -179,7 +211,63 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
 
   const removeTile = useCallback((id: string) => {
     dispatch({ type: 'REMOVE_TILE', payload: id });
-  }, []);
+    
+    // Trigger compaction after removal
+    setTimeout(() => {
+      const updatedTiles = state.layout.tiles.filter(tile => tile.id !== id);
+      if (updatedTiles.length > 0) {
+        // Reposition all remaining tiles to fill gaps
+        const grid = Array(12).fill(null).map(() => Array(8).fill(false));
+        const repositionedTiles: DashboardTile[] = [];
+        
+        updatedTiles.forEach((tile) => {
+          const size = typeof tile.size === 'string' ? tile.size : 'medium';
+          const spanX = size === 'large' ? 2 : 1;
+          const spanY = size === 'large' ? 1 : 1;
+          
+          // Find first available position
+          let newPosition = { x: 0, y: 0 };
+          outer: for (let y = 0; y <= 12 - spanY; y++) {
+            for (let x = 0; x <= 8 - spanX; x++) {
+              let canPlace = true;
+              for (let i = y; i < y + spanY; i++) {
+                for (let j = x; j < x + spanX; j++) {
+                  if (grid[i][j]) {
+                    canPlace = false;
+                    break;
+                  }
+                }
+                if (!canPlace) break;
+              }
+              if (canPlace) {
+                newPosition = { x, y };
+                break outer;
+              }
+            }
+          }
+          
+          // Mark position as occupied
+          for (let i = newPosition.y; i < newPosition.y + spanY; i++) {
+            for (let j = newPosition.x; j < newPosition.x + spanX; j++) {
+              if (grid[i] && grid[i][j] !== undefined) {
+                grid[i][j] = true;
+              }
+            }
+          }
+          
+          repositionedTiles.push({
+            ...tile,
+            position: newPosition
+          });
+        });
+        
+        // Update all tiles with new positions
+        repositionedTiles.forEach((tile) => {
+          dispatch({ type: 'UPDATE_TILE', payload: { id: tile.id, updates: { position: tile.position } } });
+        });
+      }
+    }, 0);
+  }, [state.layout.tiles]);
 
   const updateTile = useCallback((id: string, updates: Partial<DashboardTile>) => {
     dispatch({ type: 'UPDATE_TILE', payload: { id, updates } });

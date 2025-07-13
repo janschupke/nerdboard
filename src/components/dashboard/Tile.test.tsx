@@ -80,8 +80,8 @@ describe('Tile', () => {
 
     const tileElement = screen.getByTestId('cryptocurrency-tile').closest('[data-tile-id]');
     expect(tileElement).toHaveStyle({ 
-      gridColumn: '2 / span 2', 
-      gridRow: '2 / span 2' 
+      gridColumn: '2 / span 4', 
+      gridRow: '2 / span 1' 
     });
   });
 
