@@ -1,5 +1,7 @@
 import { WEATHER_API_CONFIG, WEATHER_ERROR_MESSAGES } from '../constants';
 import type { WeatherApiResponse } from '../types';
+import { interceptAPIError, interceptAPIWarning } from '../../../../../services/apiErrorInterceptor';
+import type { APIError } from '../../../../../services/apiErrorInterceptor';
 
 // Mock data for development and fallback
 const MOCK_WEATHER_DATA: Record<string, WeatherApiResponse> = {
@@ -322,22 +324,42 @@ class WeatherApiService {
     try {
       return await this.fetchFromOpenWeatherMap(city);
     } catch (error) {
-      console.warn('OpenWeatherMap failed, trying WeatherAPI.com:', error);
+      const warningInfo: APIError = {
+        apiCall: 'OpenWeatherMap',
+        reason: 'OpenWeatherMap failed, trying WeatherAPI.com',
+        details: { error, city },
+      };
+      interceptAPIWarning(warningInfo);
 
       try {
         return await this.fetchFromWeatherAPI(city);
       } catch (error) {
-        console.warn('WeatherAPI.com failed, trying AccuWeather:', error);
+        const warningInfo: APIError = {
+          apiCall: 'WeatherAPI.com',
+          reason: 'WeatherAPI.com failed, trying AccuWeather',
+          details: { error, city },
+        };
+        interceptAPIWarning(warningInfo);
 
         try {
           return await this.fetchFromAccuWeather(city);
         } catch (error) {
-          console.warn('AccuWeather failed, trying web scraping:', error);
+          const warningInfo: APIError = {
+            apiCall: 'AccuWeather',
+            reason: 'AccuWeather failed, trying web scraping',
+            details: { error, city },
+          };
+          interceptAPIWarning(warningInfo);
 
           try {
             return await this.scrapeWeatherData(city);
           } catch (error) {
-            console.error('All weather data sources failed:', error);
+            const errorInfo: APIError = {
+              apiCall: 'All weather APIs',
+              reason: 'All weather data sources failed',
+              details: { error, city },
+            };
+            interceptAPIError(errorInfo);
             throw new Error(WEATHER_ERROR_MESSAGES.FETCH_FAILED);
           }
         }

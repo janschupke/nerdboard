@@ -145,7 +145,7 @@ describe('getGridTemplateStyle', () => {
 
     expect(style.display).toBe('grid');
     expect(style.gridTemplateColumns).toBe('repeat(8, 1fr)');
-    expect(style.gridTemplateRows).toBe('repeat(12, auto)');
+    expect(style.gridTemplateRows).toBe('repeat(12, 1fr)');
     expect(style.gap).toBe('1rem');
     expect(style.minHeight).toBe('100%');
     expect(style.height).toBe('auto');

@@ -95,7 +95,7 @@ export function getGridTemplateStyle(rowCount?: number): React.CSSProperties {
   return {
     display: 'grid',
     gridTemplateColumns: `repeat(${GRID_CONFIG.columns}, 1fr)`,
-    gridTemplateRows: `repeat(${rows}, auto)`,
+    gridTemplateRows: `repeat(${rows}, 1fr)`,
     gap: GRID_CONFIG.gap,
     minHeight: '100%',
     height: 'auto',

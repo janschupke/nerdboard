@@ -340,42 +340,34 @@ export function TileGrid() {
 
   return (
     <div
-      className="h-full p-4 relative overflow-y-auto scrollbar-hide"
+      ref={gridRef}
+      className="relative grid w-full h-full p-4"
+      style={getGridTemplateStyle()}
+      data-testid="tile-grid"
       onDragOver={handleDragOver}
-      onDrop={handleDrop}
-      onDragLeave={handleDragLeave}
+      onDrop={endDrag}
     >
-      {/* Grid container using CSS Grid */}
-      <div ref={gridRef} className="relative min-h-full" style={getGridTemplateStyle(rowCount)}>
-        {tiles.map((tile: DashboardTile) => (
-          <Tile
-            key={tile.id}
-            tile={tile}
-            onRemove={removeTile}
-            dragHandleProps={{
-              draggable: true,
-              onDragStart: (e) => {
-                e.dataTransfer.setData('application/nerdboard-tile-move', tile.id);
-                e.dataTransfer.effectAllowed = 'move';
-                const size = typeof tile.size === 'string' ? tile.size : 'medium';
-                setDraggedTileSize(size as 'small' | 'medium' | 'large');
-                startDrag(tile.id, tile.position || { x: 0, y: 0 });
-              },
-              onDragEnd: endDrag,
-              className: 'cursor-grab active:cursor-grabbing',
-            }}
-          />
-        ))}
-
-        {/* Drop zone indicator */}
-        {isDragOver && dragTargetPosition && (
-          <div
-            className="absolute border-2 border-dashed border-accent-primary bg-accent-muted opacity-50 pointer-events-none z-20 rounded"
-            style={calculateDropZoneStyle(dragTargetPosition, draggedTileSize, rowCount)}
-            aria-hidden="true"
-          />
-        )}
-      </div>
+      {tiles.map((tile) => (
+        <Tile
+          key={tile.id}
+          tile={tile}
+          onRemove={removeTile}
+          dragHandleProps={{
+            draggable: true,
+            onDragStart: (e) => {
+              e.dataTransfer.setData('application/nerdboard-tile-move', tile.id);
+              e.dataTransfer.effectAllowed = 'move';
+              const size = typeof tile.size === 'string' ? tile.size : 'medium';
+              setDraggedTileSize(size as 'small' | 'medium' | 'large');
+              startDrag(tile.id, tile.position || { x: 0, y: 0 });
+            },
+            onDragEnd: endDrag,
+            className: 'cursor-grab active:cursor-grabbing',
+          }}
+        />
+      ))}
+      {/* Fade-out effect at the bottom */}
+      <div className="pointer-events-none absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-surface-primary to-transparent z-20" />
     </div>
   );
 }

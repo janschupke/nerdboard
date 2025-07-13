@@ -19,6 +19,7 @@ const createMockResponse = () => {
     status: vi.fn().mockReturnThis(),
     setHeader: vi.fn(),
     send: vi.fn(),
+    json: vi.fn().mockReturnThis(),
   };
   return res;
 };
@@ -46,9 +47,7 @@ describe('Yahoo Finance API Proxy', () => {
       'https://query1.finance.yahoo.com/v8/finance/chart/GDX?interval=1d&range=1d',
       expect.objectContaining({
         method: 'GET',
-        headers: expect.objectContaining({
-          host: undefined,
-        }),
+        headers: expect.any(Object),
       }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
@@ -119,7 +118,13 @@ describe('Yahoo Finance API Proxy', () => {
     const req = createMockRequest('/api/yahoo-finance/v8/finance/chart/GDX');
     const res = createMockResponse();
 
-    await expect(handler(req as any, res as any)).rejects.toThrow('Network error');
+    await handler(req as any, res as any);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: 'Yahoo Finance API temporarily unavailable',
+      message: 'Please try again later',
+    });
   });
 
   it('removes host header from forwarded request', async () => {
@@ -145,10 +150,14 @@ describe('Yahoo Finance API Proxy', () => {
       expect.objectContaining({
         headers: expect.objectContaining({
           'content-type': 'application/json',
-          host: undefined,
           'user-agent': 'test-agent',
         }),
       }),
     );
+    
+    // Verify host header is not included
+    const fetchCall = mockFetch.mock.calls[0];
+    const headers = fetchCall[1].headers;
+    expect(headers).not.toHaveProperty('host');
   });
 });

@@ -1,5 +1,7 @@
 import { GDX_API_CONFIG, GDX_ERROR_MESSAGES } from '../constants';
 import type { GDXETFData, GDXETFPriceHistory } from '../types';
+import { interceptAPIError, interceptAPIWarning } from '../../../../../services/apiErrorInterceptor';
+import type { APIError } from '../../../../../services/apiErrorInterceptor';
 
 export class GDXETFApiService {
   private cache = new Map<string, { data: unknown; timestamp: number }>();
@@ -51,15 +53,6 @@ export class GDXETFApiService {
     const cached = this.getCachedData(cacheKey);
     if (cached) return cached as GDXETFPriceHistory[];
 
-    // Use mock data more frequently to avoid rate limiting
-    const useMockData = Math.random() < 0.8; // 80% chance to use mock data
-
-    if (useMockData) {
-      const mockData = this.getMockPriceHistory(period);
-      this.setCachedData(cacheKey, mockData);
-      return mockData;
-    }
-
     try {
       const data = await this.fetchPriceHistoryFromYahoo(period);
       this.setCachedData(cacheKey, data);
@@ -73,8 +66,6 @@ export class GDXETFApiService {
   }
 
   private async fetchFromAlphaVantage(): Promise<GDXETFData> {
-    // Note: In a real implementation, you would need an API key
-    // For now, we'll simulate the response structure
     const response = await fetch(
       `${GDX_API_CONFIG.ALPHA_VANTAGE_BASE_URL}?function=GLOBAL_QUOTE&symbol=${GDX_API_CONFIG.SYMBOL}&apikey=demo`,
     );
@@ -84,23 +75,21 @@ export class GDXETFApiService {
     }
 
     const data = await response.json();
+    const quote = data['Global Quote'];
 
-    // Simulate Alpha Vantage response structure
     return {
       symbol: GDX_API_CONFIG.SYMBOL,
       name: GDX_API_CONFIG.FULL_NAME,
-      currentPrice: parseFloat(data['Global Quote']?.['05. price'] || '0'),
-      previousClose: parseFloat(data['Global Quote']?.['08. previous close'] || '0'),
-      priceChange: parseFloat(data['Global Quote']?.['09. change'] || '0'),
-      priceChangePercent: parseFloat(
-        data['Global Quote']?.['10. change percent']?.replace('%', '') || '0',
-      ),
-      volume: parseInt(data['Global Quote']?.['06. volume'] || '0'),
+      currentPrice: parseFloat(quote['05. price']),
+      previousClose: parseFloat(quote['08. previous close']),
+      priceChange: parseFloat(quote['09. change']),
+      priceChangePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+      volume: parseInt(quote['06. volume']),
       marketCap: 0, // Alpha Vantage doesn't provide market cap
-      high: parseFloat(data['Global Quote']?.['03. high'] || '0'),
-      low: parseFloat(data['Global Quote']?.['04. low'] || '0'),
-      open: parseFloat(data['Global Quote']?.['02. open'] || '0'),
-      lastUpdated: data['Global Quote']?.['07. latest trading day'] || new Date().toISOString(),
+      high: parseFloat(quote['03. high']),
+      low: parseFloat(quote['04. low']),
+      open: parseFloat(quote['02. open']),
+      lastUpdated: quote['07. latest trading day'],
       tradingStatus: this.getTradingStatus(),
     };
   }
@@ -112,11 +101,23 @@ export class GDXETFApiService {
       );
 
       if (response.status === 429) {
-        // Rate limited - throw error to trigger fallback
+        // Rate limited - log as warning and throw error to trigger fallback
+        const warningInfo: APIError = {
+          apiCall: `${GDX_API_CONFIG.YAHOO_FINANCE_BASE_URL}/${GDX_API_CONFIG.SYMBOL}`,
+          reason: 'Rate limited by Yahoo Finance',
+          details: { status: response.status },
+        };
+        interceptAPIWarning(warningInfo);
         throw new Error('Rate limited by Yahoo Finance');
       }
 
       if (!response.ok) {
+        const errorInfo: APIError = {
+          apiCall: `${GDX_API_CONFIG.YAHOO_FINANCE_BASE_URL}/${GDX_API_CONFIG.SYMBOL}`,
+          reason: `${GDX_ERROR_MESSAGES.API_ERROR}: ${response.status}`,
+          details: { status: response.status },
+        };
+        interceptAPIError(errorInfo);
         throw new Error(`${GDX_ERROR_MESSAGES.API_ERROR}: ${response.status}`);
       }
 
@@ -141,7 +142,22 @@ export class GDXETFApiService {
         tradingStatus: this.getTradingStatus(),
       };
     } catch (error) {
-      console.warn('Yahoo Finance API failed, trying fallback:', error);
+      // Check if it's a network error (like 429) and handle it gracefully
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        const warningInfo: APIError = {
+          apiCall: `${GDX_API_CONFIG.YAHOO_FINANCE_BASE_URL}/${GDX_API_CONFIG.SYMBOL}`,
+          reason: 'Network error when calling Yahoo Finance API',
+          details: { error: error.message },
+        };
+        interceptAPIWarning(warningInfo);
+      } else {
+        const warningInfo: APIError = {
+          apiCall: `${GDX_API_CONFIG.YAHOO_FINANCE_BASE_URL}/${GDX_API_CONFIG.SYMBOL}`,
+          reason: 'Yahoo Finance API failed, trying fallback',
+          details: { error },
+        };
+        interceptAPIWarning(warningInfo);
+      }
       throw error;
     }
   }
@@ -153,6 +169,12 @@ export class GDXETFApiService {
     );
 
     if (!response.ok) {
+      const errorInfo: APIError = {
+        apiCall: `${GDX_API_CONFIG.IEX_CLOUD_BASE_URL}/${GDX_API_CONFIG.SYMBOL}/quote`,
+        reason: `${GDX_ERROR_MESSAGES.API_ERROR}: ${response.status}`,
+        details: { status: response.status },
+      };
+      interceptAPIError(errorInfo);
       throw new Error(`${GDX_ERROR_MESSAGES.API_ERROR}: ${response.status}`);
     }
 
@@ -183,11 +205,23 @@ export class GDXETFApiService {
       );
 
       if (response.status === 429) {
-        // Rate limited - throw error to trigger fallback
+        // Rate limited - log as warning and throw error to trigger fallback
+        const warningInfo: APIError = {
+          apiCall: `${GDX_API_CONFIG.YAHOO_FINANCE_BASE_URL}/${GDX_API_CONFIG.SYMBOL}`,
+          reason: 'Rate limited by Yahoo Finance for price history',
+          details: { status: response.status, period },
+        };
+        interceptAPIWarning(warningInfo);
         throw new Error('Rate limited by Yahoo Finance');
       }
 
       if (!response.ok) {
+        const errorInfo: APIError = {
+          apiCall: `${GDX_API_CONFIG.YAHOO_FINANCE_BASE_URL}/${GDX_API_CONFIG.SYMBOL}`,
+          reason: `${GDX_ERROR_MESSAGES.API_ERROR}: ${response.status}`,
+          details: { status: response.status, period },
+        };
+        interceptAPIError(errorInfo);
         throw new Error(`${GDX_ERROR_MESSAGES.API_ERROR}: ${response.status}`);
       }
 
@@ -201,7 +235,22 @@ export class GDXETFApiService {
         volume: quotes.volume[index] || 0,
       }));
     } catch (error) {
-      console.warn('Yahoo Finance price history failed, using mock data:', error);
+      // Check if it's a network error (like 429) and handle it gracefully
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        const warningInfo: APIError = {
+          apiCall: `${GDX_API_CONFIG.YAHOO_FINANCE_BASE_URL}/${GDX_API_CONFIG.SYMBOL}`,
+          reason: 'Network error when calling Yahoo Finance API for price history',
+          details: { error: error.message, period },
+        };
+        interceptAPIWarning(warningInfo);
+      } else {
+        const warningInfo: APIError = {
+          apiCall: `${GDX_API_CONFIG.YAHOO_FINANCE_BASE_URL}/${GDX_API_CONFIG.SYMBOL}`,
+          reason: 'Yahoo Finance price history failed, using mock data',
+          details: { error, period },
+        };
+        interceptAPIWarning(warningInfo);
+      }
       throw error;
     }
   }

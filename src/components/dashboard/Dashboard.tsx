@@ -70,11 +70,11 @@ function DashboardContent() {
         {/* Scrollable Dashboard Content */}
         <main className="flex-1 overflow-auto relative scrollbar-hide">
           <TileGrid />
+          
+          {/* Log View Overlay - positioned within the tile grid area */}
+          <LogView isOpen={isLogViewOpen} onClose={closeLogView} />
         </main>
       </div>
-
-      {/* Log View Overlay */}
-      <LogView isOpen={isLogViewOpen} onClose={closeLogView} />
     </div>
   );
 }

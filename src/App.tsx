@@ -4,9 +4,13 @@ import { clearExpiredData } from './utils/localStorage';
 import { smartStorage } from './utils/enhancedLocalStorage';
 import { offlineSupport } from './utils/offlineSupport';
 import { LogProvider } from './contexts/LogContext';
+import { setupGlobalErrorHandling } from './services/apiErrorInterceptor';
 
 function App() {
   useEffect(() => {
+    // Set up global error handling to prevent console errors
+    setupGlobalErrorHandling();
+
     // Initialize smart storage monitoring
     smartStorage.startMonitoring();
 

@@ -1,5 +1,7 @@
 import { CRYPTO_API_CONFIG, CRYPTO_ERROR_MESSAGES } from '../constants';
 import type { CryptocurrencyData, PriceHistory } from '../types';
+import { interceptAPIError } from '../../../../../services/apiErrorInterceptor';
+import type { APIError } from '../../../../../services/apiErrorInterceptor';
 
 export class CoinGeckoApiService {
   private baseUrl = CRYPTO_API_CONFIG.BASE_URL;
@@ -19,6 +21,12 @@ export class CoinGeckoApiService {
       );
 
       if (!response.ok) {
+        const errorInfo: APIError = {
+          apiCall: `${this.baseUrl}/coins/markets`,
+          reason: `${CRYPTO_ERROR_MESSAGES.API_ERROR}: ${response.status}`,
+          details: { status: response.status, limit },
+        };
+        interceptAPIError(errorInfo);
         throw new Error(`${CRYPTO_ERROR_MESSAGES.API_ERROR}: ${response.status}`);
       }
 
@@ -26,7 +34,12 @@ export class CoinGeckoApiService {
       this.setCachedData(cacheKey, data);
       return data;
     } catch (error) {
-      console.error('Failed to fetch cryptocurrency data:', error);
+      const errorInfo: APIError = {
+        apiCall: `${this.baseUrl}/coins/markets`,
+        reason: 'Failed to fetch cryptocurrency data',
+        details: { error, limit },
+      };
+      interceptAPIError(errorInfo);
       throw error;
     }
   }
@@ -42,6 +55,12 @@ export class CoinGeckoApiService {
       );
 
       if (!response.ok) {
+        const errorInfo: APIError = {
+          apiCall: `${this.baseUrl}/coins/${coinId}/market_chart`,
+          reason: `${CRYPTO_ERROR_MESSAGES.API_ERROR}: ${response.status}`,
+          details: { status: response.status, coinId, days },
+        };
+        interceptAPIError(errorInfo);
         throw new Error(`${CRYPTO_ERROR_MESSAGES.API_ERROR}: ${response.status}`);
       }
 
@@ -54,7 +73,12 @@ export class CoinGeckoApiService {
       this.setCachedData(cacheKey, formattedData);
       return formattedData;
     } catch (error) {
-      console.error('Failed to fetch price history:', error);
+      const errorInfo: APIError = {
+        apiCall: `${this.baseUrl}/coins/${coinId}/market_chart`,
+        reason: 'Failed to fetch price history',
+        details: { error, coinId, days },
+      };
+      interceptAPIError(errorInfo);
       throw error;
     }
   }

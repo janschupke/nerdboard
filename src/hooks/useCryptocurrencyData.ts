@@ -3,6 +3,8 @@ import { CoinGeckoApiService } from '../services/coinGeckoApi';
 import type { CryptocurrencyData } from '../types/cryptocurrency';
 import { getCachedData, setCachedData } from '../utils/localStorage';
 import { STORAGE_KEYS, REFRESH_INTERVALS } from '../utils/constants';
+import { interceptAPIError } from '../services/apiErrorInterceptor';
+import type { APIError } from '../services/apiErrorInterceptor';
 
 interface CryptocurrencyDataConfig {
   refreshInterval?: number;
@@ -62,7 +64,13 @@ export function useCryptocurrencyData(
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to fetch cryptocurrency data';
         setError(errorMessage);
-        console.error('Error fetching cryptocurrency data:', err);
+        
+        const errorInfo: APIError = {
+          apiCall: 'cryptocurrency-data',
+          reason: 'Error fetching cryptocurrency data',
+          details: { error: err },
+        };
+        interceptAPIError(errorInfo);
 
         // Increment retry count for potential retry logic
         setRetryCount((prev) => prev + 1);

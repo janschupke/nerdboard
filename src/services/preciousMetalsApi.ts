@@ -1,6 +1,8 @@
 import { UI_CONFIG } from '../utils/constants';
 import type { PreciousMetalsData } from '../types/preciousMetals';
 import type { PriceHistory } from '../types/cryptocurrency';
+import { interceptAPIError } from './apiErrorInterceptor';
+import type { APIError } from './apiErrorInterceptor';
 
 export class PreciousMetalsApiService {
   private cache = new Map<string, { data: unknown; timestamp: number }>();
@@ -33,7 +35,12 @@ export class PreciousMetalsApiService {
       this.setCachedData(cacheKey, mockData);
       return mockData;
     } catch (error) {
-      console.error('Failed to fetch precious metals data:', error);
+      const errorInfo: APIError = {
+        apiCall: 'precious-metals-data',
+        reason: 'Failed to fetch precious metals data',
+        details: { error },
+      };
+      interceptAPIError(errorInfo);
       throw new Error(
         `Failed to fetch precious metals data: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
@@ -98,7 +105,12 @@ export class PreciousMetalsApiService {
       this.setCachedData(cacheKey, mockData);
       return mockData;
     } catch (error) {
-      console.error('Failed to fetch precious metals history:', error);
+      const errorInfo: APIError = {
+        apiCall: `precious-metals-history-${metal}`,
+        reason: 'Failed to fetch precious metals history',
+        details: { error, metal, days },
+      };
+      interceptAPIError(errorInfo);
       throw error;
     }
   }
