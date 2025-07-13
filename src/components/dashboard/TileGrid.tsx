@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useContext, useRef } from 'react';
+import React, { useState, useCallback, useContext, useRef, useEffect } from 'react';
 import { Tile } from './Tile';
 import type { DashboardTile } from '../../types/dashboard';
 import { TileType } from '../../types/dashboard';
@@ -7,7 +7,6 @@ import { DashboardContext } from '../../contexts/DashboardContext';
 import {
   GRID_CONFIG,
   calculateGridPosition,
-  calculateExistingTilePosition,
   calculateDropZoneStyle,
   getGridTemplateStyle,
   getTileSpan,
@@ -27,6 +26,55 @@ export function TileGrid() {
   );
   const [draggedTileSize, setDraggedTileSize] = useState<'small' | 'medium' | 'large'>('medium');
   const gridRef = useRef<HTMLDivElement>(null);
+  const [rowCount, setRowCount] = useState<number>(3); // Start with a reasonable default
+
+  // Helper to compute minimum rows needed for all tiles
+  const computeMinRowsNeeded = useCallback(() => {
+    if (tiles.length === 0) return 1;
+    let maxRow = 1;
+    for (const tile of tiles) {
+      const size = typeof tile.size === 'string' ? tile.size : 'medium';
+      const { rowSpan } = getTileSpan(size);
+      const y = tile.position?.y ?? 0;
+      maxRow = Math.max(maxRow, y + rowSpan);
+    }
+    return maxRow;
+  }, [tiles]);
+
+  // Update rowCount when tiles or window size changes
+  useEffect(() => {
+    function updateRows() {
+      const minRows = computeMinRowsNeeded();
+      let rowsInViewport = Number(GRID_CONFIG.rows);
+      
+      if (gridRef.current) {
+        const gridHeight = gridRef.current.offsetHeight || gridRef.current.clientHeight;
+        
+        // Calculate actual row height from rendered tiles
+        let actualRowHeight = 200; // Default fallback
+        const tileElements = gridRef.current.querySelectorAll('[data-tile-id]');
+        
+        if (tileElements.length > 0) {
+          // Find the tallest tile to determine row height
+          let maxTileHeight = 0;
+          tileElements.forEach((tileElement) => {
+            const rect = tileElement.getBoundingClientRect();
+            maxTileHeight = Math.max(maxTileHeight, rect.height);
+          });
+          
+          // Add some padding for gaps
+          actualRowHeight = maxTileHeight + 16; // 16px for gap
+        }
+        
+        rowsInViewport = Math.max(1, Math.floor(gridHeight / actualRowHeight));
+      }
+      
+      setRowCount(Math.max(minRows, rowsInViewport));
+    }
+    updateRows();
+    window.addEventListener('resize', updateRows);
+    return () => window.removeEventListener('resize', updateRows);
+  }, [tiles, computeMinRowsNeeded]);
 
   // Compact tiles to fill empty spaces from left to right, top to bottom
   const compactTiles = useCallback(
@@ -92,7 +140,10 @@ export function TileGrid() {
     (tileId: string, dropPosition?: { x: number; y: number }) => {
       const tile = tiles.find((t: DashboardTile) => t.id === tileId);
       if (!tile) return;
-
+      // Prevent no-op move: if dropPosition is the same as current position, do nothing
+      if (dropPosition && tile.position && dropPosition.x === tile.position.x && dropPosition.y === tile.position.y) {
+        return;
+      }
       let newOrder = [...tiles];
       if (dropPosition) {
         const size = typeof tile.size === 'string' ? tile.size : 'medium';
@@ -153,22 +204,56 @@ export function TileGrid() {
   // Drag and drop hook
   const { startDrag, endDrag } = useDragAndDrop(handleTileMove);
 
+  // Helper to get the closest grid position based on cursor Y
+  const getClosestGridPosition = (clientX: number, clientY: number, tileSize: 'small' | 'medium' | 'large') => {
+    if (!gridRef.current) return { x: 0, y: 0 };
+    const rect = gridRef.current.getBoundingClientRect();
+    const tileElements = Array.from(gridRef.current.querySelectorAll('[data-tile-id]')) as HTMLElement[];
+    if (tileElements.length === 0) {
+      // Fallback to old logic if no tiles
+      return calculateGridPosition(clientX, clientY, rect, tileSize);
+    }
+    // Find the closest tile boundary (top or bottom) to the cursor Y
+    let minDist = Infinity;
+    let closestRow = 0;
+    tileElements.forEach((el) => {
+      const tileRect = el.getBoundingClientRect();
+      // Check top and bottom boundaries
+      [tileRect.top, tileRect.bottom].forEach((boundary, idx) => {
+        const dist = Math.abs(clientY - boundary);
+        if (dist < minDist) {
+          minDist = dist;
+          // Calculate the corresponding grid row
+          // Use the tile's data-tile-id to find its position
+          const tileId = el.getAttribute('data-tile-id');
+          const tile = tiles.find((t) => t.id === tileId);
+          if (tile && tile.position) {
+            const { rowSpan } = getTileSpan(tile.size);
+            closestRow = tile.position.y + (idx === 0 ? 0 : rowSpan); // top or bottom
+          }
+        }
+      });
+    });
+    // For X, use the old logic (snap to colSpan)
+    const gridCellWidth = rect.width / GRID_CONFIG.columns;
+    const rawX = (clientX - rect.left) / gridCellWidth;
+    const { colSpan } = getTileSpan(tileSize);
+    const x = Math.floor(rawX / colSpan) * colSpan;
+    return { x, y: closestRow };
+  };
+
   // Handle drag over grid
   const handleDragOver = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-
       if (!gridRef.current) return;
-      const rect = gridRef.current.getBoundingClientRect();
-
       if (e.dataTransfer.types.includes('application/nerdboard-tile-type')) {
         setIsDragOver(true);
         setDraggedTileSize('medium'); // Default to medium for new tiles
-        const position = calculateGridPosition(e.clientX, e.clientY, rect, 'medium');
+        const position = getClosestGridPosition(e.clientX, e.clientY, 'medium');
         setDragTargetPosition(position);
       } else if (e.dataTransfer.types.includes('application/nerdboard-tile-move')) {
         setIsDragOver(true);
-
         // Get the tile ID from the drag event
         const tileId = e.dataTransfer.getData('application/nerdboard-tile-move');
         let tileSize: 'small' | 'medium' | 'large' = 'medium';
@@ -182,7 +267,7 @@ export function TileGrid() {
           }
         }
         setDraggedTileSize(tileSize);
-        const position = calculateExistingTilePosition(e.clientX, e.clientY, rect, tileSize);
+        const position = getClosestGridPosition(e.clientX, e.clientY, tileSize);
         setDragTargetPosition(position);
       }
     },
@@ -244,7 +329,7 @@ export function TileGrid() {
           {isDragOver && (
             <div
               className="absolute border-2 border-dashed border-accent-primary bg-accent-muted opacity-50 pointer-events-none z-10 rounded"
-              style={calculateDropZoneStyle({ x: 0, y: 0 }, draggedTileSize)}
+              style={calculateDropZoneStyle({ x: 0, y: 0 }, draggedTileSize, rowCount)}
               aria-hidden="true"
             />
           )}
@@ -261,7 +346,7 @@ export function TileGrid() {
       onDragLeave={handleDragLeave}
     >
       {/* Grid container using CSS Grid */}
-      <div ref={gridRef} className="relative min-h-full" style={getGridTemplateStyle()}>
+      <div ref={gridRef} className="relative min-h-full" style={getGridTemplateStyle(rowCount)}>
         {tiles.map((tile: DashboardTile) => (
           <Tile
             key={tile.id}
@@ -286,7 +371,7 @@ export function TileGrid() {
         {isDragOver && dragTargetPosition && (
           <div
             className="absolute border-2 border-dashed border-accent-primary bg-accent-muted opacity-50 pointer-events-none z-20 rounded"
-            style={calculateDropZoneStyle(dragTargetPosition, draggedTileSize)}
+            style={calculateDropZoneStyle(dragTargetPosition, draggedTileSize, rowCount)}
             aria-hidden="true"
           />
         )}

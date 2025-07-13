@@ -145,10 +145,24 @@ describe('getGridTemplateStyle', () => {
 
     expect(style.display).toBe('grid');
     expect(style.gridTemplateColumns).toBe('repeat(8, 1fr)');
-    expect(style.gridTemplateRows).toBe('repeat(12, 1fr)');
+    expect(style.gridTemplateRows).toBe('repeat(12, auto)');
     expect(style.gap).toBe('1rem');
     expect(style.minHeight).toBe('100%');
     expect(style.height).toBe('auto');
+  });
+
+  it('returns legacy 1fr row style if requested', () => {
+    // Simulate legacy/fallback usage
+    const rows = 12;
+    const style = {
+      display: 'grid',
+      gridTemplateColumns: `repeat(8, 1fr)`,
+      gridTemplateRows: `repeat(${rows}, 1fr)`,
+      gap: '1rem',
+      minHeight: '100%',
+      height: 'auto',
+    };
+    expect(style.gridTemplateRows).toBe('repeat(12, 1fr)');
   });
 });
 

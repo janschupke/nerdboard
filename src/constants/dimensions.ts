@@ -63,14 +63,16 @@ export function calculateExistingTilePosition(
 export function calculateDropZoneStyle(
   position: { x: number; y: number },
   tileSize: 'small' | 'medium' | 'large' = 'medium',
+  rowCount?: number,
 ): React.CSSProperties {
   const { colSpan, rowSpan } = getTileSpan(tileSize);
+  const rows = rowCount ?? GRID_CONFIG.rows;
 
   return {
     left: `${position.x * (100 / GRID_CONFIG.columns)}%`,
-    top: `${position.y * (100 / GRID_CONFIG.rows)}%`,
+    top: `${position.y * (100 / rows)}%`,
     width: `${(100 / GRID_CONFIG.columns) * colSpan}%`,
-    height: `${(100 / GRID_CONFIG.rows) * rowSpan}%`,
+    height: `${(100 / rows) * rowSpan}%`,
   };
 }
 
@@ -88,11 +90,12 @@ export function isPositionValid(
   );
 }
 
-export function getGridTemplateStyle(): React.CSSProperties {
+export function getGridTemplateStyle(rowCount?: number): React.CSSProperties {
+  const rows = rowCount ?? GRID_CONFIG.rows;
   return {
     display: 'grid',
     gridTemplateColumns: `repeat(${GRID_CONFIG.columns}, 1fr)`,
-    gridTemplateRows: `repeat(${GRID_CONFIG.rows}, 1fr)`,
+    gridTemplateRows: `repeat(${rows}, auto)`,
     gap: GRID_CONFIG.gap,
     minHeight: '100%',
     height: 'auto',
