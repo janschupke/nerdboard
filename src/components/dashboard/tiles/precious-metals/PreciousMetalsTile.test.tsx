@@ -27,9 +27,8 @@ describe('PreciousMetalsTile', () => {
     });
     render(<PreciousMetalsTile {...baseProps} />);
     await waitFor(() => {
-      expect(screen.getByText(/precious metals/i)).toBeInTheDocument();
-      expect(screen.getByText(/gold/i)).toBeInTheDocument();
-      expect(screen.getByText(/silver/i)).toBeInTheDocument();
+      expect(screen.getByText('Silver')).toBeInTheDocument();
+      expect(screen.getByText('$1,950.50')).toBeInTheDocument();
     });
   });
 

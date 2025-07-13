@@ -44,8 +44,8 @@ describe('CryptocurrencyTile', () => {
     ]);
     render(<CryptocurrencyTile {...baseProps} />);
     await waitFor(() => {
-      expect(screen.getByText(/cryptocurrency market/i)).toBeInTheDocument();
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByText('Bitcoin')).toBeInTheDocument();
+      expect(screen.getByText('BTC')).toBeInTheDocument();
     });
   });
 

@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { CoinGeckoApiService } from './coinGeckoApi';
 import { createCryptocurrencyListMockData } from '../test/mocks/factories/cryptocurrencyFactory';
 import { API_CONFIG } from '../utils/constants';
+import { MockApiService } from '../test/mocks/apiMockService';
+import { configureMockForTest } from '../test/setup/mockSetup';
 
 // Ensure fetch is always mocked
 vi.stubGlobal('fetch', vi.fn());
@@ -12,19 +14,27 @@ Object.defineProperty(API_CONFIG, 'DEFAULT_TIMEOUT', { value: 0, writable: true 
 
 describe('CoinGeckoApiService', () => {
   let service: CoinGeckoApiService;
+  let mockApiService: MockApiService;
 
   beforeEach(() => {
     service = new CoinGeckoApiService();
+    mockApiService = MockApiService.getInstance();
     vi.clearAllMocks();
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    mockApiService.clearMocks();
   });
 
   describe('getTopCryptocurrencies', () => {
     it('should fetch top cryptocurrencies successfully', async () => {
       const mockData = createCryptocurrencyListMockData(5);
+      configureMockForTest('/api/coins/markets', {
+        responseData: mockData,
+        delay: 50,
+      });
+
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => mockData,
@@ -37,6 +47,11 @@ describe('CoinGeckoApiService', () => {
 
     it('should use default limit when no limit provided', async () => {
       const mockData = createCryptocurrencyListMockData(10);
+      configureMockForTest('/api/coins/markets', {
+        responseData: mockData,
+        delay: 50,
+      });
+
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => mockData,
@@ -48,6 +63,11 @@ describe('CoinGeckoApiService', () => {
     });
 
     it('should throw error when API request fails', async () => {
+      configureMockForTest('/api/coins/markets', {
+        shouldFail: true,
+        errorType: 'api',
+      });
+
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: false,
         status: 500,
@@ -58,6 +78,11 @@ describe('CoinGeckoApiService', () => {
     });
 
     it('should throw error when fetch throws', async () => {
+      configureMockForTest('/api/coins/markets', {
+        shouldFail: true,
+        errorType: 'network',
+      });
+
       vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
 
       await expect(service.getTopCryptocurrencies()).rejects.toThrow(/Failed to fetch cryptocurrency data/);
@@ -87,6 +112,12 @@ describe('CoinGeckoApiService', () => {
           price_change_percentage_24h: 1.2,
         },
       ];
+
+      configureMockForTest('/api/coins/markets', {
+        responseData: mockData,
+        delay: 50,
+      });
+
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: false,
@@ -105,6 +136,11 @@ describe('CoinGeckoApiService', () => {
     });
 
     it('should throw error when all retries are exhausted', async () => {
+      configureMockForTest('/api/coins/markets', {
+        shouldFail: true,
+        errorType: 'api',
+      });
+
       vi.mocked(fetch).mockResolvedValue({
         ok: false,
         status: 500,
@@ -124,6 +160,11 @@ describe('CoinGeckoApiService', () => {
         ],
       };
 
+      configureMockForTest('/api/coins/bitcoin/market_chart', {
+        responseData: mockData,
+        delay: 50,
+      });
+
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => mockData,
@@ -138,6 +179,11 @@ describe('CoinGeckoApiService', () => {
     });
 
     it('should throw error when API request fails', async () => {
+      configureMockForTest('/api/coins/bitcoin/market_chart', {
+        shouldFail: true,
+        errorType: 'api',
+      });
+
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -148,12 +194,22 @@ describe('CoinGeckoApiService', () => {
     });
 
     it('should throw error when fetch throws', async () => {
+      configureMockForTest('/api/coins/bitcoin/market_chart', {
+        shouldFail: true,
+        errorType: 'network',
+      });
+
       vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
 
       await expect(service.getPriceHistory('bitcoin', 7)).rejects.toThrow(/Failed to fetch price history/);
     });
 
     it('should throw error when response format is invalid', async () => {
+      configureMockForTest('/api/coins/bitcoin/market_chart', {
+        responseData: { invalid: 'format' },
+        delay: 50,
+      });
+
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ invalid: 'format' }),
@@ -164,6 +220,11 @@ describe('CoinGeckoApiService', () => {
 
     it('should handle empty price data', async () => {
       const mockData = { prices: [] };
+
+      configureMockForTest('/api/coins/bitcoin/market_chart', {
+        responseData: mockData,
+        delay: 50,
+      });
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
@@ -180,6 +241,11 @@ describe('CoinGeckoApiService', () => {
     it('should use different cache keys for different parameters', async () => {
       const mockData1 = createCryptocurrencyListMockData(5);
       const mockData2 = createCryptocurrencyListMockData(10);
+
+      configureMockForTest('/api/coins/markets', {
+        responseData: mockData1,
+        delay: 50,
+      });
 
       vi.mocked(fetch)
         .mockResolvedValueOnce({
@@ -199,6 +265,11 @@ describe('CoinGeckoApiService', () => {
 
     it('should return cached data for same parameters', async () => {
       const mockData = createCryptocurrencyListMockData(5);
+
+      configureMockForTest('/api/coins/markets', {
+        responseData: mockData,
+        delay: 50,
+      });
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,

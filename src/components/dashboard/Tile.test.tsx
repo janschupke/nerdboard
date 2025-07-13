@@ -97,7 +97,7 @@ describe('Tile', () => {
   it('renders drag handle with correct attributes', () => {
     render(<Tile {...mockProps} />);
 
-    const dragHandle = screen.getByLabelText('Drag tile');
+    const dragHandle = screen.getByLabelText('Drag Cryptocurrency tile');
     expect(dragHandle).toHaveClass('cursor-grab');
   });
 
@@ -151,7 +151,7 @@ describe('Tile', () => {
 
     render(<Tile {...mockProps} dragHandleProps={dragHandleProps} />);
 
-    const dragHandle = screen.getByLabelText('Drag tile');
+    const dragHandle = screen.getByLabelText('Drag Cryptocurrency tile');
     expect(dragHandle).toHaveAttribute('draggable', 'true');
   });
 
