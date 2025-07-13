@@ -16,21 +16,15 @@ export const CryptocurrencyTile = React.memo<CryptocurrencyTileProps>(({ size, c
     config.chartPeriod || CRYPTO_UI_CONFIG.DEFAULT_CHART_PERIOD,
   );
 
-  // Helper to create a deep content hash for data
-  function dataContentHash(arr: typeof data): string {
-    if (!arr || arr.length === 0) return '';
-    return arr.map(item => `${item.id}:${item.current_price}`).join('|');
-  }
-
   // Memoize the top coins to prevent unnecessary re-renders
   const topCoins = useMemo(() => {
     return data.slice(0, CRYPTO_UI_CONFIG.TOP_COINS_DISPLAY_LIMIT);
-  }, [dataContentHash(data)]);
+  }, [data]);
 
   // Memoize the selected coin data
   const selectedCoinData = useMemo(() => {
     return data.find((coin) => coin.id === selectedCoin);
-  }, [dataContentHash(data), selectedCoin]);
+  }, [data, selectedCoin]);
 
   return (
     <Tile
@@ -76,9 +70,11 @@ export const CryptocurrencyTile = React.memo<CryptocurrencyTileProps>(({ size, c
                 <div className="flex items-center space-x-2">
                   <span className="font-medium text-theme-primary">{selectedCoinData.name}</span>
                 </div>
-                <PriceDisplay
+                <PriceDisplay 
                   price={selectedCoinData.current_price}
-                  changePercentage={selectedCoinData.price_change_percentage_24h}
+                  showChange={true}
+                  changeValue={selectedCoinData.price_change_percentage_24h}
+                  changePercent={selectedCoinData.price_change_percentage_24h}
                 />
               </div>
 

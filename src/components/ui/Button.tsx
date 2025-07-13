@@ -1,39 +1,44 @@
-import { UI_CONFIG } from '../../utils/constants';
+import React, { useMemo } from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'accent' | 'success' | 'error';
+  variant?: 'primary' | 'secondary' | 'muted';
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
 }
 
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  children,
+export const Button = React.memo<ButtonProps>(({ 
+  children, 
+  variant = 'primary', 
+  size = 'md', 
+  onClick, 
+  disabled = false,
   className = '',
-  ...props
-}: ButtonProps) {
-  const baseClasses = `font-semibold rounded-lg transition-colors duration-${UI_CONFIG.ANIMATION_DURATION} focus:outline-none focus:ring-2 focus:ring-offset-2`;
-
-  const variantClasses = {
-    primary: 'bg-primary-500 hover:bg-primary-600 text-white focus:ring-primary-500',
-    secondary: 'bg-secondary-500 hover:bg-secondary-600 text-white focus:ring-secondary-500',
-    accent: 'bg-accent-500 hover:bg-accent-600 text-white focus:ring-accent-500',
-    success: 'bg-success-500 hover:bg-success-600 text-white focus:ring-success-500',
-    error: 'bg-error-500 hover:bg-error-600 text-white focus:ring-error-500',
-  };
-
-  const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm h-8',
-    md: 'px-4 py-2 text-base h-10',
-    lg: 'px-6 py-3 text-lg h-12',
-  };
-
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  ...props 
+}) => {
+  // Memoize className to prevent object recreation
+  const buttonClassName = useMemo(() => {
+    const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+    const variantClasses: Record<string, string> = {
+      primary: 'bg-accent-primary text-accent-inverse hover:bg-accent-hover',
+      secondary: 'bg-surface-secondary text-theme-primary hover:bg-surface-tertiary',
+      muted: 'bg-surface-muted text-theme-secondary hover:bg-surface-tertiary',
+    };
+    const sizeClasses: Record<string, string> = {
+      sm: 'px-3 py-1.5 text-sm',
+      md: 'px-4 py-2 text-sm',
+      lg: 'px-6 py-3 text-base',
+    };
+    return `${baseClasses} ${variantClasses[variant] || ''} ${sizeClasses[size] || ''} ${className}`;
+  }, [variant, size, className]);
 
   return (
-    <button className={classes} {...props}>
+    <button 
+      className={buttonClassName}
+      onClick={onClick}
+      disabled={disabled}
+      {...props}
+    >
       {children}
     </button>
   );
-}
+});

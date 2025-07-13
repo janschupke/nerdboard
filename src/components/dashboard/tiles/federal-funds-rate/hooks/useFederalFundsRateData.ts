@@ -51,7 +51,7 @@ export function useFederalFundsRateData(refreshInterval: number = REFRESH_INTERV
     [timeRange, storageKey],
   );
 
-  // Listen for global refresh events
+  // Listen for global refresh events with proper cleanup
   useEffect(() => {
     const handleGlobalRefresh = () => {
       fetchData(true);
@@ -72,10 +72,12 @@ export function useFederalFundsRateData(refreshInterval: number = REFRESH_INTERV
     };
   }, [fetchData, storageKey]);
 
+  // Initial data fetch
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
+  // Set up refresh interval
   useEffect(() => {
     const interval = setInterval(() => {
       fetchData();

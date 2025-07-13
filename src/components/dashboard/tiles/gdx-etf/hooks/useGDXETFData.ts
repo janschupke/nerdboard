@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { GDXETFApiService } from '../services/gdxEtfApi';
 import { GDX_ERROR_MESSAGES } from '../constants';
 import type { GDXETFData, GDXETFPriceHistory, ChartPeriod } from '../types';
@@ -16,7 +16,11 @@ export function useGDXETFData(refreshInterval: number = REFRESH_INTERVALS.TILE_D
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isCached, setIsCached] = useState(false);
 
-  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}gdx-etf`;
+  // Memoize storageKey to prevent recreation on every render
+  const storageKey = useMemo(() => 
+    `${STORAGE_KEYS.TILE_DATA_PREFIX}gdx-etf`, 
+    []
+  );
 
   const fetchData = useCallback(
     async (forceRefresh = false) => {
@@ -59,12 +63,15 @@ export function useGDXETFData(refreshInterval: number = REFRESH_INTERVALS.TILE_D
     } catch {
       // Don't set error for price history as it's not critical
     }
-  }, []);
+  }, []); // No dependencies needed
 
+  // Combined useEffect for initial fetch and interval setup
   useEffect(() => {
+    // Initial fetch
     fetchData();
     fetchPriceHistory(selectedPeriod);
 
+    // Set up refresh interval
     const interval = setInterval(() => {
       fetchData();
     }, refreshInterval);

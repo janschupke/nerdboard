@@ -72,7 +72,7 @@ export const useEuriborRateData = () => {
     loadData(timeRange);
   }, [loadData, timeRange]);
 
-  // Auto-refresh every 24 hours
+  // Simplified auto-refresh every 24 hours
   useEffect(() => {
     const refreshInterval = setInterval(() => {
       if (data && lastUpdated) {

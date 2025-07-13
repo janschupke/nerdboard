@@ -5,8 +5,10 @@ import { EuriborRateChart } from './EuriborRateChart';
 import { EuriborRateControls } from './EuriborRateControls';
 import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { EURIBOR_RATE_ERROR_MESSAGES } from './constants';
+// No need to import EuriborRateTileProps if not used
 
-export const EuriborRateTile: React.FC = () => {
+// If props are not used, just memoize the component as is
+export const EuriborRateTile = React.memo(() => {
   const { data, loading, error, timeRange, setTimeRange, refreshData, hasError, hasData } =
     useEuriborRateData();
 
@@ -59,4 +61,4 @@ export const EuriborRateTile: React.FC = () => {
       />
     </div>
   );
-};
+});

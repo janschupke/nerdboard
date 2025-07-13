@@ -1,56 +1,38 @@
+import React from 'react';
+
 interface IconProps {
   name: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: number | 'sm' | 'md' | 'lg';
   className?: string;
 }
 
-export function Icon({ name, size = 'md', className = '' }: IconProps) {
-  const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8',
+export const Icon = React.memo<IconProps>(({ name, size = 16, className = '' }) => {
+  // Convert string sizes to numbers
+  const getSizeValue = (size: number | 'sm' | 'md' | 'lg'): number => {
+    if (typeof size === 'number') return size;
+    switch (size) {
+      case 'sm': return 16;
+      case 'md': return 24;
+      case 'lg': return 32;
+      default: return 16;
+    }
   };
 
-  const iconMap: Record<string, string> = {
-    // Cryptocurrency icons
-    bitcoin: '₿',
-    ethereum: 'Ξ',
-    crypto: '💎',
-
-    // Precious metals icons
-    gold: '🥇',
-    silver: '🥈',
-    metals: '🏆',
-
-    // UI icons
-    close: '✕',
-    add: '+',
-    menu: '☰',
-    drag: '⋮⋮',
-    resize: '⤡',
-    settings: '⚙',
-    refresh: '↻',
-    error: '⚠',
-    success: '✓',
-    loading: '⟳',
-    sun: '☀',
-    moon: '🌙',
-
-    // Enhanced UI icons
-    clock: '🕐',
-    database: '💾',
-    'alert-circle': '⚠️',
-    chart: '📊',
-    weather: '🌤️',
-    time: '⏰',
-  };
-
-  const icon = iconMap[name] || '?';
-  const classes = `${sizeClasses[size]} flex items-center justify-center ${className}`;
+  const sizeValue = getSizeValue(size);
 
   return (
-    <span className={classes} role="img" aria-label={name}>
-      {icon}
-    </span>
+    <svg
+      width={sizeValue}
+      height={sizeValue}
+      className={className}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      {/* Icon content based on name */}
+      <text x="12" y="12" textAnchor="middle" dominantBaseline="middle" fontSize="12">
+        {name.charAt(0).toUpperCase()}
+      </text>
+    </svg>
   );
-}
+});

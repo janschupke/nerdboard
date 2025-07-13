@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 // Chart Configuration Constants
@@ -20,25 +21,39 @@ interface ChartComponentProps {
   title: string;
   color: string;
   height?: number;
+  showPoints?: boolean;
+  className?: string;
 }
 
-export function ChartComponent({
-  data,
+export const ChartComponent = React.memo<ChartComponentProps>(({ 
+  data, 
   title,
-  color,
+  color, 
   height = CHART_CONFIG.DEFAULT_HEIGHT,
-}: ChartComponentProps) {
-  const formatTooltip = (value: unknown, name: string) => {
+  showPoints = true,
+  className = '' 
+}) => {
+  // Memoize className to prevent object recreation
+  const chartClassName = useMemo(() => 
+    `w-full ${className}`, 
+    [className]
+  );
+
+  const formatTooltip = React.useCallback((value: unknown, name: string) => {
     return [`$${Number(value).toFixed(CHART_CONFIG.PRICE_DECIMAL_PLACES)}`, name];
-  };
+  }, []);
 
-  const formatXAxis = (tickItem: number) => {
+  const formatXAxis = React.useCallback((tickItem: number) => {
     return new Date(tickItem).toLocaleDateString();
-  };
+  }, []);
 
-  const formatYAxis = (value: unknown) => {
+  const formatYAxis = React.useCallback((value: unknown) => {
     return `$${Number(value).toFixed(CHART_CONFIG.PRICE_WHOLE_NUMBER_DECIMAL_PLACES)}`;
-  };
+  }, []);
+
+  const formatLabel = React.useCallback((label: unknown) => {
+    return new Date(label as number).toLocaleDateString();
+  }, []);
 
   if (!data || data.length === 0) {
     return (
@@ -49,7 +64,7 @@ export function ChartComponent({
   }
 
   return (
-    <div className="w-full h-full">
+    <div className={chartClassName}>
       <h3 className="text-sm font-medium text-theme-primary mb-2">{title}</h3>
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data}>
@@ -68,14 +83,14 @@ export function ChartComponent({
           />
           <Tooltip
             formatter={formatTooltip}
-            labelFormatter={(label) => new Date(label).toLocaleDateString()}
+            labelFormatter={formatLabel}
           />
           <Line
             type="monotone"
             dataKey="price"
             stroke={color}
             strokeWidth={CHART_CONFIG.STROKE_WIDTH}
-            dot={false}
+            dot={showPoints}
             activeDot={{ r: CHART_CONFIG.ACTIVE_DOT_RADIUS, fill: color }}
             isAnimationActive={false}
           />
@@ -83,4 +98,4 @@ export function ChartComponent({
       </ResponsiveContainer>
     </div>
   );
-}
+});

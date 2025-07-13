@@ -25,7 +25,12 @@ export const useTimeData = (
 
   const timezoneService = useMemo(() => TimezoneService.getInstance(), []);
   const cityConfig = useMemo(() => timezoneService.getCityConfig(city), [timezoneService, city]);
-  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}time-${city}`;
+  
+  // Memoize storageKey to prevent recreation on every render
+  const storageKey = useMemo(() => 
+    `${STORAGE_KEYS.TILE_DATA_PREFIX}time-${city}`, 
+    [city]
+  );
 
   const fetchTimeData = useCallback(
     (forceRefresh = false) => {

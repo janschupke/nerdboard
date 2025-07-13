@@ -1,52 +1,51 @@
+import React, { useMemo } from 'react';
+
 interface PriceDisplayProps {
   price: number;
-  change?: number;
-  changePercentage?: number;
   currency?: string;
   className?: string;
+  showChange?: boolean;
+  changeValue?: number;
+  changePercent?: number;
 }
 
-export function PriceDisplay({
-  price,
-  change,
-  changePercentage,
-  currency = '$',
-  className = '',
-}: PriceDisplayProps) {
-  const formatPrice = (value: number) => {
-    return `${currency}${value.toLocaleString(undefined, {
+export const PriceDisplay = React.memo<PriceDisplayProps>(({ 
+  price, 
+  currency = 'USD', 
+  className = '', 
+  showChange = false,
+  changeValue = 0,
+  changePercent = 0
+}) => {
+  // Memoize formatted price
+  const formattedPrice = useMemo(() => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    })}`;
-  };
+    }).format(price);
+  }, [price, currency]);
 
-  const getChangeColor = () => {
-    if (!change && !changePercentage) return 'text-theme-muted';
-    const value = changePercentage ?? (change ? (change / price) * 100 : 0);
-    return value >= 0 ? 'text-success-600' : 'text-error-600';
-  };
-
-  const getChangeIcon = () => {
-    if (!change && !changePercentage) return null;
-    const value = changePercentage ?? (change ? (change / price) * 100 : 0);
-    return value >= 0 ? '↗' : '↘';
-  };
+  // Memoize change display
+  const changeDisplay = useMemo(() => {
+    if (!showChange) return null;
+    
+    const isPositive = changeValue >= 0;
+    const changeClass = isPositive ? 'text-success-600' : 'text-error-600';
+    const changeSymbol = isPositive ? '+' : '';
+    
+    return (
+      <span className={`text-sm ${changeClass}`}>
+        {changeSymbol}{changeValue.toFixed(2)} ({changeSymbol}{changePercent.toFixed(2)}%)
+      </span>
+    );
+  }, [showChange, changeValue, changePercent]);
 
   return (
-    <div className={className}>
-      <div className="text-lg font-semibold">{formatPrice(price)}</div>
-      {(change !== undefined || changePercentage !== undefined) && (
-        <div className={`text-sm flex items-center space-x-1 ${getChangeColor()}`}>
-          <span>{getChangeIcon()}</span>
-          <span>
-            {changePercentage !== undefined
-              ? `${changePercentage >= 0 ? '+' : ''}${changePercentage.toFixed(2)}%`
-              : change !== undefined
-                ? `${change >= 0 ? '+' : ''}${formatPrice(change)}`
-                : ''}
-          </span>
-        </div>
-      )}
+    <div className={`flex flex-col ${className}`}>
+      <span className="font-mono text-lg font-semibold">{formattedPrice}</span>
+      {changeDisplay}
     </div>
   );
-}
+});

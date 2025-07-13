@@ -38,6 +38,7 @@ describe('FederalFundsRateTile', () => {
       timeRange: '1Y',
       lastUpdated: null,
       isCached: false,
+      retryCount: 0,
       setTimeRange: vi.fn(),
       refetch: vi.fn(),
     });
@@ -55,6 +56,7 @@ describe('FederalFundsRateTile', () => {
       timeRange: '1Y',
       lastUpdated: null,
       isCached: false,
+      retryCount: 1,
       setTimeRange: vi.fn(),
       refetch: vi.fn(),
     });
@@ -73,6 +75,7 @@ describe('FederalFundsRateTile', () => {
       timeRange: '1Y',
       lastUpdated: null,
       isCached: false,
+      retryCount: 0,
       setTimeRange: vi.fn(),
       refetch: vi.fn(),
     });
@@ -92,6 +95,7 @@ describe('FederalFundsRateTile', () => {
       timeRange: '1Y',
       lastUpdated: new Date('2024-01-15T10:00:00Z'),
       isCached: false,
+      retryCount: 0,
       setTimeRange: mockSetTimeRange,
       refetch: vi.fn(),
     });
@@ -113,6 +117,7 @@ describe('FederalFundsRateTile', () => {
       timeRange: '1Y',
       lastUpdated: new Date('2024-01-15T10:00:00Z'),
       isCached: false,
+      retryCount: 0,
       setTimeRange: mockSetTimeRange,
       refetch: vi.fn(),
     });
@@ -137,6 +142,7 @@ describe('FederalFundsRateTile', () => {
       timeRange: '1Y',
       lastUpdated: new Date('2024-01-15T10:00:00Z'),
       isCached: false,
+      retryCount: 0,
       setTimeRange: mockSetTimeRange,
       refetch: vi.fn(),
     });
@@ -159,6 +165,7 @@ describe('FederalFundsRateTile', () => {
       timeRange: '1Y',
       lastUpdated: null,
       isCached: false,
+      retryCount: 0,
       setTimeRange: vi.fn(),
       refetch: mockRefetch,
     });
@@ -181,6 +188,7 @@ describe('FederalFundsRateTile', () => {
       timeRange: '1Y',
       lastUpdated: new Date('2024-01-15T10:00:00Z'),
       isCached: false,
+      retryCount: 0,
       setTimeRange: mockSetTimeRange,
       refetch: vi.fn(),
     });
@@ -200,6 +208,7 @@ describe('FederalFundsRateTile', () => {
       timeRange: '1Y',
       lastUpdated: new Date('2024-01-15T10:00:00Z'),
       isCached: false,
+      retryCount: 0,
       setTimeRange: mockSetTimeRange,
       refetch: vi.fn(),
     });
@@ -220,6 +229,7 @@ describe('FederalFundsRateTile', () => {
       timeRange: '1Y',
       lastUpdated: new Date('2024-01-15T10:00:00Z'),
       isCached: false,
+      retryCount: 0,
       setTimeRange: mockSetTimeRange,
       refetch: vi.fn(),
     });

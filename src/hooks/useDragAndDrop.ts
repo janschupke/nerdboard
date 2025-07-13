@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { DragState, UseDragAndDropReturn } from '../types/dragDrop';
 
 export function useDragAndDrop(
@@ -52,11 +52,12 @@ export function useDragAndDrop(
     });
   }, []);
 
-  return {
+  // Memoize return value to prevent unnecessary re-renders
+  return useMemo(() => ({
     dragState,
     startDrag,
     updateDrag,
     endDrag,
     cancelDrag,
-  };
+  }), [dragState, startDrag, updateDrag, endDrag, cancelDrag]);
 }

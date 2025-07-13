@@ -74,7 +74,12 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
           </div>
         </div>
         <div className="text-right">
-          <PriceDisplay price={data.currentPrice} changePercentage={data.priceChangePercent} />
+          <PriceDisplay 
+            price={data.currentPrice} 
+            showChange={true}
+            changeValue={data.priceChangePercent}
+            changePercent={data.priceChangePercent}
+          />
           <div className="text-xs text-theme-muted mt-1">{tradingStatusDisplay}</div>
         </div>
       </div>

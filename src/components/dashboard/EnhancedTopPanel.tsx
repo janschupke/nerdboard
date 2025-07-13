@@ -1,79 +1,42 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Button } from '../ui/Button';
-import { Icon } from '../ui/Icon';
-import { REFRESH_INTERVALS } from '../../utils/constants';
+import React, { useMemo } from 'react';
 
 interface EnhancedTopPanelProps {
   onRefreshAll: () => void;
-  isRefreshing?: boolean;
+  isRefreshing: boolean;
   lastRefreshTime?: Date;
 }
 
-export const EnhancedTopPanel: React.FC<EnhancedTopPanelProps> = ({
-  onRefreshAll,
-  isRefreshing = false,
-  lastRefreshTime,
+export const EnhancedTopPanel = React.memo<EnhancedTopPanelProps>(({ 
+  onRefreshAll, 
+  isRefreshing, 
+  lastRefreshTime 
 }) => {
-  const [timeUntilRefresh, setTimeUntilRefresh] = useState<number>(0);
-
-  const calculateTimeUntilRefresh = useCallback(() => {
-    if (!lastRefreshTime) {
-      setTimeUntilRefresh(REFRESH_INTERVALS.TILE_DATA);
-      return;
-    }
-    const now = Date.now();
-    const nextRefresh = lastRefreshTime.getTime() + REFRESH_INTERVALS.TILE_DATA;
-    const timeLeft = Math.max(0, nextRefresh - now);
-    setTimeUntilRefresh(timeLeft);
+  // Memoize formatted time
+  const formattedTime = useMemo(() => {
+    if (!lastRefreshTime) return 'Never';
+    return lastRefreshTime.toLocaleTimeString();
   }, [lastRefreshTime]);
 
-  useEffect(() => {
-    calculateTimeUntilRefresh();
-    const interval = setInterval(calculateTimeUntilRefresh, 1000);
-    return () => clearInterval(interval);
-  }, [calculateTimeUntilRefresh]);
-
-  const formatTime = (milliseconds: number): string => {
-    const minutes = Math.floor(milliseconds / 60000);
-    const seconds = Math.floor((milliseconds % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const handleRefreshClick = useCallback(() => {
-    onRefreshAll();
-  }, [onRefreshAll]);
+  // Memoize panel classes
+  const panelClasses = useMemo(() => {
+    return 'bg-surface-primary border-b border-surface-tertiary p-4 flex items-center justify-between';
+  }, []);
 
   return (
-    <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <header className={panelClasses}>
       <div className="flex items-center space-x-4">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Nerdboard</h1>
-        <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-          <Icon name="clock" className="w-4 h-4" aria-hidden="true" />
-          <span
-            tabIndex={0}
-            aria-label="Next refresh countdown"
-            title="Time until the next automatic data refresh"
-          >
-            Next refresh in: {formatTime(timeUntilRefresh)}
-          </span>
+        <h1 className="text-xl font-semibold text-theme-primary">Nerdboard</h1>
+        <div className="text-sm text-theme-secondary">
+          Last updated: {formattedTime}
         </div>
       </div>
-      <div className="flex items-center space-x-2">
-        <Button
-          onClick={handleRefreshClick}
-          disabled={isRefreshing}
-          className="flex items-center space-x-2"
-          aria-label="Refresh all data"
-          title="Refresh all dashboard data immediately"
-        >
-          <Icon
-            name={isRefreshing ? 'loading' : 'refresh'}
-            className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}
-            aria-hidden="true"
-          />
-          <span>{isRefreshing ? 'Refreshing...' : 'Refresh All'}</span>
-        </Button>
-      </div>
-    </div>
+      <button
+        onClick={onRefreshAll}
+        disabled={isRefreshing}
+        className="px-4 py-2 bg-accent-primary text-accent-inverse rounded-md hover:bg-accent-hover disabled:opacity-50"
+      >
+        {isRefreshing ? 'Refreshing...' : 'Refresh All'}
+      </button>
+    </header>
   );
-};
+});

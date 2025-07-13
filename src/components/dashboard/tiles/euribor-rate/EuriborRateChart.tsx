@@ -21,15 +21,9 @@ export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
   data = [],
   loading = false,
 }) => {
-  const formatYAxis = (tickItem: number) => {
+  const formatYAxis = React.useCallback((tickItem: number) => {
     return `${tickItem.toFixed(2)}%`;
-  };
-
-  // Helper to create a content hash for data
-  function dataContentHash(data: EuriborRatePoint[]): string {
-    if (!data || data.length === 0) return '';
-    return data.map(point => `${point.date.getTime()}:${point.rate}`).join('|');
-  }
+  }, []);
 
   // Memoize chart data transformation to prevent unnecessary re-renders
   const chartData = useMemo(() => {
@@ -41,9 +35,9 @@ export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
         day: '2-digit',
       }),
     }));
-  }, [dataContentHash(data)]);
+  }, [data]);
 
-  const CustomTooltip = ({
+  const CustomTooltip = React.useCallback(({
     active,
     payload,
     label,
@@ -62,7 +56,7 @@ export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
       );
     }
     return null;
-  };
+  }, []);
 
   if (loading) {
     return (

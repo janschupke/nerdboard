@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { PreciousMetalsApiService } from '../services/preciousMetalsApi';
 import { PRECIOUS_METALS_API_CONFIG, PRECIOUS_METALS_ERROR_MESSAGES } from '../constants';
 import { STORAGE_KEYS } from '../../../../../utils/constants';
@@ -17,7 +17,11 @@ export function usePreciousMetalsData(
   const [isCached, setIsCached] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}precious-metals`;
+  // Memoize storageKey to prevent recreation on every render
+  const storageKey = useMemo(() => 
+    `${STORAGE_KEYS.TILE_DATA_PREFIX}precious-metals`, 
+    []
+  );
 
   const fetchData = useCallback(
     async (forceRefresh = false) => {

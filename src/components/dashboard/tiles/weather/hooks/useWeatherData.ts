@@ -26,8 +26,13 @@ export const useWeatherData = (
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isCached, setIsCached] = useState(false);
 
-  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}weather-${city}`;
+  // Memoize storageKey to prevent recreation on every render
+  const storageKey = useMemo(() => 
+    `${STORAGE_KEYS.TILE_DATA_PREFIX}weather-${city}`, 
+    [city]
+  );
 
+  // Memoize transform functions to prevent recreation on every render
   const transformApiResponse = useCallback(
     (apiData: WeatherApiResponse, cityName: string): WeatherData => {
       const current = apiData.current;
@@ -57,7 +62,7 @@ export const useWeatherData = (
         timestamp: current.dt * 1000, // Convert to milliseconds
       };
     },
-    [],
+    [], // No dependencies needed
   );
 
   const transformForecast = useCallback((apiData: WeatherApiResponse): WeatherForecast[] => {
@@ -80,7 +85,7 @@ export const useWeatherData = (
         },
       };
     });
-  }, []);
+  }, []); // No dependencies needed
 
   const fetchWeatherData = useCallback(
     async (forceRefresh = false): Promise<void> => {
@@ -130,7 +135,7 @@ export const useWeatherData = (
         setLoading(false);
       }
     },
-    [city, transformApiResponse, transformForecast, storageKey],
+    [city, storageKey, transformApiResponse, transformForecast],
   );
 
   const refetch = useCallback(async (): Promise<void> => {

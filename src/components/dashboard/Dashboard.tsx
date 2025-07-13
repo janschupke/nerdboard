@@ -1,10 +1,9 @@
+import React, { useCallback } from 'react';
 import { DashboardProvider } from '../../contexts/DashboardContext';
 import { TileGrid } from './TileGrid';
 import { Sidebar } from './Sidebar';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { TileType } from '../../types/dashboard';
-import { ErrorBoundary } from '../ErrorBoundary';
-import { useContext } from 'react';
 import { EnhancedTopPanel } from './EnhancedTopPanel';
 
 /**
@@ -13,23 +12,20 @@ import { EnhancedTopPanel } from './EnhancedTopPanel';
  *
  * @returns {JSX.Element} The dashboard content component
  */
-function DashboardContent() {
-  const dashboardContext = useContext(DashboardContext);
+const DashboardContent = React.memo(() => {
+  const dashboardContext = React.useContext(DashboardContext);
   if (!dashboardContext) {
     throw new Error('DashboardContent must be used within DashboardProvider');
   }
 
-  const { layout, addTile, toggleCollapse, refreshAllTiles, isRefreshing, lastRefreshTime } =
+  const { state, addTile, toggleCollapse, refreshAllTiles, isRefreshing, lastRefreshTime } =
     dashboardContext;
-  const { isCollapsed } = layout;
+  const { isCollapsed } = state.layout;
 
-  /**
-   * Handles tile selection from the sidebar
-   * @param {TileType} tileType - The type of tile to add
-   */
-  const handleTileSelect = (tileType: TileType) => {
+  // Memoize handler to prevent recreation
+  const handleTileSelect = useCallback((tileType: TileType) => {
     addTile(tileType);
-  };
+  }, [addTile]);
 
   return (
     <div className="h-screen w-full flex flex-col bg-theme-primary overflow-hidden">
@@ -50,7 +46,7 @@ function DashboardContent() {
       </div>
     </div>
   );
-}
+});
 
 /**
  * Main Dashboard component that wraps the dashboard content
@@ -58,12 +54,10 @@ function DashboardContent() {
  *
  * @returns {JSX.Element} The main dashboard component
  */
-export function Dashboard() {
+export const Dashboard = React.memo(() => {
   return (
-    <ErrorBoundary>
-      <DashboardProvider>
-        <DashboardContent />
-      </DashboardProvider>
-    </ErrorBoundary>
+    <DashboardProvider>
+      <DashboardContent />
+    </DashboardProvider>
   );
-}
+});

@@ -25,7 +25,8 @@ const generateChartData = (basePrice: number) => {
 
   for (let i = days; i >= 0; i--) {
     const date = new Date(now - i * 24 * 60 * 60 * 1000);
-    const variation = (Math.random() - 0.5) * 10;
+    // Use a deterministic variation based on the day to avoid random changes
+    const variation = Math.sin(i * 0.5) * 5; // Deterministic variation
     data.push({
       date: date.toLocaleDateString(),
       price: basePrice + variation,
@@ -41,7 +42,7 @@ export const UraniumChart = React.memo<UraniumChartProps>(({ uraniumData, size }
     return generateChartData(uraniumData.spotPrice);
   }, [uraniumData.spotPrice]);
 
-  const getChartHeight = () => {
+  const getChartHeight = React.useCallback(() => {
     switch (size) {
       case 'small':
         return 120;
@@ -52,9 +53,9 @@ export const UraniumChart = React.memo<UraniumChartProps>(({ uraniumData, size }
       default:
         return 180;
     }
-  };
+  }, [size]);
 
-  const CustomTooltip = ({
+  const CustomTooltip = React.useCallback(({
     active,
     payload,
     label,
@@ -72,7 +73,7 @@ export const UraniumChart = React.memo<UraniumChartProps>(({ uraniumData, size }
       );
     }
     return null;
-  };
+  }, []);
 
   return (
     <div className="w-full" style={{ height: getChartHeight() }}>
@@ -91,7 +92,7 @@ export const UraniumChart = React.memo<UraniumChartProps>(({ uraniumData, size }
             tickLine={false}
             axisLine={false}
             domain={['dataMin - 5', 'dataMax + 5']}
-            tickFormatter={(value) => `$${value.toFixed(0)}`}
+            tickFormatter={React.useCallback((value: number) => `$${value.toFixed(0)}`, [])}
           />
           <Tooltip content={<CustomTooltip />} />
           <Line

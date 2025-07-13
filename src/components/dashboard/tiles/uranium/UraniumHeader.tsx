@@ -45,9 +45,10 @@ export const UraniumHeader = React.memo<UraniumHeaderProps>(({ uraniumData, size
         <div className={`font-bold ${getPriceSizeClass()} text-theme-primary`}>
           <PriceDisplay
             price={uraniumData.spotPrice}
-            change={uraniumData.change}
-            changePercentage={uraniumData.changePercent}
             currency="$"
+            showChange={true}
+            changeValue={uraniumData.change}
+            changePercent={uraniumData.changePercent}
           />
         </div>
         <div className={`${getChangeSizeClass()} text-theme-secondary`}>Uranium Spot Price</div>
@@ -78,5 +79,3 @@ export const UraniumHeader = React.memo<UraniumHeaderProps>(({ uraniumData, size
     </div>
   );
 });
-
-UraniumHeader.displayName = 'UraniumHeader';

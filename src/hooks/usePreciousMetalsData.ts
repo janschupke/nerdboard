@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { PreciousMetalsApiService } from '../services/preciousMetalsApi';
 import type { PreciousMetalsData } from '../types/preciousMetals';
 import { getCachedData, setCachedData } from '../utils/localStorage';
@@ -6,7 +6,7 @@ import { STORAGE_KEYS, REFRESH_INTERVALS } from '../utils/constants';
 
 export function usePreciousMetalsData(
   refreshInterval: number = REFRESH_INTERVALS.TILE_DATA,
-  service: PreciousMetalsApiService = new PreciousMetalsApiService(),
+  service?: PreciousMetalsApiService,
 ) {
   const [data, setData] = useState<PreciousMetalsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -15,7 +15,17 @@ export function usePreciousMetalsData(
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isCached, setIsCached] = useState(false);
 
-  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}precious-metals`;
+  // Memoize service instance to prevent recreation on every render
+  const memoizedService = useMemo(() => 
+    service || new PreciousMetalsApiService(), 
+    [service]
+  );
+
+  // Memoize storageKey to prevent recreation on every render
+  const storageKey = useMemo(() => 
+    `${STORAGE_KEYS.TILE_DATA_PREFIX}precious-metals`, 
+    []
+  );
 
   const fetchData = useCallback(
     async (forceRefresh = false) => {
@@ -36,7 +46,7 @@ export function usePreciousMetalsData(
         }
 
         // Fetch fresh data
-        const result = await service.getPreciousMetalsData();
+        const result = await memoizedService.getPreciousMetalsData();
 
         // Validate the result
         if (!result || typeof result !== 'object') {
@@ -65,7 +75,7 @@ export function usePreciousMetalsData(
         setLoading(false);
       }
     },
-    [service, storageKey],
+    [memoizedService, storageKey],
   );
 
   useEffect(() => {

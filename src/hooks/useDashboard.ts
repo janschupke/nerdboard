@@ -1,93 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
-import type { DashboardContextType, DashboardTile } from '../types/dashboard';
-import { useLocalStorage } from './useLocalStorage';
+import { useContext } from 'react';
+import { DashboardContext } from '../contexts/DashboardContext';
 
-const DASHBOARD_STORAGE_KEY = 'nerdboard-dashboard-layout';
-
-export const useDashboard = (): DashboardContextType => {
-  const [layout, setLayout] = useLocalStorage<DashboardTile[]>(DASHBOARD_STORAGE_KEY, []);
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
-
-  const addTile = useCallback(
-    (tile: DashboardTile | string) => {
-      if (typeof tile === 'string') {
-        const newTile: DashboardTile = {
-          id: Math.random().toString(36).substr(2, 9),
-          type: tile as DashboardTile['type'],
-          position: { x: 0, y: 0 },
-          size: 'medium',
-          config: {},
-        };
-        setLayout((prev) => [...prev, newTile]);
-      } else {
-        setLayout((prev) => [...prev, tile]);
-      }
-    },
-    [setLayout],
-  );
-
-  const removeTile = useCallback(
-    (id: string) => {
-      setLayout((prev) => prev.filter((tile) => tile.id !== id));
-    },
-    [setLayout],
-  );
-
-  const updateTile = useCallback(
-    (id: string, updates: Partial<DashboardTile>) => {
-      setLayout((prev) => prev.map((tile) => (tile.id === id ? { ...tile, ...updates } : tile)));
-    },
-    [setLayout],
-  );
-
-  const toggleCollapse = useCallback(() => {
-    setIsCollapsed((prev) => !prev);
-  }, []);
-
-  const setThemeMode = useCallback((newTheme: 'light' | 'dark') => {
-    setTheme(newTheme);
-  }, []);
-
-  const refreshAllTiles = useCallback(async () => {
-    setIsRefreshing(true);
-
-    try {
-      // Trigger refresh for all tiles
-      const event = new CustomEvent('refresh-all-tiles');
-      window.dispatchEvent(event);
-
-      setLastRefreshTime(new Date());
-    } catch (error) {
-      console.error('Failed to refresh all tiles:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  // Load dashboard configuration from local storage
-  useEffect(() => {
-    // Initialize last refresh time if not set
-    if (!lastRefreshTime) {
-      setLastRefreshTime(new Date());
-    }
-  }, [lastRefreshTime]);
-
-  return {
-    layout: {
-      tiles: layout,
-      isCollapsed,
-      theme,
-    },
-    addTile,
-    removeTile,
-    updateTile,
-    toggleCollapse,
-    setTheme: setThemeMode,
-    refreshAllTiles,
-    isRefreshing,
-    lastRefreshTime,
-  };
+export const useDashboard = () => {
+  const context = useContext(DashboardContext);
+  if (!context) {
+    throw new Error('useDashboard must be used within DashboardProvider');
+  }
+  return context;
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CoinGeckoApiService } from '../services/coinGeckoApi';
 import type { CryptocurrencyData } from '../types/cryptocurrency';
 import { getCachedData, setCachedData } from '../utils/localStorage';
@@ -10,7 +10,7 @@ interface CryptocurrencyDataConfig {
 
 export function useCryptocurrencyData(
   config: CryptocurrencyDataConfig = {},
-  service: CoinGeckoApiService = new CoinGeckoApiService(),
+  service?: CoinGeckoApiService,
 ) {
   const [data, setData] = useState<CryptocurrencyData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,18 @@ export function useCryptocurrencyData(
   const [isCached, setIsCached] = useState(false);
 
   const refreshInterval = config.refreshInterval ?? REFRESH_INTERVALS.TILE_DATA;
-  const storageKey = `${STORAGE_KEYS.TILE_DATA_PREFIX}cryptocurrency`;
+  
+  // Memoize service instance to prevent recreation on every render
+  const memoizedService = useMemo(() => 
+    service || new CoinGeckoApiService(), 
+    [service]
+  );
+
+  // Memoize storageKey to prevent recreation on every render
+  const storageKey = useMemo(() => 
+    `${STORAGE_KEYS.TILE_DATA_PREFIX}cryptocurrency`, 
+    []
+  );
 
   const fetchData = useCallback(
     async (forceRefresh = false) => {
@@ -41,7 +52,7 @@ export function useCryptocurrencyData(
         }
 
         // Fetch fresh data
-        const result = await service.getTopCryptocurrencies(10);
+        const result = await memoizedService.getTopCryptocurrencies(10);
 
         if (!Array.isArray(result) || result.length === 0) {
           throw new Error('No cryptocurrency data received');
@@ -65,7 +76,7 @@ export function useCryptocurrencyData(
         setLoading(false);
       }
     },
-    [service, storageKey],
+    [memoizedService, storageKey],
   );
 
   useEffect(() => {

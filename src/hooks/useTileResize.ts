@@ -1,9 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { ResizeState, UseTileResizeReturn } from '../types/dragDrop';
-import type { TileSize } from '../types/dashboard';
 
 export function useTileResize(
-  onTileResize: (tileId: string, newSize: TileSize) => void,
+  onTileResize: (tileId: string, newSize: string) => void,
 ): UseTileResizeReturn {
   const [resizeState, setResizeState] = useState<ResizeState>({
     isResizing: false,
@@ -26,13 +25,13 @@ export function useTileResize(
   const updateResize = useCallback((newSize: Partial<string>) => {
     setResizeState((prev) => ({
       ...prev,
-      currentSize: newSize || prev.currentSize,
+      currentSize: newSize ? (newSize as string) : prev.currentSize,
     }));
   }, []);
 
   const endResize = useCallback(() => {
-    if (resizeState.resizingTileId) {
-      onTileResize(resizeState.resizingTileId, resizeState.currentSize as TileSize);
+    if (resizeState.resizingTileId && resizeState.currentSize) {
+      onTileResize(resizeState.resizingTileId, resizeState.currentSize);
     }
     setResizeState({
       isResizing: false,
@@ -53,11 +52,12 @@ export function useTileResize(
     });
   }, []);
 
-  return {
+  // Memoize return value to prevent unnecessary re-renders
+  return useMemo(() => ({
     resizeState,
     startResize,
     updateResize,
     endResize,
     cancelResize,
-  };
+  }), [resizeState, startResize, updateResize, endResize, cancelResize]);
 }

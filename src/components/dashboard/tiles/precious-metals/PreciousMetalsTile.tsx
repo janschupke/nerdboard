@@ -87,7 +87,12 @@ export const PreciousMetalsTile = React.memo<PreciousMetalsTileProps>(({ size, c
                 {selectedMetal.charAt(0).toUpperCase() + selectedMetal.slice(1)}
               </span>
             </div>
-            <PriceDisplay price={selectedMetalData.price} change={selectedMetalData.change_24h} />
+            <PriceDisplay 
+              price={selectedMetalData.price} 
+              showChange={true}
+              changeValue={selectedMetalData.change_24h}
+              changePercent={selectedMetalData.change_24h}
+            />
           </div>
 
           {/* Chart */}
