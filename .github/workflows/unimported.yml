@@ -13,4 +13,4 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Check for unused files (unimported)
-        run: npx unimported --fail-on-unused 
+        run: npx unimported --fail-on-unused

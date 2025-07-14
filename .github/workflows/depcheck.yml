@@ -19,4 +19,4 @@ jobs:
             echo 'Unused dependencies found:'
             cat depcheck-output.txt
             exit 1
-          fi 
+          fi

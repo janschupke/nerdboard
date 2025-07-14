@@ -13,4 +13,4 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Check for unused exports (ts-unused-exports)
-        run: npx ts-unused-exports ./tsconfig.json 
+        run: npx ts-unused-exports ./tsconfig.json

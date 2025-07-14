@@ -27,7 +27,7 @@ function DashboardContent() {
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
 
-  const LogView = React.lazy(() => import('./LogView').then(m => ({ default: m.LogView })));
+  const LogView = React.lazy(() => import('./LogView').then((m) => ({ default: m.LogView })));
 
   return (
     <div className="h-screen w-full flex flex-col bg-theme-primary overflow-hidden">

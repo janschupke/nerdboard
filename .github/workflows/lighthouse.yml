@@ -19,4 +19,4 @@ jobs:
       - name: Wait for server
         run: npx wait-on http://localhost:4173
       - name: Run Lighthouse CI
-        run: npx lhci autorun --collect.url=http://localhost:4173 
+        run: npx lhci autorun --collect.url=http://localhost:4173
