@@ -4,23 +4,21 @@ import { EuriborRateHeader } from './EuriborRateHeader';
 import { EuriborRateChart } from './EuriborRateChart';
 import { EuriborRateControls } from './EuriborRateControls';
 import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
+import { GenericTile } from '../GenericTile';
 import { EURIBOR_RATE_ERROR_MESSAGES } from './constants';
-// No need to import EuriborRateTileProps if not used
 
-// If props are not used, just memoize the component as is
-export const EuriborRateTile = React.memo(() => {
+export const EuriborRateTile = React.memo((props) => {
   const { data, loading, error, timeRange, setTimeRange } = useEuriborRateData();
 
+  let content: React.ReactNode = null;
   if (loading && !data) {
-    return (
+    content = (
       <div className="tile euribor-rate-tile">
         <LoadingSkeleton />
       </div>
     );
-  }
-
-  if (error) {
-    return (
+  } else if (error) {
+    content = (
       <div className="tile euribor-rate-tile">
         <div className="tile-error">
           <div className="error-message">{error || EURIBOR_RATE_ERROR_MESSAGES.FETCH_FAILED}</div>
@@ -34,30 +32,43 @@ export const EuriborRateTile = React.memo(() => {
         </div>
       </div>
     );
-  }
-
-  if (!data) {
-    return (
+  } else if (!data) {
+    content = (
       <div className="tile euribor-rate-tile">
         <div className="tile-error">{EURIBOR_RATE_ERROR_MESSAGES.NO_DATA}</div>
+      </div>
+    );
+  } else {
+    content = (
+      <div className="tile euribor-rate-tile">
+        <EuriborRateHeader
+          currentRate={data?.currentRate}
+          lastUpdate={data?.lastUpdate}
+          loading={loading}
+        />
+        <EuriborRateChart data={data?.historicalData} timeRange={timeRange} loading={loading} />
+        <EuriborRateControls
+          timeRange={timeRange}
+          onTimeRangeChange={setTimeRange}
+          onRefresh={() => {}} // Placeholder for refreshData
+          loading={loading}
+        />
       </div>
     );
   }
 
   return (
-    <div className="tile euribor-rate-tile">
-      <EuriborRateHeader
-        currentRate={data?.currentRate}
-        lastUpdate={data?.lastUpdate}
-        loading={loading}
-      />
-      <EuriborRateChart data={data?.historicalData} timeRange={timeRange} loading={loading} />
-      <EuriborRateControls
-        timeRange={timeRange}
-        onTimeRangeChange={setTimeRange}
-        onRefresh={() => {}} // Placeholder for refreshData
-        loading={loading}
-      />
-    </div>
+    <GenericTile
+      tile={{
+        id: 'euribor-rate',
+        type: 'euribor_rate',
+        size: 'medium',
+        config: {},
+        position: { x: 0, y: 0 },
+      }}
+      {...props}
+    >
+      {content}
+    </GenericTile>
   );
 });

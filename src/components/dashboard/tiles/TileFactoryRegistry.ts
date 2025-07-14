@@ -1,35 +1,22 @@
-// Comment out or remove all imports for non-existent TileProvider modules and their usages in the file.
+import React from 'react';
+import { TileType } from '../../../types/dashboard';
 
-// Factory object for getting providers
-const tileFactory = {
-  getProvider: (type: string) => {
-    switch (type) {
-      case 'cryptocurrency':
-        return null;
-      case 'weather':
-        return null;
-      case 'precious-metals':
-        return null;
-      case 'federal-funds-rate':
-        return null;
-      case 'time_helsinki':
-      case 'time_prague':
-      case 'time_taipei':
-        return null;
-      case 'euribor_rate':
-        return null;
-      case 'gdx_etf':
-        return null;
-      case 'uranium':
-        return null;
-      case 'weather_helsinki':
-      case 'weather_prague':
-      case 'weather_taipei':
-        return null;
-      default:
-        return null;
-    }
-  },
+const lazyTileMap: Record<TileType, () => React.LazyExoticComponent<React.ComponentType<any>>> = {
+  [TileType.CRYPTOCURRENCY]: () => React.lazy(() => import('./cryptocurrency/CryptocurrencyTile').then(m => ({ default: m.CryptocurrencyTile }))),
+  [TileType.PRECIOUS_METALS]: () => React.lazy(() => import('./precious-metals/PreciousMetalsTile').then(m => ({ default: m.PreciousMetalsTile }))),
+  [TileType.FEDERAL_FUNDS_RATE]: () => React.lazy(() => import('./federal-funds-rate/FederalFundsRateTile').then(m => ({ default: m.FederalFundsRateTile }))),
+  [TileType.EURIBOR_RATE]: () => React.lazy(() => import('./euribor-rate/EuriborRateTile').then(m => ({ default: m.EuriborRateTile }))),
+  [TileType.WEATHER_HELSINKI]: () => React.lazy(() => import('./weather/WeatherTile').then(m => ({ default: m.WeatherTile }))),
+  [TileType.WEATHER_PRAGUE]: () => React.lazy(() => import('./weather/WeatherTile').then(m => ({ default: m.WeatherTile }))),
+  [TileType.WEATHER_TAIPEI]: () => React.lazy(() => import('./weather/WeatherTile').then(m => ({ default: m.WeatherTile }))),
+  [TileType.GDX_ETF]: () => React.lazy(() => import('./gdx-etf/GDXETFTile').then(m => ({ default: m.GDXETFTile }))),
+  [TileType.TIME_HELSINKI]: () => React.lazy(() => import('./time/TimeTile').then(m => ({ default: m.TimeTile }))),
+  [TileType.TIME_PRAGUE]: () => React.lazy(() => import('./time/TimeTile').then(m => ({ default: m.TimeTile }))),
+  [TileType.TIME_TAIPEI]: () => React.lazy(() => import('./time/TimeTile').then(m => ({ default: m.TimeTile }))),
+  [TileType.URANIUM]: () => React.lazy(() => import('./uranium/UraniumTile').then(m => ({ default: m.UraniumTile }))),
 };
 
-export { tileFactory };
+export function getLazyTileComponent(type: TileType): React.LazyExoticComponent<React.ComponentType<any>> | undefined {
+  const loader = lazyTileMap[type];
+  return loader ? loader() : undefined;
+}
