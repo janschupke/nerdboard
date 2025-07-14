@@ -14,9 +14,7 @@ interface SidebarProps {
 export function Sidebar({ onToggle }: SidebarProps) {
   const dashboardContext = useContext(DashboardContext);
   if (!dashboardContext) throw new Error('Sidebar must be used within DashboardProvider');
-  const { tiles, addTile, removeTile } = dashboardContext;
-  // Sidebar collapse state should come from DashboardContext or props if needed
-  const isCollapsed = false; // Replace with actual collapse state if available
+  const { tiles, addTile, removeTile, isCollapsed } = dashboardContext;
 
   // Use TILE_CATALOG for available tiles
   const availableTiles = useMemo(

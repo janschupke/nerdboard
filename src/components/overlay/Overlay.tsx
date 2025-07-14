@@ -10,6 +10,7 @@ import { DragboardProvider, DragboardGrid, DragboardTile } from '../dragboard';
 import { DASHBOARD_GRID_CONFIG } from './gridConfig';
 import { Tile } from '../tile/Tile';
 import { Header } from './Header';
+import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 
 function DashboardContent() {
   const dashboardContext = useContext(DashboardContext);
@@ -29,6 +30,13 @@ function DashboardContent() {
   } = dashboardContext;
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
+
+  // Register hotkeys here
+  useKeyboardNavigation({
+    toggleLogView,
+    refreshAllTiles,
+    isRefreshing,
+  });
 
   const LogView = React.lazy(() => import('../api-log/LogView').then((m) => ({ default: m.LogView })));
 

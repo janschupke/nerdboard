@@ -24,6 +24,7 @@ interface DashboardContextType {
   isRefreshing: boolean;
   lastRefreshTime: Date | null;
   isInitialized: boolean;
+  isCollapsed: boolean;
   // Tiles
   tiles: DashboardTile[];
   addTile: (tile: DashboardTile) => void;
@@ -180,6 +181,7 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       isRefreshing: state.isRefreshing,
       lastRefreshTime: state.lastRefreshTime,
       isInitialized,
+      isCollapsed: state.layout.isCollapsed,
       tiles,
       addTile,
       removeTile,
