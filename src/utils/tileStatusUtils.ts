@@ -1,5 +1,5 @@
-import { TileStatus } from '../types/tileStatus';
-import type { TileStatusData } from '../types/tileStatus';
+import { TileStatus } from '../components/dashboard/generic-tile/tileStatus';
+import type { TileStatusData } from '../components/dashboard/generic-tile/tileStatus';
 
 /**
  * Determines the tile status based on request result and data availability

@@ -8,7 +8,6 @@ import { FEDERAL_FUNDS_UI_CONFIG, TIME_RANGE_CONFIG } from './constants';
 import type { DashboardTile } from '../../../../types/dashboard';
 import type { TileMeta } from '../../generic-tile/GenericTile';
 import type { FederalFundsRateTileConfig } from './types';
-import type { PriceHistory } from '../../../../types';
 
 function isValidFederalFundsRateTileConfig(config: unknown): config is FederalFundsRateTileConfig {
   return Boolean(config && typeof config === 'object');
@@ -25,15 +24,7 @@ export const FederalFundsRateTile = React.memo<{ tile: DashboardTile; meta: Tile
       safeConfig.refreshInterval,
     );
 
-    // Memoize chart data to prevent unnecessary re-renders
-    // const chartData = useMemo(() => {
-    //   if (!data?.historicalData) return [];
-    //   return data.historicalData.map((item) => ({
-    //     timestamp: item.date.getTime(),
-    //     price: item.rate,
-    //   }));
-    // }, [data?.historicalData]);
-    const chartData: PriceHistory[] = [];
+    const chartData: [] = [];
 
     // Memoize the current rate change
     const rateChange = useMemo(() => {

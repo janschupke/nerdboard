@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom';
 import { vi, beforeEach, afterEach } from 'vitest';
-import { setupDefaultMocks } from './setup/mockSetup';
 
 // Mock fetch globally for tests with immediate responses
 const mockFetch = vi.fn().mockImplementation(async () => {
@@ -79,9 +78,6 @@ beforeEach(() => {
 
   // Clear all mocks before each test
   vi.clearAllMocks();
-
-  // Setup default mocks for API calls
-  setupDefaultMocks();
 });
 
 afterEach(() => {

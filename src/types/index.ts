@@ -1,6 +1,4 @@
 export * from './dashboard';
-export * from './cryptocurrency';
-export * from './preciousMetals';
 export * from './animations';
 export * from './errors';
 export { TileType, TileSize } from './dashboard';
