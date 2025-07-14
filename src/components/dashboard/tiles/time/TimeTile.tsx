@@ -8,7 +8,7 @@ import { Button } from '../../../ui/Button';
 import { GenericTile } from '../../generic-tile/GenericTile';
 import { TIME_UI_CONFIG, TIME_ERROR_MESSAGES } from './constants';
 import type { DashboardTile } from '../../../../types/dashboard';
-import type { TileMeta } from '../GenericTile';
+import type { TileMeta } from '../../generic-tile/GenericTile';
 import type { TimeTileConfig, TimeFormat, TimeData } from './types';
 
 function isValidTimeTileConfig(config: unknown): config is TimeTileConfig {

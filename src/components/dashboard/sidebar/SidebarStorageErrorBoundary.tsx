@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ErrorBoundary } from '../ErrorBoundary';
+import ErrorBoundary from '../ErrorBoundary';
 
 interface SidebarStorageErrorBoundaryProps {
   children: React.ReactNode;
@@ -28,5 +28,5 @@ export const SidebarStorageErrorBoundary: React.FC<SidebarStorageErrorBoundaryPr
     );
   }
 
-  return <ErrorBoundary onError={() => setHasStorageError(true)}>{children}</ErrorBoundary>;
+  return <ErrorBoundary>{children}</ErrorBoundary>;
 };

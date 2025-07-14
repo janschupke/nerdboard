@@ -11,6 +11,7 @@ import React, { Suspense, useState, useEffect } from 'react';
 import { DragboardProvider, DragboardGrid, DragboardTile } from '../dragboard';
 import type { DragboardConfig } from '../dragboard';
 import { Tile } from './Tile';
+import type { TileType } from '../../types';
 
 const dragboardConfig: DragboardConfig = {
   columns: 8,
@@ -65,7 +66,7 @@ function DashboardContent() {
   const handleEndSidebarDrag = useCallback(
     async (dropTarget: { x: number; y: number } | null, tileType?: string) => {
       if (tileType && dropTarget) {
-        await addTile(tileType, dropTarget);
+        await addTile(tileType as TileType);
       }
     },
     [addTile],

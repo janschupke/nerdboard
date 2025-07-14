@@ -6,7 +6,7 @@ import { EuriborRateControls } from './EuriborRateControls';
 import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { GenericTile } from '../../generic-tile/GenericTile';
 import type { DashboardTile } from '../../../../types/dashboard';
-import type { TileMeta } from '../GenericTile';
+import type { TileMeta } from '../../generic-tile/GenericTile';
 import { EURIBOR_RATE_ERROR_MESSAGES } from './constants';
 
 export const EuriborRateTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(

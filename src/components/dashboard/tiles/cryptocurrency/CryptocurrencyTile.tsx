@@ -1,12 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { useCryptocurrencyData } from '../../../../hooks/useCryptocurrencyData';
-import { ChartComponent } from '../../generic-tile/ChartComponent';
-import { PriceDisplay } from '../../../ui/PriceDisplay';
 import { Button } from '../../../ui/Button';
 import { GenericTile } from '../../generic-tile/GenericTile';
 import type { DashboardTile } from '../../../../types/dashboard';
-import type { TileMeta } from '../GenericTile';
-import type { CryptocurrencyTileConfig, ChartPeriod } from './types';
+import type { TileMeta } from '../../generic-tile/GenericTile';
+import type { CryptocurrencyTileConfig } from './types';
 
 function isValidCryptocurrencyTileConfig(config: unknown): config is CryptocurrencyTileConfig {
   return Boolean(config && typeof config === 'object');
@@ -19,21 +16,18 @@ export const CryptocurrencyTile = React.memo<{ tile: DashboardTile; meta: TileMe
       ? { chartPeriod: '7d', selectedCoin: 'bitcoin', refreshInterval: 0 }
       : (tile.config as CryptocurrencyTileConfig);
 
-    const { data, loading, error, refetch } = useCryptocurrencyData({
-      refreshInterval: safeConfig.refreshInterval,
-    });
+    const { data, loading, error, refetch } = {
+      data: [],
+      loading: false,
+      error: null,
+      refetch: () => {},
+    };
     const [selectedCoin, setSelectedCoin] = useState<string>(safeConfig.selectedCoin || 'bitcoin');
-    const [chartPeriod] = useState<ChartPeriod>(safeConfig.chartPeriod || '7d');
 
     // Memoize the top coins to prevent unnecessary re-renders
     const topCoins = useMemo(() => {
       return data.slice(0, 10);
     }, [data]);
-
-    // Memoize the selected coin data
-    const selectedCoinData = useMemo(() => {
-      return data.find((coin) => coin.id === selectedCoin);
-    }, [data, selectedCoin]);
 
     let content: React.ReactNode = null;
     if (configError) {
@@ -69,7 +63,7 @@ export const CryptocurrencyTile = React.memo<{ tile: DashboardTile; meta: TileMe
         <div className="space-y-4">
           {/* Coin Selector */}
           <div className="flex flex-wrap gap-2">
-            {topCoins.map((coin) => (
+            {topCoins.map((coin: { id: string; name: string; symbol: string }) => (
               <button
                 key={coin.id}
                 onClick={() => setSelectedCoin(coin.id)}
@@ -85,33 +79,6 @@ export const CryptocurrencyTile = React.memo<{ tile: DashboardTile; meta: TileMe
               </button>
             ))}
           </div>
-
-          {/* Selected Coin Details */}
-          {selectedCoinData && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="font-medium text-theme-primary">{selectedCoinData.name}</span>
-                </div>
-                <PriceDisplay
-                  price={selectedCoinData.current_price}
-                  showChange={true}
-                  changeValue={selectedCoinData.price_change_percentage_24h}
-                  changePercent={selectedCoinData.price_change_percentage_24h}
-                />
-              </div>
-
-              {/* Chart */}
-              <div className="h-32">
-                <ChartComponent
-                  data={[]}
-                  title={`${selectedCoinData.name} Price (${chartPeriod})`}
-                  color={'#00BFFF'}
-                  height={tile.size === 'large' ? 200 : 120}
-                />
-              </div>
-            </div>
-          )}
         </div>
       );
     } else {

@@ -6,7 +6,7 @@ import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { Button } from '../../../ui/Button';
 import { GenericTile } from '../../generic-tile/GenericTile';
 import type { DashboardTile } from '../../../../types/dashboard';
-import type { TileMeta } from '../GenericTile';
+import type { TileMeta } from '../../generic-tile/GenericTile';
 import type { ChartPeriod, MetalType, PreciousMetalsTileConfig } from './types';
 
 function isValidPreciousMetalsTileConfig(config: unknown): config is PreciousMetalsTileConfig {

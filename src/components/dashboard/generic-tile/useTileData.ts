@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useContext } from 'react';
-import { TileDataContext } from '../contexts/TileDataContext';
+import { TileDataContext } from '../../../contexts/TileDataContext';
 
 export const useTileData = () => {
   const context = useContext(TileDataContext);

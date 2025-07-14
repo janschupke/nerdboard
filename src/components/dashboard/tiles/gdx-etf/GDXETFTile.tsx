@@ -7,7 +7,7 @@ import { Button } from '../../../ui/Button';
 import { GenericTile } from '../../generic-tile/GenericTile';
 import { GDX_UI_CONFIG } from './constants';
 import type { DashboardTile } from '../../../../types/dashboard';
-import type { TileMeta } from '../GenericTile';
+import type { TileMeta } from '../../generic-tile/GenericTile';
 
 function isValidGDXETFTileConfig(config: unknown): config is Record<string, unknown> {
   return Boolean(config && typeof config === 'object');

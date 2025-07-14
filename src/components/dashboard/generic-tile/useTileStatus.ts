@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { TileStatus } from '../../../types/tileStatus';
-import type { TileStatusData } from '../types/tileStatus';
+import type { TileStatusData } from '../../../types/tileStatus';
 import {
   determineTileStatus,
   createTileStatusData,

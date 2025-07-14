@@ -1,5 +1,5 @@
 import React from 'react';
-import { TileStatus } from '../../types/tileStatus';
+import { TileStatus } from '../../../types/tileStatus';
 
 interface StatusMessageProps {
   status: TileStatus;
