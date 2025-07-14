@@ -7,4 +7,4 @@ export const useLogContext = () => {
     throw new Error('useLogContext must be used within a LogProvider');
   }
   return context;
-}; 
+};

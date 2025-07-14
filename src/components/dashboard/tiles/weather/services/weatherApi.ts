@@ -1,6 +1,9 @@
 import { WEATHER_API_CONFIG, WEATHER_ERROR_MESSAGES } from '../constants';
 import type { WeatherApiResponse } from '../types';
-import { interceptAPIError, interceptAPIWarning } from '../../../../../services/apiErrorInterceptor';
+import {
+  interceptAPIError,
+  interceptAPIWarning,
+} from '../../../../../services/apiErrorInterceptor';
 import type { APIError } from '../../../../../services/apiErrorInterceptor';
 
 // Mock data for development and fallback

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { PreciousMetalsApiService } from '../services/preciousMetalsApi';
 import type { PreciousMetalsData } from '../types/preciousMetals';
-import { getCachedData, setCachedData } from '../utils/localStorage';
 import { STORAGE_KEYS, REFRESH_INTERVALS } from '../utils/constants';
+import { useStorageManager } from '../services/storageManagerUtils';
 
 export function usePreciousMetalsData(
   refreshInterval: number = REFRESH_INTERVALS.TILE_DATA,
@@ -14,6 +14,7 @@ export function usePreciousMetalsData(
   const [retryCount, setRetryCount] = useState(0);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isCached, setIsCached] = useState(false);
+  const storage = useStorageManager();
 
   // Memoize service instance to prevent recreation on every render
   const memoizedService = useMemo(() => service || new PreciousMetalsApiService(), [service]);
@@ -29,10 +30,10 @@ export function usePreciousMetalsData(
 
         // Check cache first unless forcing refresh
         if (!forceRefresh) {
-          const cached = getCachedData<PreciousMetalsData>(storageKey);
-          if (cached) {
-            setData(cached);
-            setLastUpdated(new Date());
+          const cached = storage.getTileConfig(storageKey);
+          if (cached && cached.data) {
+            setData(cached.data as unknown as PreciousMetalsData);
+            setLastUpdated(new Date(cached.lastDataRequest));
             setIsCached(true);
             setLoading(false);
             return;
@@ -57,7 +58,11 @@ export function usePreciousMetalsData(
         setRetryCount(0); // Reset retry count on success
 
         // Cache the fresh data
-        setCachedData(storageKey, result);
+        storage.setTileConfig(storageKey, {
+          data: result as unknown as Record<string, unknown>,
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: true,
+        });
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to fetch precious metals data';
@@ -69,7 +74,7 @@ export function usePreciousMetalsData(
         setLoading(false);
       }
     },
-    [memoizedService, storageKey],
+    [memoizedService, storageKey, storage],
   );
 
   useEffect(() => {

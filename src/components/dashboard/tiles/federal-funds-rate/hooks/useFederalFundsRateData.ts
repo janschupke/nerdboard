@@ -33,7 +33,6 @@ export function useFederalFundsRateData(refreshInterval: number = REFRESH_INTERV
           storageKey,
           {
             forceRefresh,
-            fallbackToCache: true,
           },
         );
 

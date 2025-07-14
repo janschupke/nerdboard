@@ -1,42 +1,62 @@
 import { GDX_API_CONFIG, GDX_ERROR_MESSAGES } from '../constants';
 import type { GDXETFData, GDXETFPriceHistory } from '../types';
-import { interceptAPIError, interceptAPIWarning } from '../../../../../services/apiErrorInterceptor';
+import {
+  interceptAPIError,
+  interceptAPIWarning,
+} from '../../../../../services/apiErrorInterceptor';
 import type { APIError } from '../../../../../services/apiErrorInterceptor';
+import { storageManager } from '../../../../../services/storageManagerUtils';
 
 export class GDXETFApiService {
-  private cache = new Map<string, { data: unknown; timestamp: number }>();
-  private readonly CACHE_DURATION = GDX_API_CONFIG.CACHE_DURATION;
-
   async getGDXETFData(): Promise<GDXETFData> {
     const cacheKey = 'gdx-etf-data';
-    const cached = this.getCachedData(cacheKey);
-    if (cached) return cached as GDXETFData;
+    const tileConfig = storageManager.getTileConfig(cacheKey);
+    const cached =
+      tileConfig && tileConfig.data ? (tileConfig.data as unknown as GDXETFData) : null;
+
+    if (cached) return cached;
 
     // Use mock data more frequently to avoid rate limiting
     const useMockData = Math.random() < 0.7; // 70% chance to use mock data
 
     if (useMockData) {
       const mockData = this.getMockData();
-      this.setCachedData(cacheKey, mockData);
+      storageManager.setTileConfig(cacheKey, {
+        data: mockData as unknown as Record<string, unknown>,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
       return mockData;
     }
 
     // Try Alpha Vantage first
     try {
       const data = await this.fetchFromAlphaVantage();
-      this.setCachedData(cacheKey, data);
+      storageManager.setTileConfig(cacheKey, {
+        data: data as unknown as Record<string, unknown>,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
       return data;
     } catch {
       // Try Yahoo Finance as fallback
       try {
         const data = await this.fetchFromYahooFinance();
-        this.setCachedData(cacheKey, data);
+        storageManager.setTileConfig(cacheKey, {
+          data: data as unknown as Record<string, unknown>,
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: true,
+        });
         return data;
       } catch {
         // Try IEX Cloud as second fallback
         try {
           const data = await this.fetchFromIEXCloud();
-          this.setCachedData(cacheKey, data);
+          storageManager.setTileConfig(cacheKey, {
+            data: data as unknown as Record<string, unknown>,
+            lastDataRequest: Date.now(),
+            lastDataRequestSuccessful: true,
+          });
           return data;
         } catch {
           // Return mock data as final fallback
@@ -50,17 +70,28 @@ export class GDXETFApiService {
 
   async getPriceHistory(period: string): Promise<GDXETFPriceHistory[]> {
     const cacheKey = `gdx-etf-history-${period}`;
-    const cached = this.getCachedData(cacheKey);
-    if (cached) return cached as GDXETFPriceHistory[];
+    const tileConfig = storageManager.getTileConfig(cacheKey);
+    const cached =
+      tileConfig && tileConfig.data ? (tileConfig.data as unknown as GDXETFPriceHistory[]) : null;
+
+    if (cached) return cached;
 
     try {
       const data = await this.fetchPriceHistoryFromYahoo(period);
-      this.setCachedData(cacheKey, data);
+      storageManager.setTileConfig(cacheKey, {
+        data: data as unknown as Record<string, unknown>,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
       return data;
     } catch {
       // Return mock data as fallback
       const mockData = this.getMockPriceHistory(period);
-      this.setCachedData(cacheKey, mockData);
+      storageManager.setTileConfig(cacheKey, {
+        data: mockData as unknown as Record<string, unknown>,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
       return mockData;
     }
   }
@@ -342,17 +373,5 @@ export class GDXETFApiService {
       MAX: 1825,
     };
     return periodMap[period] || 30;
-  }
-
-  private getCachedData(key: string): unknown | null {
-    const cached = this.cache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-      return cached.data;
-    }
-    return null;
-  }
-
-  private setCachedData(key: string, data: unknown): void {
-    this.cache.set(key, { data, timestamp: Date.now() });
   }
 }

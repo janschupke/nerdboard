@@ -1,40 +1,42 @@
 import React, { createContext, useState, useCallback, useMemo, useLayoutEffect } from 'react';
 import type { ThemeContextType } from '../theme/types';
 import { THEME_TOKENS } from '../theme/tokens';
+import { useStorageManager, AppTheme } from '../services/storageManagerUtils';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = React.memo<{ children: React.ReactNode }>(({ children }) => {
-  // Get initial theme from localStorage or system preference
-  const getInitialTheme = (): 'light' | 'dark' => {
+  const storage = useStorageManager();
+  // Get initial theme from storage manager or system preference
+  const getInitialTheme = (): AppTheme => {
+    const config = storage.getAppConfig();
+    if (config && config.theme) return config.theme;
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('nerdboard-theme');
-      if (saved === 'dark' || saved === 'light') return saved;
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return 'dark';
+        return AppTheme.dark;
       }
     }
-    return 'light';
+    return AppTheme.light;
   };
 
-  const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme());
+  const [theme, setTheme] = useState<AppTheme>(getInitialTheme());
 
-  // Persist theme to localStorage and set document attribute
+  // Persist theme to storage manager and set document attribute
   useLayoutEffect(() => {
-    localStorage.setItem('nerdboard-theme', theme);
+    storage.setAppConfig({ ...storage.getAppConfig(), theme });
     document.documentElement.setAttribute('data-theme', theme);
-    if (theme === 'dark') {
+    if (theme === AppTheme.dark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [theme]);
+  }, [theme, storage]);
 
   const toggleTheme = useCallback(() => {
-    setTheme((prev: 'light' | 'dark') => (prev === 'light' ? 'dark' : 'light'));
+    setTheme((prev: AppTheme) => (prev === AppTheme.light ? AppTheme.dark : AppTheme.light));
   }, []);
 
-  const setThemeMode = useCallback((newTheme: 'light' | 'dark') => {
+  const setThemeMode = useCallback((newTheme: AppTheme) => {
     setTheme(newTheme);
   }, []);
 

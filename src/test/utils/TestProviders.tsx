@@ -5,9 +5,7 @@ import { LogProvider } from '../../contexts/LogContext';
 export const TestProviders = ({ children }: { children: React.ReactNode }) => {
   return (
     <ThemeProvider>
-      <LogProvider>
-        {children}
-      </LogProvider>
+      <LogProvider>{children}</LogProvider>
     </ThemeProvider>
   );
-}; 
+};

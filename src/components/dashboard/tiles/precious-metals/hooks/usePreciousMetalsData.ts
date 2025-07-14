@@ -31,7 +31,6 @@ export function usePreciousMetalsData(
           storageKey,
           {
             forceRefresh,
-            fallbackToCache: true,
           },
         );
 

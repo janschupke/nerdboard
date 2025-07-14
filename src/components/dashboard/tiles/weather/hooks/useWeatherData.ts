@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { weatherApiService } from '../services/weatherApi';
 import { WEATHER_UI_CONFIG, WEATHER_ERROR_MESSAGES } from '../constants';
 import type { WeatherData, WeatherForecast, WeatherApiResponse } from '../types';
-import { getCachedData, setCachedData } from '../../../../../utils/localStorage';
-import { STORAGE_KEYS, REFRESH_INTERVALS } from '../../../../../utils/constants';
+import { storageManager } from '../../../../../services/storageManagerUtils';
+import { REFRESH_INTERVALS } from '../../../../../utils/constants';
 
 interface UseWeatherDataReturn {
   data: WeatherData | null;
@@ -25,9 +25,6 @@ export const useWeatherData = (
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isCached, setIsCached] = useState(false);
-
-  // Memoize storageKey to prevent recreation on every render
-  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}weather-${city}`, [city]);
 
   // Memoize transform functions to prevent recreation on every render
   const transformApiResponse = useCallback(
@@ -92,9 +89,11 @@ export const useWeatherData = (
 
         // Check cache first unless forcing refresh
         if (!forceRefresh) {
-          const cached = getCachedData<{ data: WeatherData; forecast: WeatherForecast[] }>(
-            storageKey,
-          );
+          const tileConfig = storageManager.getTileConfig('weather-data');
+          const cached =
+            tileConfig && tileConfig.data
+              ? (tileConfig.data as { data: WeatherData; forecast: WeatherForecast[] })
+              : null;
           if (cached) {
             setData(cached.data);
             setForecast(cached.forecast);
@@ -123,7 +122,11 @@ export const useWeatherData = (
         setIsCached(false);
 
         // Cache the fresh data
-        setCachedData(storageKey, { data: weatherData, forecast: forecastData });
+        storageManager.setTileConfig('weather-data', {
+          data: { data: weatherData, forecast: forecastData },
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: true,
+        });
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : WEATHER_ERROR_MESSAGES.FETCH_FAILED;
@@ -132,7 +135,7 @@ export const useWeatherData = (
         setLoading(false);
       }
     },
-    [city, storageKey, transformApiResponse, transformForecast],
+    [city, transformApiResponse, transformForecast],
   );
 
   const refetch = useCallback(async (): Promise<void> => {

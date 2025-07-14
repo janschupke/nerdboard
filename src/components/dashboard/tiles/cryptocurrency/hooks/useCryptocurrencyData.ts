@@ -33,7 +33,6 @@ export function useCryptocurrencyData(config: CryptocurrencyDataConfig = {}) {
           storageKey,
           {
             forceRefresh,
-            fallbackToCache: true,
           },
         );
 

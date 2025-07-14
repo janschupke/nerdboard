@@ -1,5 +1,3 @@
-
-
 interface LoadingSkeletonProps {
   tileSize?: 'small' | 'medium' | 'large';
   className?: string;

@@ -2,18 +2,19 @@ import { CRYPTO_API_CONFIG, CRYPTO_ERROR_MESSAGES } from '../constants';
 import type { CryptocurrencyData, PriceHistory } from '../types';
 import { interceptAPIError } from '../../../../../services/apiErrorInterceptor';
 import type { APIError } from '../../../../../services/apiErrorInterceptor';
+import { storageManager } from '../../../../../services/storageManagerUtils';
 
 export class CoinGeckoApiService {
   private baseUrl = CRYPTO_API_CONFIG.BASE_URL;
-  private cache = new Map<string, { data: unknown; timestamp: number }>();
-  private readonly CACHE_DURATION = CRYPTO_API_CONFIG.CACHE_DURATION;
 
   async getTopCryptocurrencies(
     limit: number = CRYPTO_API_CONFIG.DEFAULT_LIMIT,
   ): Promise<CryptocurrencyData[]> {
     const cacheKey = `top-crypto-${limit}`;
-    const cached = this.getCachedData(cacheKey);
-    if (cached) return cached as CryptocurrencyData[];
+    const tileConfig = storageManager.getTileConfig(cacheKey);
+    const cached =
+      tileConfig && tileConfig.data ? (tileConfig.data as unknown as CryptocurrencyData[]) : null;
+    if (cached) return cached;
 
     try {
       const response = await fetch(
@@ -31,7 +32,11 @@ export class CoinGeckoApiService {
       }
 
       const data = await response.json();
-      this.setCachedData(cacheKey, data);
+      storageManager.setTileConfig(cacheKey, {
+        data: data as unknown as Record<string, unknown>,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
       return data;
     } catch (error) {
       const errorInfo: APIError = {
@@ -46,8 +51,10 @@ export class CoinGeckoApiService {
 
   async getPriceHistory(coinId: string, days: number): Promise<PriceHistory[]> {
     const cacheKey = `price-history-${coinId}-${days}`;
-    const cached = this.getCachedData(cacheKey);
-    if (cached) return cached as PriceHistory[];
+    const tileConfig = storageManager.getTileConfig(cacheKey);
+    const cached =
+      tileConfig && tileConfig.data ? (tileConfig.data as unknown as PriceHistory[]) : null;
+    if (cached) return cached;
 
     try {
       const response = await fetch(
@@ -70,7 +77,11 @@ export class CoinGeckoApiService {
         price,
       }));
 
-      this.setCachedData(cacheKey, formattedData);
+      storageManager.setTileConfig(cacheKey, {
+        data: formattedData as unknown as Record<string, unknown>,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
       return formattedData;
     } catch (error) {
       const errorInfo: APIError = {
@@ -81,17 +92,5 @@ export class CoinGeckoApiService {
       interceptAPIError(errorInfo);
       throw error;
     }
-  }
-
-  private getCachedData(key: string): unknown | null {
-    const cached = this.cache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-      return cached.data;
-    }
-    return null;
-  }
-
-  private setCachedData(key: string, data: unknown): void {
-    this.cache.set(key, { data, timestamp: Date.now() });
   }
 }

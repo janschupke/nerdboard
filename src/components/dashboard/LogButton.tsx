@@ -9,8 +9,8 @@ interface LogButtonProps {
 
 export const LogButton: React.FC<LogButtonProps> = ({ isOpen, onToggle }) => {
   const { logs } = useLogContext();
-  const errorCount = logs.filter(log => log.level === 'error').length;
-  const warningCount = logs.filter(log => log.level === 'warning').length;
+  const errorCount = logs.filter((log) => log.level === 'error').length;
+  const warningCount = logs.filter((log) => log.level === 'warning').length;
 
   return (
     <button
@@ -27,7 +27,7 @@ export const LogButton: React.FC<LogButtonProps> = ({ isOpen, onToggle }) => {
     >
       <Icon name="clipboard-list" className="w-4 h-4" />
       <span className="text-sm font-medium">Logs</span>
-      
+
       {(errorCount > 0 || warningCount > 0) && (
         <div className="flex gap-1">
           {errorCount > 0 && (
@@ -44,4 +44,4 @@ export const LogButton: React.FC<LogButtonProps> = ({ isOpen, onToggle }) => {
       )}
     </button>
   );
-}; 
+};

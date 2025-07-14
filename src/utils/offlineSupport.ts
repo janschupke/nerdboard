@@ -1,5 +1,5 @@
-import { smartStorage } from './enhancedLocalStorage';
-import type { StorageMetrics } from './enhancedLocalStorage';
+import { storageManager } from '../services/storageManagerUtils';
+import type { StorageMetrics } from '../services/storageManagerUtils';
 
 export interface OfflineStatus {
   isOnline: boolean;
@@ -57,7 +57,7 @@ export class OfflineSupport {
   }
 
   private checkCachedDataAvailability(): void {
-    const metrics = smartStorage.getStorageMetrics();
+    const metrics = storageManager.getStorageMetrics();
     this.onlineStatus.cachedDataAvailable = metrics.tileCount > 0;
     this.onlineStatus.storageMetrics = metrics;
   }

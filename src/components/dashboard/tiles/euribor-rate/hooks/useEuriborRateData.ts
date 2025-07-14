@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { EuriborRateApiService } from '../services/euriborRateApi';
 import { EURIBOR_RATE_UI_CONFIG } from '../constants';
 import type { EuriborRateData, TimeRange } from '../types';
-import { getCachedData, setCachedData } from '../../../../../utils/localStorage';
 import { STORAGE_KEYS } from '../../../../../utils/constants';
+import { useStorageManager } from '../../../../../services/storageManagerUtils';
 
 const apiService = new EuriborRateApiService();
+const REFRESH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
 export const useEuriborRateData = () => {
   const [data, setData] = useState<EuriborRateData | null>(null);
@@ -14,6 +15,7 @@ export const useEuriborRateData = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>(EURIBOR_RATE_UI_CONFIG.DEFAULT_TIME_RANGE);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isCached, setIsCached] = useState(false);
+  const storage = useStorageManager();
 
   // Memoize storageKey to prevent recreation on every render
   const storageKey = useMemo(
@@ -21,85 +23,65 @@ export const useEuriborRateData = () => {
     [timeRange],
   );
 
-  const loadData = useCallback(
-    async (range: TimeRange, forceRefresh = false) => {
+  const fetchData = useCallback(
+    async (forceRefresh = false) => {
       try {
         setLoading(true);
         setError(null);
 
         // Check cache first unless forcing refresh
         if (!forceRefresh) {
-          const cached = getCachedData<EuriborRateData>(storageKey);
-          if (cached) {
-            setData(cached);
-            setLastUpdated(new Date());
+          const cached = storage.getTileConfig(storageKey);
+          if (cached && cached.data) {
+            setData(cached.data as unknown as EuriborRateData);
+            setLastUpdated(new Date(cached.lastDataRequest));
             setIsCached(true);
             setLoading(false);
             return;
           }
         }
 
-        const result = await apiService.getEuriborRateData(range);
+        // Fetch fresh data
+        const result = await apiService.getEuriborRateData(timeRange);
         setData(result);
         setLastUpdated(new Date());
         setIsCached(false);
 
         // Cache the fresh data
-        setCachedData(storageKey, result);
+        storage.setTileConfig(storageKey, {
+          data: result as unknown as Record<string, unknown>,
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: true,
+        });
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : 'Failed to load Euribor rate data';
+          err instanceof Error ? err.message : 'Failed to fetch euribor rate data';
         setError(errorMessage);
-        console.error('Euribor rate data loading error:', err);
       } finally {
         setLoading(false);
       }
     },
-    [storageKey],
+    [storageKey, timeRange, storage],
   );
 
-  const handleTimeRangeChange = useCallback(
-    (newTimeRange: TimeRange) => {
-      setTimeRange(newTimeRange);
-      loadData(newTimeRange);
-    },
-    [loadData],
-  );
-
-  const refreshData = useCallback(() => {
-    loadData(timeRange, true);
-  }, [loadData, timeRange]);
-
-  // Initial data load
   useEffect(() => {
-    loadData(timeRange);
-  }, [loadData, timeRange]);
+    fetchData();
+  }, [fetchData]);
 
-  // Simplified auto-refresh every 24 hours
   useEffect(() => {
-    const refreshInterval = setInterval(() => {
-      if (data && lastUpdated) {
-        const hoursSinceLastRefresh = (Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60);
-        if (hoursSinceLastRefresh >= 24) {
-          refreshData();
-        }
-      }
-    }, 60000); // Check every minute
-
-    return () => clearInterval(refreshInterval);
-  }, [data, lastUpdated, refreshData]);
+    const interval = setInterval(() => {
+      fetchData();
+    }, REFRESH_INTERVAL);
+    return () => clearInterval(interval);
+  }, [fetchData]);
 
   return {
     data,
     loading,
     error,
     timeRange,
+    setTimeRange,
     lastUpdated,
     isCached,
-    setTimeRange: handleTimeRangeChange,
-    refreshData,
-    isLoading: loading,
-    hasError: !!error,
-    hasData: !!data,
   };
 };

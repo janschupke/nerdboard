@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { APILogEntry } from '../services/logStorageService';
+import type { APILogEntry } from '../services/storageManagerUtils';
 
 interface LogContextType {
   logs: APILogEntry[];
@@ -9,4 +9,4 @@ interface LogContextType {
   refreshLogs: () => void;
 }
 
-export const LogContext = createContext<LogContextType | undefined>(undefined); 
+export const LogContext = createContext<LogContextType | undefined>(undefined);

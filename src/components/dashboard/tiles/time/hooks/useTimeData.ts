@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { TimezoneService } from '../services/timezoneService';
-import type { TimeData } from '../types';
-import { getCachedData, setCachedData } from '../../../../../utils/localStorage';
 import { STORAGE_KEYS, REFRESH_INTERVALS } from '../../../../../utils/constants';
+import { useStorageManager } from '../../../../../services/storageManagerUtils';
+import type { TimeData } from '../types';
 
 interface UseTimeDataReturn {
   timeData: TimeData | null;
@@ -22,6 +22,7 @@ export const useTimeData = (
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isCached, setIsCached] = useState(false);
+  const storage = useStorageManager();
 
   const timezoneService = useMemo(() => TimezoneService.getInstance(), []);
   const cityConfig = useMemo(() => timezoneService.getCityConfig(city), [timezoneService, city]);
@@ -36,10 +37,10 @@ export const useTimeData = (
 
         // Check cache first unless forcing refresh
         if (!forceRefresh) {
-          const cached = getCachedData<TimeData>(storageKey);
-          if (cached) {
-            setTimeData(cached);
-            setLastUpdated(new Date());
+          const cached = storage.getTileConfig(storageKey);
+          if (cached && cached.data) {
+            setTimeData(cached.data as unknown as TimeData);
+            setLastUpdated(new Date(cached.lastDataRequest));
             setIsCached(true);
             setLoading(false);
             return;
@@ -52,7 +53,11 @@ export const useTimeData = (
         setIsCached(false);
 
         // Cache the fresh data
-        setCachedData(storageKey, data);
+        storage.setTileConfig(storageKey, {
+          data: data as unknown as Record<string, unknown>,
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: true,
+        });
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch time data';
         setError(errorMessage);
@@ -60,7 +65,7 @@ export const useTimeData = (
         setLoading(false);
       }
     },
-    [timezoneService, cityConfig, storageKey],
+    [timezoneService, cityConfig, storageKey, storage],
   );
 
   // Initial fetch

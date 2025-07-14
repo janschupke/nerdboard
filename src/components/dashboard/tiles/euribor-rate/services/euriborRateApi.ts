@@ -1,18 +1,21 @@
-import { EURIBOR_RATE_CONFIG } from '../constants';
 import type { EuriborRateData, TimeRange } from '../types';
+import { storageManager } from '../../../../../services/storageManagerUtils';
 
 export class EuriborRateApiService {
-  private cache = new Map<string, { data: unknown; timestamp: number }>();
-  private readonly CACHE_DURATION = EURIBOR_RATE_CONFIG.CACHE_DURATION;
-
   async getEuriborRateData(timeRange: TimeRange = '1Y'): Promise<EuriborRateData> {
     const cacheKey = `euribor-rate-${timeRange}`;
-    const cached = this.getCachedData(cacheKey);
+    const tileConfig = storageManager.getTileConfig(cacheKey);
+    const cached =
+      tileConfig && tileConfig.data ? (tileConfig.data as unknown as EuriborRateData) : null;
     if (cached) return cached as EuriborRateData;
 
     // Use mock data as primary since real APIs are unreliable
     const mockData = this.getMockData(timeRange);
-    this.setCachedData(cacheKey, mockData);
+    storageManager.setTileConfig(cacheKey, {
+      data: mockData as unknown as Record<string, unknown>,
+      lastDataRequest: Date.now(),
+      lastDataRequestSuccessful: true,
+    });
     return mockData;
 
     // Commented out real API calls due to reliability issues
@@ -82,17 +85,5 @@ export class EuriborRateApiService {
     };
 
     return timeRangeMap[timeRange] || 365;
-  }
-
-  private getCachedData(key: string): unknown | null {
-    const cached = this.cache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-      return cached.data;
-    }
-    return null;
-  }
-
-  private setCachedData(key: string, data: unknown): void {
-    this.cache.set(key, { data, timestamp: Date.now() });
   }
 }

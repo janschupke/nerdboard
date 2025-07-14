@@ -36,4 +36,4 @@ export const StorageStatusIndicator: React.FC = () => {
   }
 
   return null;
-}; 
+};

@@ -1,9 +1,8 @@
 import React, { createContext, useReducer, useCallback, useMemo, useEffect } from 'react';
 import type { DashboardTile, TileType } from '../types/dashboard';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Toast } from '../components/ui/Toast';
 import { getTileSpan } from '../constants/gridSystem';
-import { sidebarStorage } from '../utils/sidebarStorage';
+import { useStorageManager } from '../services/storageManagerUtils';
 
 // Helper function to rearrange tiles after removal
 const rearrangeTiles = (tiles: DashboardTile[]): DashboardTile[] => {
@@ -119,7 +118,9 @@ const dashboardReducer = (state: DashboardState, action: DashboardAction): Dashb
         },
       };
     case 'REMOVE_TILE': {
-      const newTiles = state.layout.tiles.filter((tile: DashboardTile) => tile.id !== action.payload);
+      const newTiles = state.layout.tiles.filter(
+        (tile: DashboardTile) => tile.id !== action.payload,
+      );
       const rearrangedTiles = rearrangeTiles(newTiles);
       return {
         ...state,
@@ -182,51 +183,15 @@ const defaultState: DashboardState = {
 };
 
 export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ children }) => {
-  const [storedState, setStoredState] = useLocalStorage<DashboardState>(
-    'dashboard-state',
-    defaultState,
-  );
-
-  // Add initialization state
+  const storage = useStorageManager();
+  // Load initial state from storage manager
+  const getInitialState = () => {
+    const stored = storage.getTileConfig('dashboard-state');
+    if (stored && stored.data) return stored.data as unknown as DashboardState;
+    return defaultState;
+  };
+  const [state, dispatch] = useReducer(dashboardReducer, getInitialState());
   const [isInitialized, setIsInitialized] = React.useState(false);
-
-  // Validate and normalize stored state
-  const validatedState: DashboardState = React.useMemo(() => {
-    if (!storedState || typeof storedState !== 'object') {
-      return defaultState;
-    }
-
-    // Ensure layout exists and has required properties
-    const layout = storedState.layout || {};
-    const validatedLayout = {
-      tiles: Array.isArray(layout.tiles) ? layout.tiles : [],
-      isCollapsed: typeof layout.isCollapsed === 'boolean' ? layout.isCollapsed : false,
-    };
-
-    // Migrate existing tiles to have createdAt property
-    const migratedTiles = validatedLayout.tiles.map((tile: DashboardTile, index: number) => {
-      if (!tile.createdAt) {
-        // Try to extract timestamp from tile ID, or use index as fallback
-        const idMatch = tile.id.match(/tile-(\d+)-/);
-        const timestamp = idMatch ? parseInt(idMatch[1], 10) : Date.now() - index * 1000;
-        return { ...tile, createdAt: timestamp };
-      }
-      return tile;
-    });
-
-    return {
-      layout: {
-        ...validatedLayout,
-        tiles: migratedTiles,
-      },
-      isRefreshing:
-        typeof storedState.isRefreshing === 'boolean' ? storedState.isRefreshing : false,
-      lastRefreshTime:
-        storedState.lastRefreshTime instanceof Date ? storedState.lastRefreshTime : null,
-    };
-  }, [storedState]);
-
-  const [state, dispatch] = useReducer(dashboardReducer, validatedState);
   const [toast, setToast] = React.useState<{ message: string; visible: boolean }>({
     message: '',
     visible: false,
@@ -235,56 +200,36 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
   const showToast = useCallback((message: string) => {
     setToast({ message, visible: true });
   }, []);
-
   const hideToast = useCallback(() => setToast({ ...toast, visible: false }), [toast]);
+
+  // Save state to storage manager whenever it changes
+  useEffect(() => {
+    storage.setTileConfig('dashboard-state', {
+      data: state as unknown as Record<string, unknown>,
+      lastDataRequest: Date.now(),
+      lastDataRequestSuccessful: true,
+    });
+  }, [state, storage]);
 
   // Load sidebar state on mount
   useEffect(() => {
-    const initializeSidebarState = async () => {
-      try {
-        const savedSidebarState = await sidebarStorage.loadSidebarState();
-        if (savedSidebarState && savedSidebarState.isCollapsed !== state.layout.isCollapsed) {
-          // Restore the saved collapse state by dispatching toggle if needed
-          dispatch({ type: 'TOGGLE_COLLAPSE' });
-        }
-      } catch (error) {
-        console.error('Failed to initialize sidebar state:', error);
-      } finally {
-        setIsInitialized(true);
-      }
-    };
+    const sidebar = storage.getSidebarState();
+    if (sidebar && sidebar.isCollapsed !== state.layout.isCollapsed) {
+      dispatch({ type: 'TOGGLE_COLLAPSE' });
+    }
+    setIsInitialized(true);
+  }, [storage, state.layout.isCollapsed]);
 
-    initializeSidebarState();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount to prevent infinite loops
-
-  // Save state to localStorage whenever it changes
-  React.useEffect(() => {
-    setStoredState(state);
-  }, [state, setStoredState]);
-
-  // Debounced save of sidebar state
-  React.useEffect(() => {
+  // Save sidebar state when relevant changes
+  useEffect(() => {
     if (!isInitialized) return;
-
-    const saveSidebarState = async () => {
-      try {
-        const activeTileTypes = state.layout.tiles.map(tile => tile.type);
-        await sidebarStorage.saveSidebarState({
-          activeTiles: activeTileTypes,
-          isCollapsed: state.layout.isCollapsed,
-          lastUpdated: Date.now(),
-        });
-      } catch (error) {
-        console.error('Failed to save sidebar state:', error);
-        showToast('Failed to save sidebar preferences');
-      }
-    };
-
-    // Debounce save operations
-    const timeoutId = setTimeout(saveSidebarState, 500);
-    return () => clearTimeout(timeoutId);
-  }, [state.layout.tiles, state.layout.isCollapsed, isInitialized, showToast]);
+    const activeTileTypes = state.layout.tiles.map((tile) => tile.type);
+    storage.setSidebarState({
+      activeTiles: activeTileTypes,
+      isCollapsed: state.layout.isCollapsed,
+      lastUpdated: Date.now(),
+    });
+  }, [state.layout.tiles, state.layout.isCollapsed, isInitialized, storage]);
 
   const addTile = useCallback(
     async (tileType: TileType) => {
@@ -372,7 +317,7 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
           }
         }
       }
-      
+
       dispatch({ type: 'REMOVE_TILE', payload: tileId });
     },
     [state.layout.tiles],
@@ -406,9 +351,12 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
     dispatch({ type: 'REORDER_TILES', payload: tiles });
   }, []);
 
-  const isTileActive = useCallback((tileType: TileType) => {
-    return state.layout.tiles.some((tile) => tile.type === tileType);
-  }, [state.layout.tiles]);
+  const isTileActive = useCallback(
+    (tileType: TileType) => {
+      return state.layout.tiles.some((tile) => tile.type === tileType);
+    },
+    [state.layout.tiles],
+  );
 
   const getActiveTileTypes = useCallback(() => {
     return state.layout.tiles.map((tile) => tile.type);
@@ -416,8 +364,8 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
 
   const saveSidebarState = useCallback(async () => {
     try {
-      const activeTileTypes = state.layout.tiles.map(tile => tile.type);
-      await sidebarStorage.saveSidebarState({
+      const activeTileTypes = state.layout.tiles.map((tile) => tile.type);
+      await storage.setSidebarState({
         activeTiles: activeTileTypes,
         isCollapsed: state.layout.isCollapsed,
         lastUpdated: Date.now(),
@@ -426,11 +374,11 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       console.error('Failed to save sidebar state:', error);
       throw error;
     }
-  }, [state.layout.tiles, state.layout.isCollapsed]);
+  }, [state.layout.tiles, state.layout.isCollapsed, storage]);
 
   const loadSidebarState = useCallback(async () => {
     try {
-      const savedState = await sidebarStorage.loadSidebarState();
+      const savedState = await storage.getSidebarState();
       if (savedState) {
         // Note: We don't restore tiles here as they're managed by the dashboard state
         // The sidebar will use this information for visual state
@@ -439,7 +387,7 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       console.error('Failed to load sidebar state:', error);
       throw error;
     }
-  }, []);
+  }, [storage]);
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(

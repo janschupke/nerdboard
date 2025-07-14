@@ -88,7 +88,7 @@ export default {
     },
   },
   plugins: [
-    function({ addUtilities }) {
+    function ({ addUtilities }) {
       addUtilities({
         '.scrollbar-hide': {
           /* IE and Edge */
@@ -97,10 +97,10 @@ export default {
           'scrollbar-width': 'none',
           /* Safari and Chrome */
           '&::-webkit-scrollbar': {
-            display: 'none'
-          }
-        }
-      })
-    }
+            display: 'none',
+          },
+        },
+      });
+    },
   ],
 };

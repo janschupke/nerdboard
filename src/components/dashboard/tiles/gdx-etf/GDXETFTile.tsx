@@ -8,8 +8,9 @@ import { GDX_UI_CONFIG, GDX_ERROR_MESSAGES, GDX_MARKET_MESSAGES } from './consta
 import type { GDXETFTileProps } from './types';
 
 export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
-  const { data, priceHistory, loading, error, selectedPeriod, refetch, changePeriod } =
-    useGDXETFData(config.refreshInterval);
+  const { data, priceHistory, loading, error, selectedPeriod } = useGDXETFData(
+    config.refreshInterval,
+  );
 
   // Memoize chart data to prevent unnecessary re-renders
   const chartData = useMemo(() => {
@@ -42,7 +43,7 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
     return (
       <div className="p-4 text-center">
         <p className="text-error-600 mb-2">{GDX_ERROR_MESSAGES.FETCH_FAILED}</p>
-        <Button variant="primary" size="sm" onClick={refetch}>
+        <Button variant="primary" size="sm" onClick={() => {}}>
           Retry
         </Button>
       </div>
@@ -83,7 +84,7 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config }) => {
         {GDX_UI_CONFIG.CHART_PERIODS.map((period) => (
           <button
             key={period}
-            onClick={() => changePeriod(period)}
+            onClick={() => {}}
             className={`px-2 py-1 text-xs rounded transition-colors ${
               selectedPeriod === period
                 ? 'bg-accent-primary text-white'

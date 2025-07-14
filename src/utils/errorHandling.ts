@@ -28,7 +28,8 @@ export class ErrorHandler {
 
     // Log to API log system if type is 'api'
     if (appError.type === 'api') {
-      const apiCall = typeof appError.context?.apiCall === 'string' ? appError.context.apiCall : 'unknown';
+      const apiCall =
+        typeof appError.context?.apiCall === 'string' ? appError.context.apiCall : 'unknown';
       const apiError: APIError = {
         apiCall,
         reason: appError.message,

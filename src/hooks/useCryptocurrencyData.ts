@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CoinGeckoApiService } from '../services/coinGeckoApi';
 import type { CryptocurrencyData } from '../types/cryptocurrency';
-import { getCachedData, setCachedData } from '../utils/localStorage';
-import { STORAGE_KEYS, REFRESH_INTERVALS } from '../utils/constants';
+import { storageManager } from '../services/storageManagerUtils';
+import { REFRESH_INTERVALS } from '../utils/constants';
 import { interceptAPIError } from '../services/apiErrorInterceptor';
 import type { APIError } from '../services/apiErrorInterceptor';
 
@@ -26,9 +26,6 @@ export function useCryptocurrencyData(
   // Memoize service instance to prevent recreation on every render
   const memoizedService = useMemo(() => service || new CoinGeckoApiService(), [service]);
 
-  // Memoize storageKey to prevent recreation on every render
-  const storageKey = useMemo(() => `${STORAGE_KEYS.TILE_DATA_PREFIX}cryptocurrency`, []);
-
   const fetchData = useCallback(
     async (forceRefresh = false) => {
       try {
@@ -37,7 +34,11 @@ export function useCryptocurrencyData(
 
         // Check cache first unless forcing refresh
         if (!forceRefresh) {
-          const cached = getCachedData<CryptocurrencyData[]>(storageKey);
+          const tileConfig = storageManager.getTileConfig('cryptocurrency-data');
+          const cached =
+            tileConfig && tileConfig.data
+              ? (tileConfig.data as unknown as CryptocurrencyData[])
+              : null;
           if (cached) {
             setData(cached);
             setLastUpdated(new Date());
@@ -59,12 +60,16 @@ export function useCryptocurrencyData(
         setRetryCount(0); // Reset retry count on success
         setIsCached(false);
         // Cache the fresh data
-        setCachedData(storageKey, result);
+        storageManager.setTileConfig('cryptocurrency-data', {
+          data: result as unknown as Record<string, unknown>,
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: true,
+        });
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to fetch cryptocurrency data';
         setError(errorMessage);
-        
+
         const errorInfo: APIError = {
           apiCall: 'cryptocurrency-data',
           reason: 'Error fetching cryptocurrency data',
@@ -78,7 +83,7 @@ export function useCryptocurrencyData(
         setLoading(false);
       }
     },
-    [memoizedService, storageKey],
+    [memoizedService],
   );
 
   useEffect(() => {

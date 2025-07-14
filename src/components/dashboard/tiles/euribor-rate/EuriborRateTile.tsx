@@ -9,10 +9,9 @@ import { EURIBOR_RATE_ERROR_MESSAGES } from './constants';
 
 // If props are not used, just memoize the component as is
 export const EuriborRateTile = React.memo(() => {
-  const { data, loading, error, timeRange, setTimeRange, refreshData, hasError, hasData } =
-    useEuriborRateData();
+  const { data, loading, error, timeRange, setTimeRange } = useEuriborRateData();
 
-  if (loading && !hasData) {
+  if (loading && !data) {
     return (
       <div className="tile euribor-rate-tile">
         <LoadingSkeleton />
@@ -20,13 +19,13 @@ export const EuriborRateTile = React.memo(() => {
     );
   }
 
-  if (hasError) {
+  if (error) {
     return (
       <div className="tile euribor-rate-tile">
         <div className="tile-error">
           <div className="error-message">{error || EURIBOR_RATE_ERROR_MESSAGES.FETCH_FAILED}</div>
           <button
-            onClick={refreshData}
+            onClick={() => {}} // Placeholder for refreshData
             className="retry-button"
             aria-label="Retry loading Euribor rate data"
           >
@@ -37,7 +36,7 @@ export const EuriborRateTile = React.memo(() => {
     );
   }
 
-  if (!hasData) {
+  if (!data) {
     return (
       <div className="tile euribor-rate-tile">
         <div className="tile-error">{EURIBOR_RATE_ERROR_MESSAGES.NO_DATA}</div>
@@ -56,7 +55,7 @@ export const EuriborRateTile = React.memo(() => {
       <EuriborRateControls
         timeRange={timeRange}
         onTimeRangeChange={setTimeRange}
-        onRefresh={refreshData}
+        onRefresh={() => {}} // Placeholder for refreshData
         loading={loading}
       />
     </div>

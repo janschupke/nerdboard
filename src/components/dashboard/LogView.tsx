@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { Icon } from '../ui/Icon';
 import { useLogContext } from '../../hooks/useLogContext';
-import type { APILogEntry } from '../../services/logStorageService';
+import type { APILogEntry } from '../../services/storageManagerUtils';
 
 interface LogViewProps {
   isOpen: boolean;
@@ -23,11 +23,14 @@ export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
     };
   }, [isOpen]);
 
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-  }, [onClose]);
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    },
+    [onClose],
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -47,8 +50,8 @@ export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
   };
 
   const getLevelColor = (level: 'warning' | 'error'): string => {
-    return level === 'error' 
-      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' 
+    return level === 'error'
+      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
       : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
   };
 
@@ -63,17 +66,15 @@ export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
       <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95 z-10">
         <div className="flex items-center gap-3">
           <Icon name="clipboard-list" className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            API Logs
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">API Logs</h2>
           <div className="flex gap-2">
             <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded">
               <Icon name="exclamation-triangle" className="w-3 h-3" />
-              {logs.filter(log => log.level === 'error').length} Errors
+              {logs.filter((log) => log.level === 'error').length} Errors
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded">
               <Icon name="exclamation-circle" className="w-3 h-3" />
-              {logs.filter(log => log.level === 'warning').length} Warnings
+              {logs.filter((log) => log.level === 'warning').length} Warnings
             </span>
           </div>
         </div>
@@ -124,9 +125,9 @@ export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
               <table className="w-full">
                 <tbody className="bg-white/80 dark:bg-gray-900/80 divide-y divide-gray-200/50 dark:divide-gray-700/50">
                   {logs.map((log) => (
-                    <LogRow 
-                      key={log.id} 
-                      log={log} 
+                    <LogRow
+                      key={log.id}
+                      log={log}
                       onRemove={() => removeLog(log.id)}
                       formatTimestamp={formatTimestamp}
                       getLevelColor={getLevelColor}
@@ -153,17 +154,19 @@ interface LogRowProps {
   getLevelIcon: (level: 'warning' | 'error') => string;
 }
 
-const LogRow: React.FC<LogRowProps> = ({ 
-  log, 
-  onRemove, 
-  formatTimestamp, 
-  getLevelColor, 
-  getLevelIcon 
+const LogRow: React.FC<LogRowProps> = ({
+  log,
+  onRemove,
+  formatTimestamp,
+  getLevelColor,
+  getLevelIcon,
 }) => {
   return (
     <tr className="hover:bg-gray-50/60 dark:hover:bg-gray-800/60 transition-colors duration-150">
       <td className="px-4 py-3">
-        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded ${getLevelColor(log.level)}`}>
+        <span
+          className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded ${getLevelColor(log.level)}`}
+        >
           <Icon name={getLevelIcon(log.level)} className="w-3 h-3" />
           {log.level}
         </span>
@@ -171,12 +174,8 @@ const LogRow: React.FC<LogRowProps> = ({
       <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
         {formatTimestamp(log.timestamp)}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-mono">
-        {log.apiCall}
-      </td>
-      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-        {log.reason}
-      </td>
+      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-mono">{log.apiCall}</td>
+      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{log.reason}</td>
       <td className="px-4 py-3 text-right">
         <button
           onClick={onRemove}
@@ -188,4 +187,4 @@ const LogRow: React.FC<LogRowProps> = ({
       </td>
     </tr>
   );
-}; 
+};

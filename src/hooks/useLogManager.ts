@@ -6,7 +6,7 @@ export const useLogManager = () => {
   const { logs } = useLogContext();
 
   const toggleLogView = useCallback(() => {
-    setIsLogViewOpen(prev => !prev);
+    setIsLogViewOpen((prev) => !prev);
   }, []);
 
   const closeLogView = useCallback(() => {
@@ -14,8 +14,8 @@ export const useLogManager = () => {
   }, []);
 
   const hasLogs = logs.length > 0;
-  const errorCount = logs.filter(log => log.level === 'error').length;
-  const warningCount = logs.filter(log => log.level === 'warning').length;
+  const errorCount = logs.filter((log) => log.level === 'error').length;
+  const warningCount = logs.filter((log) => log.level === 'warning').length;
 
   return {
     isLogViewOpen,
@@ -25,4 +25,4 @@ export const useLogManager = () => {
     errorCount,
     warningCount,
   };
-}; 
+};

@@ -2,11 +2,10 @@ import type { CryptocurrencyData, PriceHistory } from '../types/cryptocurrency';
 import { API_CONFIG } from '../utils/constants';
 import { interceptAPIError, interceptAPIWarning } from './apiErrorInterceptor';
 import type { APIError } from './apiErrorInterceptor';
+import { storageManager } from './storageManagerUtils';
 
 export class CoinGeckoApiService {
   private baseUrl = '/api/coingecko/api/v3';
-  private cache = new Map<string, { data: unknown; timestamp: number }>();
-  private readonly CACHE_DURATION = 30000; // 30 seconds
 
   private async makeRequest(
     url: string,
@@ -73,8 +72,10 @@ export class CoinGeckoApiService {
 
   async getTopCryptocurrencies(limit: number = 10): Promise<CryptocurrencyData[]> {
     const cacheKey = `top-crypto-${limit}`;
-    const cached = this.getCachedData(cacheKey);
-    if (cached) return cached as CryptocurrencyData[];
+    const tileConfig = storageManager.getTileConfig(cacheKey);
+    const cached =
+      tileConfig && tileConfig.data ? (tileConfig.data as unknown as CryptocurrencyData[]) : null;
+    if (cached) return cached;
 
     try {
       const response = await this.makeRequest(
@@ -93,7 +94,11 @@ export class CoinGeckoApiService {
         throw new Error('Invalid response format from API');
       }
 
-      this.setCachedData(cacheKey, data);
+      storageManager.setTileConfig(cacheKey, {
+        data: data as unknown as Record<string, unknown>,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
       return data;
     } catch (error) {
       const errorInfo: APIError = {
@@ -110,8 +115,10 @@ export class CoinGeckoApiService {
 
   async getPriceHistory(coinId: string, days: number): Promise<PriceHistory[]> {
     const cacheKey = `price-history-${coinId}-${days}`;
-    const cached = this.getCachedData(cacheKey);
-    if (cached) return cached as PriceHistory[];
+    const tileConfig = storageManager.getTileConfig(cacheKey);
+    const cached =
+      tileConfig && tileConfig.data ? (tileConfig.data as unknown as PriceHistory[]) : null;
+    if (cached) return cached;
 
     try {
       const response = await this.makeRequest(
@@ -135,7 +142,11 @@ export class CoinGeckoApiService {
         price,
       }));
 
-      this.setCachedData(cacheKey, formattedData);
+      storageManager.setTileConfig(cacheKey, {
+        data: formattedData as unknown as Record<string, unknown>,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
       return formattedData;
     } catch (error) {
       const errorInfo: APIError = {
@@ -148,17 +159,5 @@ export class CoinGeckoApiService {
         `Failed to fetch price history for ${coinId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
-  }
-
-  private getCachedData(key: string): unknown | null {
-    const cached = this.cache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-      return cached.data;
-    }
-    return null;
-  }
-
-  private setCachedData(key: string, data: unknown): void {
-    this.cache.set(key, { data, timestamp: Date.now() });
   }
 }

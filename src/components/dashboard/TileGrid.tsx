@@ -46,14 +46,14 @@ export function TileGrid() {
     function updateRows() {
       const minRows = computeMinRowsNeeded();
       let rowsInViewport = Number(GRID_CONFIG.rows);
-      
+
       if (gridRef.current) {
         const gridHeight = gridRef.current.offsetHeight || gridRef.current.clientHeight;
-        
+
         // Calculate actual row height from rendered tiles
         let actualRowHeight = 200; // Default fallback
         const tileElements = gridRef.current.querySelectorAll('[data-tile-id]');
-        
+
         if (tileElements.length > 0) {
           // Find the tallest tile to determine row height
           let maxTileHeight = 0;
@@ -61,14 +61,14 @@ export function TileGrid() {
             const rect = tileElement.getBoundingClientRect();
             maxTileHeight = Math.max(maxTileHeight, rect.height);
           });
-          
+
           // Add some padding for gaps
           actualRowHeight = maxTileHeight + 16; // 16px for gap
         }
-        
+
         rowsInViewport = Math.max(1, Math.floor(gridHeight / actualRowHeight));
       }
-      
+
       setRowCount(Math.max(minRows, rowsInViewport));
     }
     updateRows();
@@ -141,7 +141,12 @@ export function TileGrid() {
       const tile = tiles.find((t: DashboardTile) => t.id === tileId);
       if (!tile) return;
       // Prevent no-op move: if dropPosition is the same as current position, do nothing
-      if (dropPosition && tile.position && dropPosition.x === tile.position.x && dropPosition.y === tile.position.y) {
+      if (
+        dropPosition &&
+        tile.position &&
+        dropPosition.x === tile.position.x &&
+        dropPosition.y === tile.position.y
+      ) {
         return;
       }
       let newOrder = [...tiles];
@@ -205,42 +210,47 @@ export function TileGrid() {
   const { startDrag, endDrag } = useDragAndDrop(handleTileMove);
 
   // Helper to get the closest grid position based on cursor Y
-  const getClosestGridPosition = (clientX: number, clientY: number, tileSize: 'small' | 'medium' | 'large') => {
-    if (!gridRef.current) return { x: 0, y: 0 };
-    const rect = gridRef.current.getBoundingClientRect();
-    const tileElements = Array.from(gridRef.current.querySelectorAll('[data-tile-id]')) as HTMLElement[];
-    if (tileElements.length === 0) {
-      // Fallback to old logic if no tiles
-      return calculateGridPosition(clientX, clientY, rect, tileSize);
-    }
-    // Find the closest tile boundary (top or bottom) to the cursor Y
-    let minDist = Infinity;
-    let closestRow = 0;
-    tileElements.forEach((el) => {
-      const tileRect = el.getBoundingClientRect();
-      // Check top and bottom boundaries
-      [tileRect.top, tileRect.bottom].forEach((boundary, idx) => {
-        const dist = Math.abs(clientY - boundary);
-        if (dist < minDist) {
-          minDist = dist;
-          // Calculate the corresponding grid row
-          // Use the tile's data-tile-id to find its position
-          const tileId = el.getAttribute('data-tile-id');
-          const tile = tiles.find((t) => t.id === tileId);
-          if (tile && tile.position) {
-            const { rowSpan } = getTileSpan(tile.size);
-            closestRow = tile.position.y + (idx === 0 ? 0 : rowSpan); // top or bottom
+  const getClosestGridPosition = useCallback(
+    (clientX: number, clientY: number, tileSize: 'small' | 'medium' | 'large') => {
+      if (!gridRef.current) return { x: 0, y: 0 };
+      const rect = gridRef.current.getBoundingClientRect();
+      const tileElements = Array.from(
+        gridRef.current.querySelectorAll('[data-tile-id]'),
+      ) as HTMLElement[];
+      if (tileElements.length === 0) {
+        // Fallback to old logic if no tiles
+        return calculateGridPosition(clientX, clientY, rect, tileSize);
+      }
+      // Find the closest tile boundary (top or bottom) to the cursor Y
+      let minDist = Infinity;
+      let closestRow = 0;
+      tileElements.forEach((el) => {
+        const tileRect = el.getBoundingClientRect();
+        // Check top and bottom boundaries
+        [tileRect.top, tileRect.bottom].forEach((boundary, idx) => {
+          const dist = Math.abs(clientY - boundary);
+          if (dist < minDist) {
+            minDist = dist;
+            // Calculate the corresponding grid row
+            // Use the tile's data-tile-id to find its position
+            const tileId = el.getAttribute('data-tile-id');
+            const tile = tiles.find((t) => t.id === tileId);
+            if (tile && tile.position) {
+              const { rowSpan } = getTileSpan(tile.size);
+              closestRow = tile.position.y + (idx === 0 ? 0 : rowSpan); // top or bottom
+            }
           }
-        }
+        });
       });
-    });
-    // For X, use the old logic (snap to colSpan)
-    const gridCellWidth = rect.width / GRID_CONFIG.columns;
-    const rawX = (clientX - rect.left) / gridCellWidth;
-    const { colSpan } = getTileSpan(tileSize);
-    const x = Math.floor(rawX / colSpan) * colSpan;
-    return { x, y: closestRow };
-  };
+      // For X, use the old logic (snap to colSpan)
+      const gridCellWidth = rect.width / GRID_CONFIG.columns;
+      const rawX = (clientX - rect.left) / gridCellWidth;
+      const { colSpan } = getTileSpan(tileSize);
+      const x = Math.floor(rawX / colSpan) * colSpan;
+      return { x, y: closestRow };
+    },
+    [tiles],
+  );
 
   // Handle drag over grid
   const handleDragOver = useCallback(
@@ -271,7 +281,7 @@ export function TileGrid() {
         setDragTargetPosition(position);
       }
     },
-    [tiles],
+    [tiles, getClosestGridPosition],
   );
 
   // Handle drop
@@ -368,7 +378,6 @@ export function TileGrid() {
       ))}
       {/* Fade-out effect at the bottom */}
       <div className="pointer-events-none absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-surface-primary to-transparent z-20" />
-      
     </div>
   );
 }

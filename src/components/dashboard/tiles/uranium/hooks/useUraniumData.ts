@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { uraniumApi } from '../services/uraniumApi';
-import type { UraniumPriceData, UraniumTimeRange } from '../types';
-import { getCachedData, setCachedData } from '../../../../../utils/localStorage';
 import { STORAGE_KEYS, REFRESH_INTERVALS } from '../../../../../utils/constants';
+import { useStorageManager } from '../../../../../services/storageManagerUtils';
+import type { UraniumPriceData, UraniumTimeRange } from '../types';
 
 interface UseUraniumDataReturn {
   uraniumData: UraniumPriceData | null;
@@ -22,6 +22,7 @@ export const useUraniumData = (
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isCached, setIsCached] = useState(false);
+  const storage = useStorageManager();
 
   // Memoize storageKey to prevent recreation on every render
   const storageKey = useMemo(
@@ -37,10 +38,10 @@ export const useUraniumData = (
 
         // Check cache first unless forcing refresh
         if (!forceRefresh) {
-          const cached = getCachedData<UraniumPriceData>(storageKey);
-          if (cached) {
-            setUraniumData(cached);
-            setLastUpdated(new Date());
+          const cached = storage.getTileConfig(storageKey);
+          if (cached && cached.data) {
+            setUraniumData(cached.data as unknown as UraniumPriceData);
+            setLastUpdated(new Date(cached.lastDataRequest));
             setIsCached(true);
             setLoading(false);
             return;
@@ -53,7 +54,11 @@ export const useUraniumData = (
         setIsCached(false);
 
         // Cache the fresh data
-        setCachedData(storageKey, data);
+        storage.setTileConfig(storageKey, {
+          data: data as unknown as Record<string, unknown>,
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: true,
+        });
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch uranium data';
         setError(errorMessage);
@@ -62,7 +67,7 @@ export const useUraniumData = (
         setLoading(false);
       }
     },
-    [timeRange, storageKey],
+    [timeRange, storageKey, storage],
   );
 
   // Initial fetch

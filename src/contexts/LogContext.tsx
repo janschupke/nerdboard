@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { APILogEntry } from '../services/logStorageService';
-import { logStorageService } from '../services/logStorageService';
+import type { APILogEntry } from '../services/storageManagerUtils';
+import { storageManager } from '../services/storageManagerUtils';
 import { LogContext } from './LogContextDef';
 
 interface LogProviderProps {
@@ -11,22 +11,37 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
   const [logs, setLogs] = useState<APILogEntry[]>([]);
 
   const refreshLogs = useCallback(() => {
-    const storedLogs = logStorageService.getLogs();
+    const storedLogs = storageManager.getLogs();
     setLogs(Array.isArray(storedLogs) ? storedLogs : []);
   }, []);
 
-  const addLog = useCallback((entry: Omit<APILogEntry, 'id' | 'timestamp'>) => {
-    logStorageService.addLog(entry);
-    refreshLogs();
-  }, [refreshLogs]);
+  const addLog = useCallback(
+    (entry: Omit<APILogEntry, 'id' | 'timestamp'>) => {
+      storageManager.addLog(entry);
+      refreshLogs();
+    },
+    [refreshLogs],
+  );
 
-  const removeLog = useCallback((id: string) => {
-    logStorageService.removeLog(id);
-    refreshLogs();
-  }, [refreshLogs]);
+  const removeLog = useCallback(
+    (id: string) => {
+      const logs = storageManager.getLogs().filter((log) => log.id !== id);
+      storageManager.clearLogs();
+      logs.forEach((log) =>
+        storageManager.addLog({
+          level: log.level,
+          apiCall: log.apiCall,
+          reason: log.reason,
+          details: log.details,
+        }),
+      );
+      refreshLogs();
+    },
+    [refreshLogs],
+  );
 
   const clearLogs = useCallback(() => {
-    logStorageService.clearLogs();
+    storageManager.clearLogs();
     refreshLogs();
   }, [refreshLogs]);
 
@@ -42,9 +57,5 @@ export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
     refreshLogs,
   };
 
-  return (
-    <LogContext.Provider value={value}>
-      {children}
-    </LogContext.Provider>
-  );
-}; 
+  return <LogContext.Provider value={value}>{children}</LogContext.Provider>;
+};

@@ -89,16 +89,26 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({
       title={`${isActive ? 'Remove' : 'Add'} ${name} tile ${isActive ? 'from' : 'to'} dashboard`}
     >
       <span className="flex items-center flex-1 min-w-0">
-        <Icon name={icon} size="sm" className="text-theme-secondary mr-2 flex-shrink-0" aria-hidden="true" />
+        <Icon
+          name={icon}
+          size="sm"
+          className="text-theme-secondary mr-2 flex-shrink-0"
+          aria-hidden="true"
+        />
         <span className="text-left text-sm font-medium truncate">{name}</span>
       </span>
       <span className="flex-shrink-0 flex items-center">
         {isLoading ? (
-          <Icon name="loading" size="sm" className="animate-spin text-accent-primary" aria-hidden="true" />
+          <Icon
+            name="loading"
+            size="sm"
+            className="animate-spin text-accent-primary"
+            aria-hidden="true"
+          />
         ) : isActive ? (
           <Icon name="check" size="sm" className="text-accent-primary" aria-hidden="true" />
         ) : null}
       </span>
     </button>
   );
-}; 
+};

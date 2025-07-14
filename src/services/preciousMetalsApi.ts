@@ -3,15 +3,15 @@ import type { PreciousMetalsData } from '../types/preciousMetals';
 import type { PriceHistory } from '../types/cryptocurrency';
 import { interceptAPIError } from './apiErrorInterceptor';
 import type { APIError } from './apiErrorInterceptor';
+import { storageManager } from './storageManagerUtils';
 
 export class PreciousMetalsApiService {
-  private cache = new Map<string, { data: unknown; timestamp: number }>();
-  private readonly CACHE_DURATION = 300000; // 5 minutes
-
   async getPreciousMetalsData(): Promise<PreciousMetalsData> {
     const cacheKey = 'precious-metals-data';
-    const cached = this.getCachedData(cacheKey);
-    if (cached) return cached as PreciousMetalsData;
+    const tileConfig = storageManager.getTileConfig(cacheKey);
+    const cached =
+      tileConfig && tileConfig.data ? (tileConfig.data as unknown as PreciousMetalsData) : null;
+    if (cached) return cached;
 
     try {
       // For now, using mock data since real precious metals APIs often require paid access
@@ -32,7 +32,11 @@ export class PreciousMetalsApiService {
       // Validate the mock data structure
       this.validatePreciousMetalsData(mockData);
 
-      this.setCachedData(cacheKey, mockData);
+      storageManager.setTileConfig(cacheKey, {
+        data: mockData as unknown as Record<string, unknown>,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
       return mockData;
     } catch (error) {
       const errorInfo: APIError = {
@@ -79,8 +83,10 @@ export class PreciousMetalsApiService {
 
   async getPreciousMetalsHistory(metal: 'gold' | 'silver', days: number): Promise<PriceHistory[]> {
     const cacheKey = `precious-metals-history-${metal}-${days}`;
-    const cached = this.getCachedData(cacheKey);
-    if (cached) return cached as PriceHistory[];
+    const tileConfig = storageManager.getTileConfig(cacheKey);
+    const cached =
+      tileConfig && tileConfig.data ? (tileConfig.data as unknown as PriceHistory[]) : null;
+    if (cached) return cached;
 
     try {
       // Mock historical data
@@ -102,7 +108,11 @@ export class PreciousMetalsApiService {
         });
       }
 
-      this.setCachedData(cacheKey, mockData);
+      storageManager.setTileConfig(cacheKey, {
+        data: mockData as unknown as Record<string, unknown>,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
       return mockData;
     } catch (error) {
       const errorInfo: APIError = {
@@ -113,17 +123,5 @@ export class PreciousMetalsApiService {
       interceptAPIError(errorInfo);
       throw error;
     }
-  }
-
-  private getCachedData(key: string): unknown | null {
-    const cached = this.cache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-      return cached.data;
-    }
-    return null;
-  }
-
-  private setCachedData(key: string, data: unknown): void {
-    this.cache.set(key, { data, timestamp: Date.now() });
   }
 }
