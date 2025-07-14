@@ -1,7 +1,7 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { Icon } from '../../ui/Icon';
 import { useLogContext } from './useLogContext.ts';
-import type { APILogEntry } from '../../../services/storageManager.ts';
+import type { APILogEntry, APILogLevel } from '../../../services/storageManager.ts';
 
 interface LogViewProps {
   isOpen: boolean;
@@ -10,6 +10,7 @@ interface LogViewProps {
 
 export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
   const { logs, removeLog } = useLogContext();
+  const [detailsId, setDetailsId] = useState<string | null>(null);
 
   // Prevent background scroll when log is open
   useEffect(() => {
@@ -45,9 +46,23 @@ export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const formatTimestamp = () => '';
-  const getLevelColor = () => '';
-  const getLevelIcon = () => '';
+  // Format timestamp as readable string
+  const formatTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+  };
+
+  // Return Tailwind color classes based on log level
+  const getLevelColor = (level: APILogLevel) => {
+    return level === 'error'
+      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+  };
+
+  // Return icon name based on log level
+  const getLevelIcon = (level: APILogLevel) => {
+    return level === 'error' ? 'exclamation-triangle' : 'exclamation-circle';
+  };
 
   // Position exactly over the tile grid area
   return (
@@ -85,51 +100,48 @@ export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
             <p className="text-sm">All API calls are working correctly</p>
           </div>
         ) : (
-          <>
-            {/* Table header */}
-            <div className="flex-shrink-0">
-              <table className="w-full">
-                <thead className="bg-gray-50/80 dark:bg-gray-800/80">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Level
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Time
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      API Call
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Reason
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-            {/* Scrollable table body */}
-            <div className="flex-1 overflow-y-auto scrollbar-hide relative">
-              <table className="w-full">
-                <tbody className="bg-white/80 dark:bg-gray-900/80 divide-y divide-gray-200/50 dark:divide-gray-700/50">
-                  {logs.map((log) => (
-                    <LogRow
-                      key={log.id}
-                      log={log}
-                      onRemove={() => removeLog(log.id)}
-                      formatTimestamp={formatTimestamp}
-                      getLevelColor={getLevelColor}
-                      getLevelIcon={getLevelIcon}
-                    />
-                  ))}
-                </tbody>
-              </table>
-              {/* Fade-out effect at the bottom, above log entries */}
-              <div className="pointer-events-none absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white/95 dark:from-gray-900/95 to-transparent z-10" />
-            </div>
-          </>
+          <div className="flex-1 overflow-y-auto scrollbar-hide relative">
+            <table className="w-full">
+              <thead className="bg-gray-50/80 dark:bg-gray-800/80 sticky top-0 z-10">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Level
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Time
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    API Call
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Reason
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Details
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white/80 dark:bg-gray-900/80 divide-y divide-gray-200/50 dark:divide-gray-700/50">
+                {logs.map((log) => (
+                  <LogRow
+                    key={log.id}
+                    log={log}
+                    onRemove={() => removeLog(log.id)}
+                    formatTimestamp={formatTimestamp}
+                    getLevelColor={getLevelColor}
+                    getLevelIcon={getLevelIcon}
+                    showDetails={detailsId === log.id}
+                    onToggleDetails={() => setDetailsId(detailsId === log.id ? null : log.id)}
+                  />
+                ))}
+              </tbody>
+            </table>
+            {/* Fade-out effect at the bottom, above log entries */}
+            <div className="pointer-events-none absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white/95 dark:from-gray-900/95 to-transparent z-10" />
+          </div>
         )}
       </div>
     </div>
@@ -140,8 +152,10 @@ interface LogRowProps {
   log: APILogEntry;
   onRemove: () => void;
   formatTimestamp: (timestamp: number) => string;
-  getLevelColor: (level: 'warning' | 'error') => string;
-  getLevelIcon: (level: 'warning' | 'error') => string;
+  getLevelColor: (level: APILogLevel) => string;
+  getLevelIcon: (level: APILogLevel) => string;
+  showDetails: boolean;
+  onToggleDetails: () => void;
 }
 
 const LogRow: React.FC<LogRowProps> = ({
@@ -150,31 +164,56 @@ const LogRow: React.FC<LogRowProps> = ({
   formatTimestamp,
   getLevelColor,
   getLevelIcon,
+  showDetails,
+  onToggleDetails,
 }) => {
   return (
-    <tr className="hover:bg-gray-50/60 dark:hover:bg-gray-800/60 transition-colors duration-150">
-      <td className="px-4 py-3">
-        <span
-          className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded ${getLevelColor(log.level)}`}
-        >
-          <Icon name={getLevelIcon(log.level)} className="w-3 h-3" />
-          {log.level}
-        </span>
-      </td>
-      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-        {formatTimestamp(log.timestamp)}
-      </td>
-      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-mono">{log.apiCall}</td>
-      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{log.reason}</td>
-      <td className="px-4 py-3 text-right">
-        <button
-          onClick={onRemove}
-          className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500"
-          aria-label={`Remove log entry for ${log.apiCall}`}
-        >
-          <Icon name="trash" className="w-4 h-4" />
-        </button>
-      </td>
-    </tr>
+    <>
+      <tr className="hover:bg-gray-50/60 dark:hover:bg-gray-800/60 transition-colors duration-150">
+        <td className="px-4 py-3">
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded ${getLevelColor(log.level)}`}
+          >
+            <Icon name={getLevelIcon(log.level)} className="w-3 h-3" />
+            {log.level}
+          </span>
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+          {formatTimestamp(log.timestamp)}
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-mono">{log.apiCall}</td>
+        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{log.reason}</td>
+        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+          {log.details ? (
+            <button
+              onClick={onToggleDetails}
+              className="underline text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 text-xs"
+              aria-expanded={showDetails}
+              aria-controls={`log-details-${log.id}`}
+            >
+              {showDetails ? 'Hide' : 'Show'}
+            </button>
+          ) : (
+            <span className="text-gray-400">—</span>
+          )}
+        </td>
+        <td className="px-4 py-3 text-right">
+          <button
+            onClick={onRemove}
+            className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+            aria-label={`Remove log entry for ${log.apiCall}`}
+          >
+            <Icon name="trash" className="w-4 h-4" />
+          </button>
+        </td>
+      </tr>
+      {log.details && showDetails && (
+        <tr id={`log-details-${log.id}`}>
+          <td colSpan={6} className="px-4 pb-4 pt-0 text-xs text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800">
+            <pre className="whitespace-pre-wrap break-all">{JSON.stringify(log.details, null, 2)}</pre>
+          </td>
+        </tr>
+      )}
+    </>
   );
 };

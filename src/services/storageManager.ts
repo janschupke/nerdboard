@@ -6,6 +6,8 @@ export const AppTheme = {
 } as const;
 export type AppTheme = (typeof AppTheme)[keyof typeof AppTheme];
 
+export type APILogLevel = 'warning' | 'error';
+
 export interface AppConfig {
   isSidebarCollapsed: boolean;
   theme: AppTheme;
@@ -20,7 +22,7 @@ export interface SidebarState {
 export interface APILogEntry {
   id: string;
   timestamp: number;
-  level: 'warning' | 'error';
+  level: APILogLevel;
   apiCall: string;
   reason: string;
   details?: Record<string, unknown>;

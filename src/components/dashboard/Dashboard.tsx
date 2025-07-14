@@ -51,6 +51,25 @@ function DashboardContent() {
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
 
+  // Add global keyboard shortcut for toggling log view with 'L' and refreshing with 'R'
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      // Ignore if focus is on input, textarea, or select
+      const tag = (event.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (event.ctrlKey || event.metaKey || event.altKey)) return;
+      if (event.key === 'l' || event.key === 'L') {
+        event.preventDefault();
+        toggleLogView();
+      }
+      if ((event.key === 'r' || event.key === 'R') && !isRefreshing) {
+        event.preventDefault();
+        refreshAllTiles();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleLogView, refreshAllTiles, isRefreshing]);
+
   const LogView = React.lazy(() => import('./log/LogView').then((m) => ({ default: m.LogView })));
 
   // Bridge Dragboard actions to DashboardContext

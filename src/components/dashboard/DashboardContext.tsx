@@ -218,7 +218,7 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       dispatch({ type: 'TOGGLE_COLLAPSE' });
     }
     setIsInitialized(true);
-  }, [storage, state.layout.isCollapsed]);
+  }, []);
 
   // Save sidebar state when relevant changes
   useEffect(() => {
