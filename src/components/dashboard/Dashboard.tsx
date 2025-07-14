@@ -8,7 +8,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { useContext } from 'react';
 import { LogButton } from './LogButton';
 import { useLogManager } from '../../hooks/useLogManager';
-import { LogView } from './LogView';
+import React, { Suspense } from 'react';
 
 /**
  * Main dashboard content component that renders the dashboard layout
@@ -26,6 +26,8 @@ function DashboardContent() {
   const { tiles = [] } = state?.layout || {};
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
+
+  const LogView = React.lazy(() => import('./LogView').then((m) => ({ default: m.LogView })));
 
   return (
     <div className="h-screen w-full flex flex-col bg-theme-primary overflow-hidden">
@@ -70,7 +72,9 @@ function DashboardContent() {
         {/* Scrollable Dashboard Content */}
         <main className="flex-1 overflow-auto relative scrollbar-hide">
           <TileGrid />
-          <LogView isOpen={isLogViewOpen} onClose={closeLogView} />
+          <Suspense fallback={null}>
+            <LogView isOpen={isLogViewOpen} onClose={closeLogView} />
+          </Suspense>
         </main>
       </div>
     </div>

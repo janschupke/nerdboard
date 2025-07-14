@@ -1,18 +1,41 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import type { DashboardTile } from '../../types/dashboard';
 import { TileType, TileSize } from '../../types/dashboard';
 import { Icon } from '../ui/Icon';
-import { CryptocurrencyTile } from './tiles/cryptocurrency/CryptocurrencyTile';
-import { PreciousMetalsTile } from './tiles/precious-metals/PreciousMetalsTile';
-import { FederalFundsRateTile } from './tiles/federal-funds-rate/FederalFundsRateTile';
-import { EuriborRateTile } from './tiles/euribor-rate/EuriborRateTile';
-import { WeatherTile } from './tiles/weather/WeatherTile';
-import { GDXETFTile } from './tiles/gdx-etf/GDXETFTile';
-import { TimeTile } from './tiles/time/TimeTile';
-import { UraniumTile } from './tiles/uranium/UraniumTile';
-import { getTileSpan } from '../../constants/gridSystem';
 import { useDashboard } from '../../hooks/useDashboard';
 import { useCallback } from 'react';
+import { getTileSpan } from '../../constants/gridSystem';
+
+const CryptocurrencyTile = React.lazy(() =>
+  import('./tiles/cryptocurrency/CryptocurrencyTile').then((m) => ({
+    default: m.CryptocurrencyTile,
+  })),
+);
+const PreciousMetalsTile = React.lazy(() =>
+  import('./tiles/precious-metals/PreciousMetalsTile').then((m) => ({
+    default: m.PreciousMetalsTile,
+  })),
+);
+const FederalFundsRateTile = React.lazy(() =>
+  import('./tiles/federal-funds-rate/FederalFundsRateTile').then((m) => ({
+    default: m.FederalFundsRateTile,
+  })),
+);
+const EuriborRateTile = React.lazy(() =>
+  import('./tiles/euribor-rate/EuriborRateTile').then((m) => ({ default: m.EuriborRateTile })),
+);
+const WeatherTile = React.lazy(() =>
+  import('./tiles/weather/WeatherTile').then((m) => ({ default: m.WeatherTile })),
+);
+const GDXETFTile = React.lazy(() =>
+  import('./tiles/gdx-etf/GDXETFTile').then((m) => ({ default: m.GDXETFTile })),
+);
+const TimeTile = React.lazy(() =>
+  import('./tiles/time/TimeTile').then((m) => ({ default: m.TimeTile })),
+);
+const UraniumTile = React.lazy(() =>
+  import('./tiles/uranium/UraniumTile').then((m) => ({ default: m.UraniumTile })),
+);
 
 interface TileProps {
   tile: DashboardTile;
@@ -74,54 +97,98 @@ export function Tile({
 
     switch (tile.type) {
       case TileType.CRYPTOCURRENCY:
-        return <CryptocurrencyTile id={tile.id} size={size} config={config} />;
+        return (
+          <Suspense fallback={<div>Loading...</div>}>
+            <CryptocurrencyTile id={tile.id} size={size} config={config} />
+          </Suspense>
+        );
       case TileType.PRECIOUS_METALS:
-        return <PreciousMetalsTile id={tile.id} size={size} config={config} />;
+        return (
+          <Suspense fallback={<div>Loading...</div>}>
+            <PreciousMetalsTile id={tile.id} size={size} config={config} />
+          </Suspense>
+        );
       case TileType.FEDERAL_FUNDS_RATE:
-        return <FederalFundsRateTile id={tile.id} size={size} config={config} />;
+        return (
+          <Suspense fallback={<div>Loading...</div>}>
+            <FederalFundsRateTile id={tile.id} size={size} config={config} />
+          </Suspense>
+        );
       case TileType.EURIBOR_RATE:
-        return <EuriborRateTile />;
+        return (
+          <Suspense fallback={<div>Loading...</div>}>
+            <EuriborRateTile />
+          </Suspense>
+        );
       case TileType.WEATHER_HELSINKI:
         return (
-          <WeatherTile
-            size={size}
-            config={{ city: 'helsinki', country: 'Finland', refreshInterval: 300000 }}
-          />
+          <Suspense fallback={<div>Loading...</div>}>
+            <WeatherTile
+              size={size}
+              config={{ city: 'helsinki', country: 'Finland', refreshInterval: 300000 }}
+            />
+          </Suspense>
         );
       case TileType.WEATHER_PRAGUE:
         return (
-          <WeatherTile
-            size={size}
-            config={{ city: 'prague', country: 'Czech Republic', refreshInterval: 300000 }}
-          />
+          <Suspense fallback={<div>Loading...</div>}>
+            <WeatherTile
+              size={size}
+              config={{ city: 'prague', country: 'Czech Republic', refreshInterval: 300000 }}
+            />
+          </Suspense>
         );
       case TileType.WEATHER_TAIPEI:
         return (
-          <WeatherTile
-            size={size}
-            config={{ city: 'taipei', country: 'Taiwan', refreshInterval: 300000 }}
-          />
+          <Suspense fallback={<div>Loading...</div>}>
+            <WeatherTile
+              size={size}
+              config={{ city: 'taipei', country: 'Taiwan', refreshInterval: 300000 }}
+            />
+          </Suspense>
         );
       case TileType.GDX_ETF:
-        return <GDXETFTile id={tile.id} size={size} config={config} />;
+        return (
+          <Suspense fallback={<div>Loading...</div>}>
+            <GDXETFTile id={tile.id} size={size} config={config} />
+          </Suspense>
+        );
       case TileType.TIME_HELSINKI:
         return (
-          <TimeTile
-            id={tile.id}
-            size={size}
-            config={{ city: 'helsinki', showBusinessHours: true }}
-          />
+          <Suspense fallback={<div>Loading...</div>}>
+            <TimeTile
+              id={tile.id}
+              size={size}
+              config={{ city: 'helsinki', showBusinessHours: true }}
+            />
+          </Suspense>
         );
       case TileType.TIME_PRAGUE:
         return (
-          <TimeTile id={tile.id} size={size} config={{ city: 'prague', showBusinessHours: true }} />
+          <Suspense fallback={<div>Loading...</div>}>
+            <TimeTile
+              id={tile.id}
+              size={size}
+              config={{ city: 'prague', showBusinessHours: true }}
+            />
+          </Suspense>
         );
       case TileType.TIME_TAIPEI:
         return (
-          <TimeTile id={tile.id} size={size} config={{ city: 'taipei', showBusinessHours: true }} />
+          <Suspense fallback={<div>Loading...</div>}>
+            <TimeTile
+              id={tile.id}
+              size={size}
+              config={{ city: 'taipei', showBusinessHours: true }}
+            />
+          </Suspense>
         );
       case TileType.URANIUM:
-        return <UraniumTile id={tile.id} size={size} config={config} />;
+        return (
+          <Suspense fallback={<div>Loading...</div>}>
+            <UraniumTile id={tile.id} size={size} config={config} />
+          </Suspense>
+        );
       default:
         return (
           <div className="flex items-center justify-center h-full text-theme-secondary">
