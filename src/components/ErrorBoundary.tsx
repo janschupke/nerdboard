@@ -2,11 +2,10 @@ import React from 'react';
 import { Button } from './ui/Button';
 import { Icon } from './ui/Icon';
 
- 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
   fallback?: React.ComponentType<{ error: Error; resetError: () => void }>;
-  onError?: (_error: Error, _errorInfo: React.ErrorInfo) => void;  
+  onError?: (_error: Error, _errorInfo: React.ErrorInfo) => void;
 }
 
 interface ErrorBoundaryState {
@@ -74,7 +73,9 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
     if (this.state.hasError) {
       if (this.props.fallback) {
         const FallbackComponent = this.props.fallback;
-        return <FallbackComponent error={new Error('Unknown error')} resetError={this.resetError} />;
+        return (
+          <FallbackComponent error={new Error('Unknown error')} resetError={this.resetError} />
+        );
       }
 
       return (

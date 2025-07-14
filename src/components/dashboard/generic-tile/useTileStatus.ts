@@ -15,7 +15,7 @@ import {
  * @returns Status management object with status, data, display info, and update function
  */
 export const useTileStatus = (
-  lastRequestResult: 'success' | 'error' | 'failure' | null,
+  lastRequestResult: TileStatus | null,
   hasLocalData: boolean,
   errorMessage?: string,
 ) => {

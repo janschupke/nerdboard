@@ -7,15 +7,13 @@ function App() {
   useEffect(() => {
     // Set up global error handling to prevent console errors
     setupGlobalErrorHandling();
-
-    return () => {
-      // No-op for deprecated storage cleanup
-    };
   }, []);
 
   return (
     <LogProvider>
-      <Dashboard />
+      <div data-testid="app-root">
+        <Dashboard />
+      </div>
     </LogProvider>
   );
 }

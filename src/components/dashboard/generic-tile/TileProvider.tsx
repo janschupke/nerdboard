@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTileStatus } from './useTileStatus';
 import { StatusAwareTile } from './StatusAwareTile';
+import type { TileStatus } from './tileStatus';
 // Comment out or remove the import of TileState from '../../../types/tile' and any usage of TileState in this file.
 
 interface TileProviderProps {
@@ -18,7 +19,7 @@ export const TileProvider: React.FC<TileProviderProps> = ({ tileState, children 
     errorMessage = (tileState as { errorMessage?: string }).errorMessage ?? '';
   }
   const { status } = useTileStatus(
-    lastRequestResult as 'success' | 'error' | 'failure' | null,
+    lastRequestResult as TileStatus | null,
     hasLocalData,
     errorMessage,
   );
