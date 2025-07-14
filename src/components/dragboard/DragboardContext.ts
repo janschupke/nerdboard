@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { DashboardTile } from './dashboard';
 
 export interface DragboardConfig {
   columns: number;
@@ -25,7 +26,13 @@ export interface DragboardContextValue {
   startSidebarDrag: (tileType: string) => void;
   endSidebarDrag: (dropTarget: { x: number; y: number } | null, tileType?: string) => void;
   setDropTarget: (target: { x: number; y: number } | null) => void;
-  removeTile: (tileId: string) => void;
+  // Board state/actions
+  tiles: DashboardTile[];
+  addTile: (tile: DashboardTile) => void;
+  removeTile: (id: string) => void;
+  updateTile: (id: string, updates: Partial<DashboardTile>) => void;
+  moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
+  reorderTiles: (tiles: DashboardTile[]) => void;
 }
 
 /**

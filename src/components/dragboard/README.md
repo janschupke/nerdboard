@@ -33,16 +33,16 @@ const dragboardConfig = {
 </DragboardProvider>;
 ```
 
-2. **All drag and resize logic must be implemented in this folder.**
-   - The main app should not implement or duplicate drag/resize logic elsewhere.
+2. **All drag, resize, and tile board logic is managed by DragboardProvider.**
+   - The main app should not implement or duplicate drag/resize/tile logic elsewhere.
    - Only interact with Dragboard through its context and exported API.
 
 ## API
 
-- `DragboardProvider`: Context provider for drag/resize state and configuration.
+- `DragboardProvider`: Context provider for drag/resize state, configuration, and tile board state/actions.
 - `DragboardGrid`: Renders the dashboard grid layout.
 - `DragboardTile`: Wraps each tile, providing drag, drop, and resize handles.
-- `useDragboard`: Access Dragboard config and state.
+- `useDragboard`: Access Dragboard config, drag state/actions, and tile board state/actions.
 - `DragboardConfig`: Type for grid and sizing configuration.
 
 ## Configuration Example
@@ -62,6 +62,6 @@ const dragboardConfig = {
 
 ## Notes
 
-- All drag/resize logic must be encapsulated here.
+- All drag/resize/tile logic must be encapsulated here.
 - The app must interact with Dragboard only through the defined interface.
 - Use Tailwind theme classes for all styling.

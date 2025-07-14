@@ -1,7 +1,7 @@
 import React from 'react';
-import { GenericTile } from '../../../tile/GenericTile';
-import type { DashboardTile } from '../../../dragboard/dashboard';
-import type { TileMeta } from '../../../tile/GenericTile';
+import { GenericTile } from '../../tile/GenericTile';
+import type { DashboardTile } from '../../dragboard/dashboard';
+import type { TileMeta } from '../../tile/GenericTile';
 import { cryptocurrencyTileMeta } from './meta';
 
 export const CryptocurrencyTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(

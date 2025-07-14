@@ -1,17 +1,16 @@
-import React from 'react';
+import React, { useReducer, useCallback, useMemo, useState } from 'react';
 import { DragboardContext } from './DragboardContext';
 import type {
   DragboardConfig,
   DragboardDragState,
   DragboardContextValue,
 } from './DragboardContext';
+import type { DashboardTile } from './dashboard.ts';
+import { rearrangeTiles } from './rearrangeTiles.ts';
 
 interface DragboardProviderProps {
   config: DragboardConfig;
   children: React.ReactNode;
-  endTileDrag?: (dropTarget: { x: number; y: number } | null, tileId?: string) => void;
-  endSidebarDrag?: (dropTarget: { x: number; y: number } | null, tileType?: string) => void;
-  removeTile?: (tileId: string) => void;
 }
 
 // Utility to snap a position to the nearest valid tile increment
@@ -28,14 +27,43 @@ function snapToTileGrid(
   };
 }
 
+// Board state management
+interface DragboardBoardState {
+  tiles: DashboardTile[];
+}
+
+type DragboardBoardAction =
+  | { type: 'ADD_TILE'; payload: DashboardTile }
+  | { type: 'REMOVE_TILE'; payload: string }
+  | { type: 'UPDATE_TILE'; payload: { id: string; updates: Partial<DashboardTile> } }
+  | { type: 'REORDER_TILES'; payload: DashboardTile[] };
+
+const dragboardBoardReducer = (state: DragboardBoardState, action: DragboardBoardAction): DragboardBoardState => {
+  switch (action.type) {
+    case 'ADD_TILE':
+      return { ...state, tiles: [...state.tiles, action.payload] };
+    case 'REMOVE_TILE': {
+      const newTiles = state.tiles.filter(tile => tile.id !== action.payload);
+      return { ...state, tiles: rearrangeTiles(newTiles) };
+    }
+    case 'UPDATE_TILE':
+      return {
+        ...state,
+        tiles: state.tiles.map(tile => tile.id === action.payload.id ? { ...tile, ...action.payload.updates } : tile),
+      };
+    case 'REORDER_TILES':
+      return { ...state, tiles: action.payload };
+    default:
+      return state;
+  }
+};
+
 export const DragboardProvider: React.FC<DragboardProviderProps> = ({
   config,
   children,
-  endTileDrag,
-  endSidebarDrag,
-  removeTile,
 }) => {
-  const [dragState, setDragState] = React.useState<DragboardDragState>({
+  // Drag state
+  const [dragState, setDragState] = useState<DragboardDragState>({
     draggingTileId: null,
     dragOrigin: null,
     dragOffset: null,
@@ -44,8 +72,11 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
     sidebarTileType: undefined,
   });
 
+  // Board state
+  const [boardState, dispatch] = useReducer(dragboardBoardReducer, { tiles: [] });
+
   // Tile drag actions
-  const startTileDrag = React.useCallback((tileId: string, origin: { x: number; y: number }) => {
+  const startTileDrag = useCallback((tileId: string, origin: { x: number; y: number }) => {
     setDragState((prev) => ({
       ...prev,
       draggingTileId: tileId,
@@ -56,19 +87,18 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
     }));
   }, []);
 
-  const updateTileDrag = React.useCallback((offset: { x: number; y: number }) => {
+  const updateTileDrag = useCallback((offset: { x: number; y: number }) => {
     setDragState((prev) => ({ ...prev, dragOffset: offset }));
   }, []);
 
-  const _endTileDrag = React.useCallback(
+  const endTileDrag = useCallback(
     (dropTarget: { x: number; y: number } | null, tileId?: string) => {
       let snappedTarget = dropTarget;
       if (dropTarget && tileId) {
-        // Find the tile size from config or default to medium
         const tileSize: 'small' | 'medium' | 'large' = 'medium';
-        // Optionally, you could pass the size as a prop or context if needed
-        // For now, default to medium
         snappedTarget = snapToTileGrid(dropTarget.x, dropTarget.y, config, tileSize);
+        // Move the tile in board state
+        dispatch({ type: 'UPDATE_TILE', payload: { id: tileId, updates: { position: snappedTarget } } });
       }
       setDragState((prev) => ({
         ...prev,
@@ -79,15 +109,12 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
         isSidebarDrag: false,
         sidebarTileType: undefined,
       }));
-      if (endTileDrag) {
-        endTileDrag(snappedTarget, tileId);
-      }
     },
-    [endTileDrag, config],
+    [config],
   );
 
   // Sidebar drag actions
-  const startSidebarDrag = React.useCallback((tileType: string) => {
+  const startSidebarDrag = useCallback((tileType: string) => {
     setDragState((prev) => ({
       ...prev,
       draggingTileId: null,
@@ -99,13 +126,23 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
     }));
   }, []);
 
-  const _endSidebarDrag = React.useCallback(
+  const endSidebarDrag = useCallback(
     (dropTarget: { x: number; y: number } | null, tileType?: string) => {
       let snappedTarget = dropTarget;
       if (dropTarget && tileType) {
-        // Optionally, map tileType to a size if needed; for now, default to medium
         const tileSize: 'small' | 'medium' | 'large' = 'medium';
         snappedTarget = snapToTileGrid(dropTarget.x, dropTarget.y, config, tileSize);
+        // Add a new tile to board state
+        dispatch({
+          type: 'ADD_TILE',
+          payload: {
+            id: `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            type: tileType,
+            position: snappedTarget,
+            size: 'medium',
+            createdAt: Date.now(),
+          } as DashboardTile,
+        });
       }
       setDragState((prev) => ({
         ...prev,
@@ -116,51 +153,61 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
         isSidebarDrag: false,
         sidebarTileType: undefined,
       }));
-      if (endSidebarDrag) {
-        endSidebarDrag(snappedTarget, tileType);
-      }
     },
-    [endSidebarDrag, config],
+    [config],
   );
 
-  // Remove tile action (to be connected to dashboard state)
-  const _removeTile = React.useCallback(
-    (tileId: string) => {
-      if (removeTile) {
-        removeTile(tileId);
-      }
-    },
-    [removeTile],
-  );
+  // Board actions
+  const addTile = useCallback((tile: DashboardTile) => {
+    dispatch({ type: 'ADD_TILE', payload: tile });
+  }, []);
+
+  const removeTile = useCallback((id: string) => {
+    dispatch({ type: 'REMOVE_TILE', payload: id });
+  }, []);
+
+  const updateTile = useCallback((id: string, updates: Partial<DashboardTile>) => {
+    dispatch({ type: 'UPDATE_TILE', payload: { id, updates } });
+  }, []);
+
+  const moveTile = useCallback((tileId: string, newPosition: { x: number; y: number }) => {
+    dispatch({ type: 'UPDATE_TILE', payload: { id: tileId, updates: { position: newPosition } } });
+  }, []);
+
+  const reorderTiles = useCallback((tiles: DashboardTile[]) => {
+    dispatch({ type: 'REORDER_TILES', payload: tiles });
+  }, []);
 
   // Set drop target for drag-over events
-  const setDropTarget = React.useCallback((target: { x: number; y: number } | null) => {
+  const setDropTarget = useCallback((target: { x: number; y: number } | null) => {
     setDragState((prev) => ({ ...prev, dropTarget: target }));
   }, []);
 
-  const value = React.useMemo<DragboardContextValue>(
+  const value = useMemo<DragboardContextValue & {
+    tiles: DashboardTile[];
+    addTile: (tile: DashboardTile) => void;
+    removeTile: (id: string) => void;
+    updateTile: (id: string, updates: Partial<DashboardTile>) => void;
+    moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
+    reorderTiles: (tiles: DashboardTile[]) => void;
+  }>(
     () => ({
       config,
       dragState,
       startTileDrag,
       updateTileDrag,
-      endTileDrag: _endTileDrag,
+      endTileDrag,
       startSidebarDrag,
-      endSidebarDrag: _endSidebarDrag,
+      endSidebarDrag,
       setDropTarget,
-      removeTile: _removeTile,
+      tiles: boardState.tiles,
+      addTile,
+      removeTile,
+      updateTile,
+      moveTile,
+      reorderTiles,
     }),
-    [
-      config,
-      dragState,
-      startTileDrag,
-      updateTileDrag,
-      _endTileDrag,
-      startSidebarDrag,
-      _endSidebarDrag,
-      setDropTarget,
-      _removeTile,
-    ],
+    [config, dragState, startTileDrag, updateTileDrag, endTileDrag, startSidebarDrag, endSidebarDrag, setDropTarget, boardState.tiles, addTile, removeTile, updateTile, moveTile, reorderTiles],
   );
 
   return <DragboardContext.Provider value={value}>{children}</DragboardContext.Provider>;

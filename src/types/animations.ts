@@ -1,4 +1,4 @@
-import { UI_CONFIG } from '../services/constants';
+import { UI_CONFIG } from '../contexts/constants';
 
 export interface AnimationConfig {
   duration: number;
