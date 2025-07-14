@@ -8,6 +8,7 @@ export const DASHBOARD_GRID_CONFIG = {
     medium: { colSpan: 2, rowSpan: 1 },
     large: { colSpan: 4, rowSpan: 1 },
   },
+  breakpoints: { sm: 640, md: 768, lg: 1024 },
 };
 
 export type TileSize = 'small' | 'medium' | 'large';
