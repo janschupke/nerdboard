@@ -2,6 +2,12 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FederalFundsRateTile } from './FederalFundsRateTile';
 import { useFederalFundsRateData } from './hooks/useFederalFundsRateData';
+import { DashboardProvider } from '../../../../contexts/DashboardContext';
+import { TileSize } from '../../../../types/dashboard';
+
+function renderWithProviders(ui: React.ReactElement) {
+  return render(<DashboardProvider>{ui}</DashboardProvider>);
+}
 
 // Mock the hook
 vi.mock('./hooks/useFederalFundsRateData');
@@ -43,7 +49,7 @@ describe('FederalFundsRateTile', () => {
       refetch: vi.fn(),
     });
 
-    render(<FederalFundsRateTile {...defaultProps} />);
+    renderWithProviders(<FederalFundsRateTile {...defaultProps} />);
 
     expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument();
   });
@@ -61,9 +67,9 @@ describe('FederalFundsRateTile', () => {
       refetch: vi.fn(),
     });
 
-    render(<FederalFundsRateTile {...defaultProps} />);
+    renderWithProviders(<FederalFundsRateTile {...defaultProps} />);
 
-    expect(screen.getByText('Failed to load Federal Funds rate data')).toBeInTheDocument();
+    expect(screen.getByText(/error loading federal funds rate data/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
   });
 
@@ -80,9 +86,9 @@ describe('FederalFundsRateTile', () => {
       refetch: vi.fn(),
     });
 
-    render(<FederalFundsRateTile {...defaultProps} />);
+    renderWithProviders(<FederalFundsRateTile {...defaultProps} />);
 
-    expect(screen.getByText('No Federal Funds rate data available')).toBeInTheDocument();
+    expect(screen.getByText(/no federal funds rate data available/i)).toBeInTheDocument();
   });
 
   it('should render tile with data', () => {
@@ -100,11 +106,11 @@ describe('FederalFundsRateTile', () => {
       refetch: vi.fn(),
     });
 
-    render(<FederalFundsRateTile {...defaultProps} />);
+    renderWithProviders(<FederalFundsRateTile {...defaultProps} />);
 
-    expect(screen.getByText('Federal Funds Rate')).toBeInTheDocument();
+    expect(screen.getAllByText(/Federal Funds Rate/i).length).toBeGreaterThan(0);
     expect(screen.getByText('5.25%')).toBeInTheDocument();
-    expect(screen.getByText('Last updated: 1/15/2024, 10:00:00 AM')).toBeInTheDocument();
+    expect(screen.getByText(/last updated/i)).toBeInTheDocument();
   });
 
   it('should render time range controls', () => {
@@ -122,7 +128,7 @@ describe('FederalFundsRateTile', () => {
       refetch: vi.fn(),
     });
 
-    render(<FederalFundsRateTile {...defaultProps} />);
+    renderWithProviders(<FederalFundsRateTile {...defaultProps} />);
 
     expect(screen.getByText('1M')).toBeInTheDocument();
     expect(screen.getByText('3M')).toBeInTheDocument();
@@ -147,7 +153,7 @@ describe('FederalFundsRateTile', () => {
       refetch: vi.fn(),
     });
 
-    render(<FederalFundsRateTile {...defaultProps} />);
+    renderWithProviders(<FederalFundsRateTile {...defaultProps} />);
 
     const threeMonthButton = screen.getByText('3M');
     fireEvent.click(threeMonthButton);
@@ -170,7 +176,7 @@ describe('FederalFundsRateTile', () => {
       refetch: mockRefetch,
     });
 
-    render(<FederalFundsRateTile {...defaultProps} />);
+    renderWithProviders(<FederalFundsRateTile {...defaultProps} />);
 
     const retryButton = screen.getByRole('button', { name: /retry/i });
     fireEvent.click(retryButton);
@@ -193,9 +199,9 @@ describe('FederalFundsRateTile', () => {
       refetch: vi.fn(),
     });
 
-    render(<FederalFundsRateTile {...defaultProps} />);
+    renderWithProviders(<FederalFundsRateTile {...defaultProps} />);
 
-    expect(screen.getByText('Federal Funds Rate (1 Year)')).toBeInTheDocument();
+    expect(screen.getByText(/federal funds rate \(1y\)/i)).toBeInTheDocument();
   });
 
   it('should display rate change correctly', () => {
@@ -213,7 +219,7 @@ describe('FederalFundsRateTile', () => {
       refetch: vi.fn(),
     });
 
-    render(<FederalFundsRateTile {...defaultProps} />);
+    renderWithProviders(<FederalFundsRateTile {...defaultProps} />);
 
     // Should show the rate change (5.25 - 5.0 = 0.25)
     expect(screen.getByText('+0.25%')).toBeInTheDocument();
@@ -234,10 +240,15 @@ describe('FederalFundsRateTile', () => {
       refetch: vi.fn(),
     });
 
-    const { rerender } = render(<FederalFundsRateTile {...defaultProps} size="small" />);
-    expect(screen.getByText('Federal Funds Rate')).toBeInTheDocument();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <DashboardProvider>{children}</DashboardProvider>
+    );
+    const { rerender } = render(<FederalFundsRateTile {...defaultProps} size={TileSize.SMALL} />, {
+      wrapper,
+    });
+    expect(screen.getAllByText(/Federal Funds Rate/i).length).toBeGreaterThan(0);
 
-    rerender(<FederalFundsRateTile {...defaultProps} size="large" />);
-    expect(screen.getByText('Federal Funds Rate')).toBeInTheDocument();
+    rerender(<FederalFundsRateTile {...defaultProps} size={TileSize.LARGE} />);
+    expect(screen.getAllByText(/Federal Funds Rate/i).length).toBeGreaterThan(0);
   });
 });

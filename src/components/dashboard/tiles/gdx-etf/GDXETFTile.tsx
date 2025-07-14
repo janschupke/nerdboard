@@ -5,22 +5,24 @@ import { PriceDisplay } from '../../../ui/PriceDisplay';
 import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { Button } from '../../../ui/Button';
 import { GenericTile } from '../GenericTile';
-import { GDX_UI_CONFIG, GDX_ERROR_MESSAGES, GDX_MARKET_MESSAGES } from './constants';
-import type { GDXETFTileProps, GDXETFTileConfig } from './types';
+import { GDX_UI_CONFIG } from './constants';
+import type { DashboardTile } from '../../../../types/dashboard';
+import { gdxEtfTileMeta } from './meta';
 
-function isValidGDXETFTileConfig(config: unknown): config is GDXETFTileConfig {
-  return config && typeof config === 'object';
+function isValidGDXETFTileConfig(config: unknown): config is Record<string, unknown> {
+  return Boolean(config && typeof config === 'object');
 }
 
-export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config, ...rest }) => {
-  const configError = !isValidGDXETFTileConfig(config);
-  const safeConfig: GDXETFTileConfig = configError
+export const GDXETFTile = React.memo<{ tile: DashboardTile }>(({ tile, ...rest }) => {
+  const configError = !isValidGDXETFTileConfig(tile.config);
+  const safeConfig = configError
     ? { chartPeriod: '1D', refreshInterval: 0, showVolume: false }
-    : config;
+    : (tile.config as Record<string, unknown>);
 
-  const { data, priceHistory, loading, error, selectedPeriod } = useGDXETFData(
-    safeConfig.refreshInterval,
-  );
+  const refreshInterval =
+    typeof safeConfig.refreshInterval === 'number' ? safeConfig.refreshInterval : 0;
+
+  const { data, priceHistory, loading, error, selectedPeriod } = useGDXETFData(refreshInterval);
 
   // Memoize chart data to prevent unnecessary re-renders
   const chartData = useMemo(() => {
@@ -50,7 +52,7 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config, ...rest }
       </div>
     );
   } else if (loading) {
-    const tileSize = typeof size === 'string' ? size : 'medium';
+    const tileSize = typeof tile.size === 'string' ? tile.size : 'medium';
     content = <LoadingSkeleton tileSize={tileSize as 'small' | 'medium' | 'large'} />;
   } else if (error) {
     content = (
@@ -113,59 +115,16 @@ export const GDXETFTile = React.memo<GDXETFTileProps>(({ size, config, ...rest }
           <ChartComponent
             data={chartData}
             title={`${data.symbol} Price (${selectedPeriod})`}
-            color="var(--color-primary-500)"
-            height={
-              size === 'large'
-                ? 200
-                : 120
-            }
+            color="#fbbf24" // Tailwind amber-400 as example; replace with theme if available
           />
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div>
-            <span className="text-theme-muted">Volume:</span>
-            <span className="ml-1 text-theme-primary">{data.volume.toLocaleString()}</span>
-          </div>
-          <div>
-            <span className="text-theme-muted">Market Cap:</span>
-            <span className="ml-1 text-theme-primary">
-              ${(data.marketCap / 1000000000).toFixed(2)}B
-            </span>
-          </div>
-          <div>
-            <span className="text-theme-muted">High:</span>
-            <span className="ml-1 text-theme-primary">${data.high.toFixed(2)}</span>
-          </div>
-          <div>
-            <span className="text-theme-muted">Low:</span>
-            <span className="ml-1 text-theme-primary">${data.low.toFixed(2)}</span>
-          </div>
-        </div>
-
-        {/* Last updated */}
-        <div className="text-xs text-theme-muted text-center">
-          Last updated: {new Date(data.lastUpdated).toLocaleTimeString()}
         </div>
       </div>
     );
   }
 
   return (
-    <GenericTile
-      tile={{
-        id: 'gdx-etf',
-        type: 'gdx_etf',
-        size,
-        config: safeConfig as Record<string, unknown>,
-        position: { x: 0, y: 0 },
-      }}
-      {...rest}
-    >
+    <GenericTile tile={tile} meta={gdxEtfTileMeta} {...rest}>
       {content}
     </GenericTile>
   );
 });
-
-GDXETFTile.displayName = 'GDXETFTile';

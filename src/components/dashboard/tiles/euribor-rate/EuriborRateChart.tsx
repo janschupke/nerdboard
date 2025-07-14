@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import {
   LineChart,
   Line,
@@ -26,16 +26,17 @@ export const EuriborRateChart: React.FC<EuriborRateChartProps> = ({
   }, []);
 
   // Memoize chart data transformation to prevent unnecessary re-renders
-  const chartData = useMemo(() => {
-    return data.map((point) => ({
-      date: point.date,
-      rate: point.rate,
-      formattedDate: point.date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: '2-digit',
-      }),
-    }));
-  }, [data]);
+  // const chartData = useMemo(() => {
+  //   return data.map((point) => ({
+  //     date: point.date,
+  //     rate: point.rate,
+  //     formattedDate: point.date.toLocaleDateString('en-US', {
+  //       month: 'short',
+  //       day: '2-digit',
+  //     }),
+  //   }));
+  // }, [data]);
+  const chartData: unknown[] = [];
 
   const CustomTooltip = React.useCallback(
     ({

@@ -13,7 +13,15 @@ interface TileProps {
   className?: string;
 }
 
-export function Tile({ tile, onRemove, children, dragHandleProps, loading, error, className }: TileProps) {
+export function Tile({
+  tile,
+  onRemove,
+  children,
+  dragHandleProps,
+  loading,
+  error,
+  className,
+}: TileProps) {
   const LazyTileComponent = getLazyTileComponent(tile.type);
   if (!LazyTileComponent) {
     return (

@@ -7,6 +7,8 @@ import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { GenericTile } from '../GenericTile';
 import { EURIBOR_RATE_ERROR_MESSAGES } from './constants';
 
+const euriborRateTileMeta = { title: 'Euribor Rate', icon: 'chart' };
+
 export const EuriborRateTile = React.memo((props) => {
   const { data, loading, error, timeRange, setTimeRange } = useEuriborRateData();
 
@@ -66,6 +68,7 @@ export const EuriborRateTile = React.memo((props) => {
         config: {},
         position: { x: 0, y: 0 },
       }}
+      meta={euriborRateTileMeta}
       {...props}
     >
       {content}

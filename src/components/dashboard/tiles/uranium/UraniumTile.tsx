@@ -7,11 +7,11 @@ import { UraniumMarketInfo } from './UraniumMarketInfo';
 import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { Button } from '../../../ui/Button';
 import { GenericTile } from '../GenericTile';
-import { URANIUM_ERROR_MESSAGES } from './constants';
 import type { UraniumTileProps, UraniumTimeRange, UraniumTileConfig } from './types';
+import { uraniumTileMeta } from './meta';
 
 function isValidUraniumTileConfig(config: unknown): config is UraniumTileConfig {
-  return config && typeof config === 'object';
+  return Boolean(config && typeof config === 'object');
 }
 
 export const UraniumTile = React.memo<UraniumTileProps>(({ size, config, ...rest }) => {
@@ -30,7 +30,8 @@ export const UraniumTile = React.memo<UraniumTileProps>(({ size, config, ...rest
   if (configError) {
     content = (
       <div className="text-error-600 p-2">
-        <span className="font-semibold">Tile Error:</span> Invalid or missing config for UraniumTile.
+        <span className="font-semibold">Tile Error:</span> Invalid or missing config for
+        UraniumTile.
       </div>
     );
   } else if (loading) {
@@ -86,6 +87,7 @@ export const UraniumTile = React.memo<UraniumTileProps>(({ size, config, ...rest
         config: safeConfig as Record<string, unknown>,
         position: { x: 0, y: 0 },
       }}
+      meta={uraniumTileMeta}
       {...rest}
     >
       {content}

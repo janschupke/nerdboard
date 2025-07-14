@@ -1,13 +1,19 @@
 import React from 'react';
 import type { DashboardTile } from '../../../types/dashboard';
-import { TileType, TileSize } from '../../../types/dashboard';
+import { TileSize } from '../../../types/dashboard';
 import { Icon } from '../../ui/Icon';
 import { useDashboard } from '../../../hooks/useDashboard';
 import { useCallback } from 'react';
 import { getTileSpan } from '../../../constants/gridSystem';
 
+export interface TileMeta {
+  title: string;
+  icon: string;
+}
+
 interface GenericTileProps {
   tile: DashboardTile;
+  meta: TileMeta;
   onRemove?: (id: string) => void;
   children?: React.ReactNode;
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
@@ -16,6 +22,7 @@ interface GenericTileProps {
 
 export function GenericTile({
   tile,
+  meta,
   onRemove,
   children,
   dragHandleProps,
@@ -53,42 +60,6 @@ export function GenericTile({
     return { gridColumn: `span ${colSpan}`, gridRow: `span ${rowSpan}` };
   };
 
-  const getTileTitle = () => {
-    const titles: Record<TileType, string> = {
-      [TileType.CRYPTOCURRENCY]: 'Cryptocurrency',
-      [TileType.PRECIOUS_METALS]: 'Precious Metals',
-      [TileType.FEDERAL_FUNDS_RATE]: 'Federal Funds Rate',
-      [TileType.EURIBOR_RATE]: 'Euribor Rate',
-      [TileType.WEATHER_HELSINKI]: 'Helsinki Weather',
-      [TileType.WEATHER_PRAGUE]: 'Prague Weather',
-      [TileType.WEATHER_TAIPEI]: 'Taipei Weather',
-      [TileType.GDX_ETF]: 'GDX ETF',
-      [TileType.TIME_HELSINKI]: 'Helsinki Time',
-      [TileType.TIME_PRAGUE]: 'Prague Time',
-      [TileType.TIME_TAIPEI]: 'Taipei Time',
-      [TileType.URANIUM]: 'Uranium Price',
-    };
-    return titles[tile.type] || 'Unknown Tile';
-  };
-
-  const getTileIcon = () => {
-    const icons: Record<TileType, string> = {
-      [TileType.CRYPTOCURRENCY]: 'crypto',
-      [TileType.PRECIOUS_METALS]: 'metals',
-      [TileType.FEDERAL_FUNDS_RATE]: 'chart',
-      [TileType.EURIBOR_RATE]: 'chart',
-      [TileType.WEATHER_HELSINKI]: 'weather',
-      [TileType.WEATHER_PRAGUE]: 'weather',
-      [TileType.WEATHER_TAIPEI]: 'weather',
-      [TileType.GDX_ETF]: 'chart',
-      [TileType.TIME_HELSINKI]: 'clock',
-      [TileType.TIME_PRAGUE]: 'clock',
-      [TileType.TIME_TAIPEI]: 'clock',
-      [TileType.URANIUM]: 'chart',
-    };
-    return icons[tile.type] || 'chart';
-  };
-
   return (
     <div
       className={`${getTileClasses()} ${className || ''}`}
@@ -96,7 +67,7 @@ export function GenericTile({
       data-tile-id={tile.id}
       data-tile-type={tile.type}
       role="gridcell"
-      aria-label={`${getTileTitle()} tile`}
+      aria-label={`${meta.title} tile`}
     >
       {/* Tile Header - Grabbable */}
       <div
@@ -105,8 +76,8 @@ export function GenericTile({
         {...dragHandleProps}
       >
         <div className="flex items-center space-x-3">
-          <Icon name={getTileIcon()} size="sm" className="text-accent-primary" aria-hidden="true" />
-          <h3 className="text-base font-semibold text-theme-primary truncate">{getTileTitle()}</h3>
+          <Icon name={meta.icon} size="sm" className="text-accent-primary" aria-hidden="true" />
+          <h3 className="text-base font-semibold text-theme-primary truncate">{meta.title}</h3>
         </div>
       </div>
 
@@ -115,7 +86,7 @@ export function GenericTile({
         <button
           onClick={handleRemove}
           className="absolute top-1 right-1 p-1 text-theme-tertiary hover:text-theme-primary hover:bg-theme-tertiary rounded transition-colors cursor-pointer z-10"
-          aria-label={`Remove ${getTileTitle()} tile`}
+          aria-label={`Remove ${meta.title} tile`}
           onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
         >
@@ -124,7 +95,7 @@ export function GenericTile({
       )}
 
       {/* Tile Content */}
-      <div className="flex-1 p-2" role="region" aria-label={`${getTileTitle()} content`}>
+      <div className="flex-1 p-2" role="region" aria-label={`${meta.title} content`}>
         {(() => {
           try {
             return children;
@@ -140,4 +111,4 @@ export function GenericTile({
       </div>
     </div>
   );
-} 
+}

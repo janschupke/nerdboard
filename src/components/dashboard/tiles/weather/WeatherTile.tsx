@@ -9,9 +9,15 @@ import { GenericTile } from '../GenericTile';
 import { WEATHER_CITIES } from './constants';
 import type { WeatherTileProps } from './types';
 import { TileType } from '../../../../types/dashboard';
+import { weatherTileMeta } from './meta';
 
 function isValidWeatherTileConfig(config: unknown): config is WeatherTileProps['config'] {
-  return config && typeof config === 'object' && typeof (config as any).city === 'string' && typeof (config as any).country === 'string';
+  return Boolean(
+    config &&
+      typeof config === 'object' &&
+      typeof (config as Record<string, unknown>).city === 'string' &&
+      typeof (config as Record<string, unknown>).country === 'string',
+  );
 }
 
 export const WeatherTile = React.memo<WeatherTileProps>(({ size, config, ...rest }) => {
@@ -34,7 +40,8 @@ export const WeatherTile = React.memo<WeatherTileProps>(({ size, config, ...rest
   if (configError) {
     content = (
       <div className="text-error-600 p-2">
-        <span className="font-semibold">Tile Error:</span> Invalid or missing config for WeatherTile.
+        <span className="font-semibold">Tile Error:</span> Invalid or missing config for
+        WeatherTile.
       </div>
     );
   } else if (loading) {
@@ -92,6 +99,7 @@ export const WeatherTile = React.memo<WeatherTileProps>(({ size, config, ...rest
         config: safeConfig as unknown as Record<string, unknown>,
         position: { x: 0, y: 0 },
       }}
+      meta={weatherTileMeta(cityName)}
       {...rest}
     >
       {content}

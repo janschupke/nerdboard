@@ -9,9 +9,12 @@ import { GenericTile } from '../GenericTile';
 import { TIME_UI_CONFIG, TIME_ERROR_MESSAGES } from './constants';
 import type { TimeTileProps, TimeTileConfig, TimeFormat, TimeData } from './types';
 import { TileType } from '../../../../types/dashboard';
+import { timeTileMeta } from './meta';
 
 function isValidTimeTileConfig(config: unknown): config is TimeTileConfig {
-  return Boolean(config && typeof config === 'object' && typeof (config as { city?: unknown }).city === 'string');
+  return Boolean(
+    config && typeof config === 'object' && typeof (config as { city?: unknown }).city === 'string',
+  );
 }
 
 export const TimeTile = React.memo<TimeTileProps>(({ size, config, ...rest }) => {
@@ -37,7 +40,10 @@ export const TimeTile = React.memo<TimeTileProps>(({ size, config, ...rest }) =>
         safeConfig.timeFormat || TIME_UI_CONFIG.DEFAULT_TIME_FORMAT,
       );
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      ({ timeData, loading, error, refetch } = useTimeData(safeConfig.city, safeConfig.refreshInterval));
+      ({ timeData, loading, error, refetch } = useTimeData(
+        safeConfig.city,
+        safeConfig.refreshInterval,
+      ));
     }
   } catch (err) {
     hookError = err instanceof Error ? err : new Error(String(err));
@@ -99,7 +105,9 @@ export const TimeTile = React.memo<TimeTileProps>(({ size, config, ...rest }) =>
         {/* Timezone and business hours info */}
         <div className="flex justify-between items-center">
           <TimezoneInfo timeData={timeData} size={size} />
-          {safeConfig.showBusinessHours !== false && <BusinessHours timeData={timeData} size={size} />}
+          {safeConfig.showBusinessHours !== false && (
+            <BusinessHours timeData={timeData} size={size} />
+          )}
         </div>
 
         {/* Last update info for large tiles */}
@@ -127,6 +135,7 @@ export const TimeTile = React.memo<TimeTileProps>(({ size, config, ...rest }) =>
         config: safeConfig as unknown as Record<string, unknown>,
         position: { x: 0, y: 0 },
       }}
+      meta={timeTileMeta(safeConfig.city)}
       {...rest}
     >
       {content}

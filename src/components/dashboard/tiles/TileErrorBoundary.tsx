@@ -9,7 +9,10 @@ interface TileErrorBoundaryState {
   error: Error | null;
 }
 
-export class TileErrorBoundary extends React.Component<TileErrorBoundaryProps, TileErrorBoundaryState> {
+export class TileErrorBoundary extends React.Component<
+  TileErrorBoundaryProps,
+  TileErrorBoundaryState
+> {
   constructor(props: TileErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -38,4 +41,4 @@ export class TileErrorBoundary extends React.Component<TileErrorBoundaryProps, T
     }
     return this.props.children;
   }
-} 
+}
