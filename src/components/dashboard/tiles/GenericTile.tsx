@@ -1,10 +1,9 @@
 import React from 'react';
 import type { DashboardTile } from '../../../types/dashboard';
-import { TileSize } from '../../../types/dashboard';
+import { getTileSpan } from '../../../constants/dashboardGrid';
 import { Icon } from '../../ui/Icon';
 import { useDashboard } from '../../../hooks/useDashboard';
 import { useCallback } from 'react';
-import { getTileSpan } from '../../../constants/gridSystem';
 
 export interface TileMeta {
   title: string;
@@ -42,14 +41,14 @@ export function GenericTile({
   const getTileClasses = () => {
     const baseClasses =
       'bg-surface-primary border border-theme-primary rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 relative';
-    const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
+    const size = typeof tile.size === 'string' ? tile.size : 'medium';
     const { colSpan, rowSpan } = getTileSpan(size);
     const sizeClass = `col-span-${colSpan} row-span-${rowSpan}`;
     return `${baseClasses} ${sizeClass}`;
   };
 
   const getTileStyles = () => {
-    const size = typeof tile.size === 'string' ? tile.size : TileSize.MEDIUM;
+    const size = typeof tile.size === 'string' ? tile.size : 'medium';
     const { colSpan, rowSpan } = getTileSpan(size);
     if (tile.position) {
       return {

@@ -1,7 +1,7 @@
 import React, { createContext, useReducer, useCallback, useMemo, useEffect } from 'react';
 import type { DashboardTile, TileType } from '../types/dashboard';
 import { Toast } from '../components/ui/Toast';
-import { getTileSpan } from '../constants/gridSystem';
+import { getTileSpan, DASHBOARD_GRID_CONFIG } from '../constants/dashboardGrid';
 import { useStorageManager } from '../services/storageManagerUtils';
 
 // Helper function to rearrange tiles after removal
@@ -11,8 +11,8 @@ const rearrangeTiles = (tiles: DashboardTile[]): DashboardTile[] => {
   // Sort tiles by creation time to maintain order
   const sortedTiles = [...tiles].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
 
-  const GRID_ROWS = 12;
-  const GRID_COLUMNS = 8;
+  const GRID_ROWS = DASHBOARD_GRID_CONFIG.rows;
+  const GRID_COLUMNS = DASHBOARD_GRID_CONFIG.columns;
   const grid = Array(GRID_ROWS)
     .fill(null)
     .map(() => Array(GRID_COLUMNS).fill(false));
@@ -242,8 +242,8 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       }
 
       // Find first available position using unified tile size system
-      const GRID_ROWS = 12;
-      const GRID_COLUMNS = 8;
+      const GRID_ROWS = DASHBOARD_GRID_CONFIG.rows;
+      const GRID_COLUMNS = DASHBOARD_GRID_CONFIG.columns;
       const grid = Array(GRID_ROWS)
         .fill(null)
         .map(() => Array(GRID_COLUMNS).fill(false));

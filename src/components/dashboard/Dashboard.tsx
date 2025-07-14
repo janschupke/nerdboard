@@ -1,5 +1,4 @@
 import { DashboardProvider } from '../../contexts/DashboardContext';
-import { TileGrid } from './TileGrid';
 import { Sidebar } from './Sidebar';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { Icon } from '../ui/Icon';
@@ -9,13 +8,21 @@ import { useContext } from 'react';
 import { LogButton } from './LogButton';
 import { useLogManager } from '../../hooks/useLogManager';
 import React, { Suspense } from 'react';
+import { DragboardProvider, DragboardGrid, DragboardTile } from '../dragboard';
+import type { DragboardConfig } from '../dragboard';
+import { Tile } from './Tile';
 
-/**
- * Main dashboard content component that renders the dashboard layout
- * with sidebar, header, and tile grid
- *
- * @returns {JSX.Element} The dashboard content component
- */
+const dragboardConfig: DragboardConfig = {
+  columns: 8,
+  rows: 12,
+  tileSizes: {
+    small: { colSpan: 2, rowSpan: 1 },
+    medium: { colSpan: 2, rowSpan: 1 },
+    large: { colSpan: 4, rowSpan: 1 },
+  },
+  breakpoints: { sm: 640, md: 768, lg: 1024 },
+};
+
 function DashboardContent() {
   const dashboardContext = useContext(DashboardContext);
   if (!dashboardContext) {
@@ -71,7 +78,20 @@ function DashboardContent() {
 
         {/* Scrollable Dashboard Content */}
         <main className="flex-1 overflow-auto relative scrollbar-hide">
-          <TileGrid />
+          <DragboardProvider config={dragboardConfig}>
+            <DragboardGrid>
+              {tiles.map((tile) => (
+                <DragboardTile
+                  key={tile.id}
+                  id={tile.id}
+                  position={tile.position || { x: 0, y: 0 }}
+                  size={typeof tile.size === 'string' ? tile.size : 'medium'}
+                >
+                  <Tile tile={tile} />
+                </DragboardTile>
+              ))}
+            </DragboardGrid>
+          </DragboardProvider>
           <Suspense fallback={null}>
             <LogView isOpen={isLogViewOpen} onClose={closeLogView} />
           </Suspense>
@@ -81,12 +101,6 @@ function DashboardContent() {
   );
 }
 
-/**
- * Main Dashboard component that wraps the dashboard content
- * with the necessary providers and error boundaries
- *
- * @returns {JSX.Element} The main dashboard component
- */
 export function Dashboard() {
   return (
     <ErrorBoundary>
