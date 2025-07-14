@@ -80,6 +80,7 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({
         e.dataTransfer.setData('application/nerdboard-tile-type', tileType);
         e.dataTransfer.effectAllowed = 'copy';
       }}
+      onDragEnd={() => {}}
       onKeyDown={(e) => {
         if (e.key === ' ') {
           e.preventDefault();
@@ -87,6 +88,7 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({
         }
       }}
       title={`${isActive ? 'Remove' : 'Add'} ${name} tile ${isActive ? 'from' : 'to'} dashboard`}
+      aria-grabbed={false}
     >
       <span className="flex items-center flex-1 min-w-0">
         <Icon

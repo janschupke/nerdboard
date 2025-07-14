@@ -7,9 +7,25 @@ export interface DragboardConfig {
   breakpoints: Record<string, number>;
 }
 
-interface DragboardContextValue {
+export interface DragboardDragState {
+  draggingTileId: string | null;
+  dragOrigin: { x: number; y: number } | null;
+  dragOffset: { x: number; y: number } | null;
+  dropTarget: { x: number; y: number } | null;
+  isSidebarDrag: boolean;
+  sidebarTileType?: string;
+}
+
+export interface DragboardContextValue {
   config: DragboardConfig;
-  // Add drag/resize state here as needed
+  dragState: DragboardDragState;
+  startTileDrag: (tileId: string, origin: { x: number; y: number }) => void;
+  updateTileDrag: (offset: { x: number; y: number }) => void;
+  endTileDrag: (dropTarget: { x: number; y: number } | null, tileId?: string) => void;
+  startSidebarDrag: (tileType: string) => void;
+  endSidebarDrag: (dropTarget: { x: number; y: number } | null, tileType?: string) => void;
+  setDropTarget: (target: { x: number; y: number } | null) => void;
+  removeTile: (tileId: string) => void;
 }
 
 export const DragboardContext = createContext<DragboardContextValue | undefined>(undefined);

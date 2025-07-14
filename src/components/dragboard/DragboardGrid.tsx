@@ -6,17 +6,64 @@ interface DragboardGridProps {
 }
 
 export const DragboardGrid: React.FC<DragboardGridProps> = ({ children }) => {
-  const { config } = useDragboard();
+  const { config, dragState, endTileDrag, endSidebarDrag, setDropTarget, startSidebarDrag } = useDragboard();
   const gridStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: `repeat(${config.columns}, minmax(0, 1fr))`,
-    gridTemplateRows: `repeat(${config.rows}, minmax(0, 1fr))`,
+    gridTemplateRows: `repeat(${config.rows}, minmax(6rem, 1fr))`,
     gap: '1rem',
     width: '100%',
     height: '100%',
   };
+
+  // Render drop targets for each grid cell
+  const dropTargets = [];
+  for (let y = 0; y < config.rows; y++) {
+    for (let x = 0; x < config.columns; x++) {
+      dropTargets.push(
+        <div
+          key={`drop-${x}-${y}`}
+          className={`absolute z-40 pointer-events-auto`}
+          style={{
+            left: `calc(${(x / config.columns) * 100}% + 1rem)`,
+            top: `calc(${(y / config.rows) * 100}% + 1rem)`,
+            width: `calc(100% / ${config.columns} - 2rem)`,
+            height: `calc(100% / ${config.rows} - 2rem)`,
+            border: dragState.dropTarget && dragState.dropTarget.x === x && dragState.dropTarget.y === y ? '2px solid #facc15' : 'none',
+            borderRadius: '0.5rem',
+            background: dragState.dropTarget && dragState.dropTarget.x === x && dragState.dropTarget.y === y ? 'rgba(250, 204, 21, 0.1)' : 'transparent',
+            transition: 'border 0.2s, background 0.2s',
+          }}
+          aria-label={`Drop target (${x + 1}, ${y + 1})`}
+          aria-dropeffect="move"
+          onDragOver={e => {
+            e.preventDefault();
+            setDropTarget({ x, y });
+          }}
+          onDragLeave={() => {
+            setDropTarget(null);
+          }}
+          onDrop={e => {
+            e.preventDefault();
+            const sidebarTileType = e.dataTransfer.getData('application/nerdboard-tile-type');
+            const tileId = e.dataTransfer.getData('application/nerdboard-tile-id');
+            if (sidebarTileType && endSidebarDrag && startSidebarDrag) {
+              startSidebarDrag(sidebarTileType);
+              endSidebarDrag({ x, y }, sidebarTileType);
+            } else if (tileId && endTileDrag) {
+              endTileDrag({ x, y }, tileId);
+            }
+            setDropTarget(null);
+          }}
+        />
+      );
+    }
+  }
+
   return (
     <div className="relative w-full h-full p-4" style={gridStyle} role="grid" data-testid="dragboard-grid">
+      {/* Drop targets overlay */}
+      {dragState.draggingTileId || dragState.isSidebarDrag ? dropTargets : null}
       {children}
     </div>
   );
