@@ -14,4 +14,4 @@ export type TileSize = 'small' | 'medium' | 'large';
 
 export function getTileSpan(size: TileSize) {
   return DASHBOARD_GRID_CONFIG.tileSizes[size] || DASHBOARD_GRID_CONFIG.tileSizes.medium;
-} 
+}

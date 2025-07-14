@@ -209,7 +209,12 @@ describe('TimeTile', () => {
       refetch: vi.fn(),
     });
 
-    renderWithProviders(<TimeTile tile={{ ...tile, config: { city: 'prague', showBusinessHours: true } }} meta={meta} />);
+    renderWithProviders(
+      <TimeTile
+        tile={{ ...tile, config: { city: 'prague', showBusinessHours: true } }}
+        meta={meta}
+      />,
+    );
     expect(screen.getAllByText(/Prague/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/09:30:00/)).toBeInTheDocument();
   });
@@ -251,7 +256,12 @@ describe('TimeTile', () => {
       refetch: vi.fn(),
     });
 
-    renderWithProviders(<TimeTile tile={{ ...tile, config: { city: 'taipei', showBusinessHours: true } }} meta={meta} />);
+    renderWithProviders(
+      <TimeTile
+        tile={{ ...tile, config: { city: 'taipei', showBusinessHours: true } }}
+        meta={meta}
+      />,
+    );
     expect(screen.getAllByText(/Taipei/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/16:30:00/)).toBeInTheDocument();
   });

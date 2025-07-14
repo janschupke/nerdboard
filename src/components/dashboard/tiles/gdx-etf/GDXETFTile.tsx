@@ -49,7 +49,8 @@ export const GDXETFTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
     if (configError) {
       content = (
         <div className="text-error-600 p-2">
-          <span className="font-semibold">Tile Error:</span> Invalid or missing config for GDXETFTile.
+          <span className="font-semibold">Tile Error:</span> Invalid or missing config for
+          GDXETFTile.
         </div>
       );
     } else if (loading) {

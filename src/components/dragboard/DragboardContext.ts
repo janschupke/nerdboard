@@ -28,10 +28,44 @@ export interface DragboardContextValue {
   removeTile: (tileId: string) => void;
 }
 
+/**
+ * Interface for items that can be dropped into the dragboard grid.
+ * External components (e.g., sidebar menu items) should implement this for type safety.
+ */
+export interface DragboardDroppableItem {
+  /**
+   * The unique type or identifier for the tile/item.
+   */
+  tileType: string;
+  /**
+   * Optionally, the default size for the tile when dropped (e.g., 'small', 'medium', 'large').
+   */
+  defaultSize?: 'small' | 'medium' | 'large';
+  /**
+   * Optionally, any initial config or data for the tile.
+   */
+  initialConfig?: Record<string, unknown>;
+}
+
+/**
+ * Interface for dragboard-compatible sidebar drag items.
+ * Used for type checking and documentation.
+ */
+export interface DragboardSidebarDragItem extends DragboardDroppableItem {
+  /**
+   * Optionally, a display name for the item.
+   */
+  displayName?: string;
+  /**
+   * Optionally, an icon name or component for the item.
+   */
+  icon?: string;
+}
+
 export const DragboardContext = createContext<DragboardContextValue | undefined>(undefined);
 
 export const useDragboard = () => {
   const ctx = useContext(DragboardContext);
   if (!ctx) throw new Error('useDragboard must be used within DragboardProvider');
   return ctx;
-}; 
+};

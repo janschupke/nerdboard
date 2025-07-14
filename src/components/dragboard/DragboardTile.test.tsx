@@ -23,7 +23,7 @@ describe('DragboardTile', () => {
         <DragboardTile id="tile-1" position={{ x: 1, y: 2 }} size="medium">
           <div>Tile Content</div>
         </DragboardTile>
-      </DragboardProvider>
+      </DragboardProvider>,
     );
     expect(getByText('Tile Content')).toBeInTheDocument();
   });
@@ -34,7 +34,7 @@ describe('DragboardTile', () => {
         <DragboardTile id="tile-2" position={{ x: 1, y: 2 }} size="large">
           <div>Tile</div>
         </DragboardTile>
-      </DragboardProvider>
+      </DragboardProvider>,
     );
     const tile = getByRole('gridcell');
     expect(tile).toHaveStyle('grid-column: 2 / span 3');
@@ -47,11 +47,11 @@ describe('DragboardTile', () => {
         <DragboardTile id="tile-3" position={{ x: 0, y: 0 }} size="small">
           <div>Tile</div>
         </DragboardTile>
-      </DragboardProvider>
+      </DragboardProvider>,
     );
     const tile = getByRole('gridcell');
     expect(tile.className).toMatch(/bg-surface-primary/);
     expect(tile.className).toMatch(/border-theme-primary/);
     expect(tile.className).toMatch(/rounded-lg/);
   });
-}); 
+});

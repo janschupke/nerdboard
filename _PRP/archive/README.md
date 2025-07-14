@@ -4,7 +4,6 @@
 
 - **PRP-1718040000000-01-dragboard-framework.md**: Implements the Dragboard framework for encapsulated, configurable drag-and-drop and resize logic for dashboard tiles. Provides a unified API, context, and grid system, ensuring all drag/resize logic is centralized and accessible, with full accessibility and test coverage.
 
-
 ## API Logging System (1703123456789)
 
 ### 01. API Logging Storage Service

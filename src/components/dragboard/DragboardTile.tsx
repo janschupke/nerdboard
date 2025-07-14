@@ -8,12 +8,7 @@ export interface DraggableTileProps {
   children: React.ReactNode;
 }
 
-export const DragboardTile: React.FC<DraggableTileProps> = ({
-  id,
-  position,
-  size,
-  children,
-}) => {
+export const DragboardTile: React.FC<DraggableTileProps> = ({ id, position, size, children }) => {
   const { config, dragState, startTileDrag, endTileDrag, removeTile } = useDragboard();
   const isDragging = dragState.draggingTileId === id;
 
@@ -34,6 +29,7 @@ export const DragboardTile: React.FC<DraggableTileProps> = ({
         gridColumn: `${position.x + 1} / span ${config.tileSizes[size].colSpan}`,
         gridRow: `${position.y + 1} / span ${config.tileSizes[size].rowSpan}`,
         zIndex: isDragging ? 50 : undefined,
+        height: '100%',
       }}
       data-tile-id={id}
       role="gridcell"
@@ -54,17 +50,23 @@ export const DragboardTile: React.FC<DraggableTileProps> = ({
           onClick={() => removeTile(id)}
         >
           {/* Inline SVG close icon */}
-          <svg className="w-4 h-4 text-theme-secondary" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            className="w-4 h-4 text-theme-secondary"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l8 8M6 14L14 6" />
           </svg>
         </button>
       </div>
       {/* Tile content */}
-      <div className="p-2 h-full min-h-0">{children}</div>
+      <div className="p-2 h-full min-h-0 flex flex-col flex-1">{children}</div>
       {/* Ghost/preview tile when dragging (optional) */}
       {isDragging && (
         <div className="absolute inset-0 bg-theme-primary opacity-30 pointer-events-none z-50 rounded-lg" />
       )}
     </div>
   );
-}; 
+};

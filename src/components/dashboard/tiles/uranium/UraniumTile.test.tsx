@@ -19,7 +19,7 @@ describe('UraniumTile', () => {
     render(
       <DashboardProvider>
         <UraniumTile tile={tile} meta={meta} />
-      </DashboardProvider>
+      </DashboardProvider>,
     );
   });
-}); 
+});

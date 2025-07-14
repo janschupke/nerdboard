@@ -67,7 +67,11 @@ export const UraniumTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
           </div>
 
           {/* Controls for time range selection */}
-          <UraniumControls timeRange={timeRange} onTimeRangeChange={setTimeRange} size={tile.size} />
+          <UraniumControls
+            timeRange={timeRange}
+            onTimeRangeChange={setTimeRange}
+            size={tile.size}
+          />
 
           {/* Market information for large tiles */}
           {isLargeTile && <UraniumMarketInfo uraniumData={uraniumData} size={tile.size} />}

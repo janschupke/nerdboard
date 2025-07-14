@@ -5,10 +5,9 @@ import { Icon } from '../ui/Icon';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
 import { useContext, useCallback } from 'react';
-import { DragboardContext } from '../dragboard/DragboardContext';
 import { LogButton } from './LogButton';
 import { useLogManager } from '../../hooks/useLogManager';
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { DragboardProvider, DragboardGrid, DragboardTile } from '../dragboard';
 import type { DragboardConfig } from '../dragboard';
 import { Tile } from './Tile';
@@ -26,12 +25,27 @@ const dragboardConfig: DragboardConfig = {
 
 function DashboardContent() {
   const dashboardContext = useContext(DashboardContext);
-  const dragboardContext = useContext(DragboardContext);
   if (!dashboardContext) {
     throw new Error('DashboardContent must be used within DashboardProvider');
   }
 
-  const { state, toggleCollapse, refreshAllTiles, isRefreshing, moveTile, addTile, removeTile } = dashboardContext;
+  // Dynamic row count for square-like tiles
+  const [rowCount, setRowCount] = useState(() => {
+    const columns = dragboardConfig.columns;
+    return Math.max(1, Math.round((window.innerHeight / window.innerWidth) * columns));
+  });
+
+  useEffect(() => {
+    function handleResize() {
+      const columns = dragboardConfig.columns;
+      setRowCount(Math.max(1, Math.round((window.innerHeight / window.innerWidth) * columns)));
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const { state, toggleCollapse, refreshAllTiles, isRefreshing, moveTile, addTile, removeTile } =
+    dashboardContext;
   const { tiles = [] } = state?.layout || {};
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
@@ -39,23 +53,32 @@ function DashboardContent() {
   const LogView = React.lazy(() => import('./LogView').then((m) => ({ default: m.LogView })));
 
   // Bridge Dragboard actions to DashboardContext
-  const handleEndTileDrag = useCallback((dropTarget: { x: number; y: number } | null, tileId?: string) => {
-    if (tileId && dropTarget) {
-      moveTile(tileId, dropTarget);
-    }
-  }, [moveTile]);
+  const handleEndTileDrag = useCallback(
+    (dropTarget: { x: number; y: number } | null, tileId?: string) => {
+      if (tileId && dropTarget) {
+        moveTile(tileId, dropTarget);
+      }
+    },
+    [moveTile],
+  );
 
-  const handleEndSidebarDrag = useCallback(async (dropTarget: { x: number; y: number } | null, tileType?: string) => {
-    if (tileType && dropTarget) {
-      await addTile(tileType, dropTarget);
-    }
-  }, [addTile]);
+  const handleEndSidebarDrag = useCallback(
+    async (dropTarget: { x: number; y: number } | null, tileType?: string) => {
+      if (tileType && dropTarget) {
+        await addTile(tileType, dropTarget);
+      }
+    },
+    [addTile],
+  );
 
-  const handleRemoveTile = useCallback((tileId: string) => {
-    if (tileId) {
-      removeTile(tileId);
-    }
-  }, [removeTile]);
+  const handleRemoveTile = useCallback(
+    (tileId: string) => {
+      if (tileId) {
+        removeTile(tileId);
+      }
+    },
+    [removeTile],
+  );
 
   return (
     <div className="h-screen w-full flex flex-col bg-theme-primary overflow-hidden">
@@ -100,7 +123,7 @@ function DashboardContent() {
         {/* Scrollable Dashboard Content */}
         <main className="flex-1 overflow-auto relative scrollbar-hide">
           <DragboardProvider
-            config={dragboardConfig}
+            config={{ ...dragboardConfig, rows: rowCount }}
             endTileDrag={handleEndTileDrag}
             endSidebarDrag={handleEndSidebarDrag}
             removeTile={handleRemoveTile}

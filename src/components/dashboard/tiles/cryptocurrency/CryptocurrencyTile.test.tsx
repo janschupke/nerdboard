@@ -89,7 +89,9 @@ describe('CryptocurrencyTile', () => {
         last_updated: '2024-07-12T23:00:00Z',
       },
     ];
-    const { container } = renderWithProvider(<CryptocurrencyTile tile={baseTile} meta={cryptocurrencyTileMeta} />);
+    const { container } = renderWithProvider(
+      <CryptocurrencyTile tile={baseTile} meta={cryptocurrencyTileMeta} />,
+    );
     await waitFor(
       () => {
         expect(container.textContent?.toLowerCase()).toMatch(/bitcoin/);

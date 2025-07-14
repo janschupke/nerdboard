@@ -25,7 +25,7 @@ describe('DragboardProvider', () => {
     render(
       <DragboardProvider config={mockConfig}>
         <TestComponent />
-      </DragboardProvider>
+      </DragboardProvider>,
     );
     expect(screen.getByTestId('config-columns').textContent).toBe('4');
   });
@@ -37,4 +37,4 @@ describe('DragboardProvider', () => {
     }
     expect(() => render(<TestComponent />)).toThrow();
   });
-}); 
+});

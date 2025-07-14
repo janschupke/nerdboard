@@ -32,7 +32,8 @@ export const WeatherTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
     );
 
     // Get city configuration
-    const cityConfig = WEATHER_CITIES[(safeConfig.city as string)?.toUpperCase?.() as keyof typeof WEATHER_CITIES];
+    const cityConfig =
+      WEATHER_CITIES[(safeConfig.city as string)?.toUpperCase?.() as keyof typeof WEATHER_CITIES];
     const cityName = cityConfig?.name || (safeConfig.city as string);
     const countryName = cityConfig?.country || '';
 

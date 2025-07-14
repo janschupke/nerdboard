@@ -223,9 +223,12 @@ describe('GDXETFTile', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <DashboardProvider>{children}</DashboardProvider>
     );
-    const { rerender } = render(<GDXETFTile tile={{ ...baseTile, size: TileSize.SMALL }} meta={meta} />, {
-      wrapper,
-    });
+    const { rerender } = render(
+      <GDXETFTile tile={{ ...baseTile, size: TileSize.SMALL }} meta={meta} />,
+      {
+        wrapper,
+      },
+    );
     expect(screen.getAllByText(/GDX/).length).toBeGreaterThan(0);
 
     rerender(<GDXETFTile tile={{ ...baseTile, size: TileSize.LARGE }} meta={meta} />);

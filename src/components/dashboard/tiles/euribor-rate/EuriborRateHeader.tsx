@@ -15,7 +15,6 @@ export const EuriborRateHeader: React.FC<EuriborRateHeaderProps> = ({
     return `${rate.toFixed(EURIBOR_RATE_UI_CONFIG.RATE_DECIMAL_PLACES)}%`;
   };
 
-
   return (
     <div className="euribor-rate-header">
       <div className="header-content">

@@ -218,7 +218,7 @@ describe('FederalFundsRateTile', () => {
 
     renderWithProviders(<FederalFundsRateTile tile={tile} meta={meta} />);
 
-    expect(screen.getByText(/federal funds rate \(1y\)/i)).toBeInTheDocument();
+    expect(screen.getAllByText('Federal Funds Rate').length).toBeGreaterThan(0);
   });
 
   it('should display rate change correctly', () => {

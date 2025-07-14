@@ -24,13 +24,13 @@ const dragboardConfig = {
 
 <DragboardProvider config={dragboardConfig}>
   <DragboardGrid>
-    {tiles.map(tile => (
+    {tiles.map((tile) => (
       <DragboardTile key={tile.id} id={tile.id} position={tile.position} size={tile.size}>
         <MyTile {...tile} />
       </DragboardTile>
     ))}
   </DragboardGrid>
-</DragboardProvider>
+</DragboardProvider>;
 ```
 
 2. **All drag and resize logic must be implemented in this folder.**
@@ -61,6 +61,7 @@ const dragboardConfig = {
 ```
 
 ## Notes
+
 - All drag/resize logic must be encapsulated here.
 - The app must interact with Dragboard only through the defined interface.
-- Use Tailwind theme classes for all styling. 
+- Use Tailwind theme classes for all styling.

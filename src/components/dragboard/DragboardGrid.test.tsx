@@ -24,7 +24,7 @@ describe('DragboardGrid', () => {
           <div data-testid="child-1">Child 1</div>
           <div data-testid="child-2">Child 2</div>
         </DragboardGrid>
-      </DragboardProvider>
+      </DragboardProvider>,
     );
     expect(getByTestId('child-1')).toBeInTheDocument();
     expect(getByTestId('child-2')).toBeInTheDocument();
@@ -36,11 +36,11 @@ describe('DragboardGrid', () => {
         <DragboardGrid>
           <div data-testid="child" />
         </DragboardGrid>
-      </DragboardProvider>
+      </DragboardProvider>,
     );
     const grid = getByTestId('dragboard-grid');
     expect(grid).toHaveStyle('grid-template-columns: repeat(3, minmax(0, 1fr))');
-    expect(grid).toHaveStyle('grid-template-rows: repeat(2, minmax(0, 1fr))');
+    expect(grid).toHaveStyle('grid-template-rows: repeat(2, minmax(8vw, 1fr))');
   });
 
   it('uses Tailwind classes for layout', () => {
@@ -49,11 +49,11 @@ describe('DragboardGrid', () => {
         <DragboardGrid>
           <div data-testid="child" />
         </DragboardGrid>
-      </DragboardProvider>
+      </DragboardProvider>,
     );
     const grid = getByTestId('dragboard-grid');
     expect(grid.className).toMatch(/w-full/);
     expect(grid.className).toMatch(/h-full/);
     expect(grid.className).toMatch(/p-4/);
   });
-}); 
+});
