@@ -77,7 +77,12 @@ function DashboardContent() {
                   position={tile.position || { x: 0, y: 0 }}
                   size={typeof tile.size === 'string' ? tile.size : 'medium'}
                 >
-                  <Tile tile={tile} />
+                  <Tile 
+                    tile={tile} 
+                    id={tile.id}
+                    position={tile.position || { x: 0, y: 0 }}
+                    size={typeof tile.size === 'string' ? tile.size : 'medium'}
+                  />
                 </DragboardTile>
               ))}
             </DragboardGrid>
