@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { UI_CONFIG } from '../../utils/constants';
+import { UI_CONFIG } from '../../services/constants';
 import { tileAnimations } from '../../types/animations';
 
 interface AnimationContainerProps {

@@ -1,7 +1,7 @@
 import React, { createContext, useState, useCallback, useMemo, useLayoutEffect } from 'react';
 import type { ThemeContextType } from '../theme/types';
 import { THEME_TOKENS } from '../theme/tokens';
-import { useStorageManager, AppTheme } from '../services/storageManagerUtils';
+import { useStorageManager, AppTheme } from '../services/storageManager';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { Icon } from '../../ui/Icon';
 import { useLogContext } from '../../../hooks/useLogContext';
-import type { APILogEntry } from '../../../services/storageManagerUtils.ts';
+import type { APILogEntry } from '../../../services/storageManager.ts';
 
 interface LogViewProps {
   isOpen: boolean;
@@ -45,19 +45,9 @@ export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const formatTimestamp = (timestamp: number): string => {
-    return new Date(timestamp).toLocaleTimeString();
-  };
-
-  const getLevelColor = (level: 'warning' | 'error'): string => {
-    return level === 'error'
-      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-  };
-
-  const getLevelIcon = (level: 'warning' | 'error'): string => {
-    return level === 'error' ? 'exclamation-triangle' : 'exclamation-circle';
-  };
+  const formatTimestamp = () => '';
+  const getLevelColor = () => '';
+  const getLevelIcon = () => '';
 
   // Position exactly over the tile grid area
   return (

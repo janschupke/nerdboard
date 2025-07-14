@@ -1,4 +1,4 @@
-import { storageManager } from './storageManagerUtils';
+import { storageManager } from './storageManager';
 
 export interface APIError {
   apiCall: string;

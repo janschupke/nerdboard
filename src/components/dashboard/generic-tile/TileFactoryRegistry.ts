@@ -19,7 +19,7 @@ export interface TileCatalogEntry {
     React.ComponentType<{ tile: DashboardTile; meta: TileMeta; [key: string]: unknown }>
   >;
   meta?: TileMeta; // For static meta
-  getMeta?: (...args: unknown[]) => TileMeta; // For dynamic meta (e.g. city)
+  getMeta?: () => TileMeta; // For dynamic meta (e.g. city)
 }
 
 export const TILE_CATALOG: TileCatalogEntry[] = [

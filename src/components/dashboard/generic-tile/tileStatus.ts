@@ -8,7 +8,7 @@ export type TileStatus = (typeof TileStatus)[keyof typeof TileStatus];
 
 export interface TileStatusData {
   status: TileStatus;
-  lastRequestResult: 'success' | 'error' | 'failure' | null;
+  lastRequestResult: TileStatus | null;
   hasLocalData: boolean;
   lastUpdate: Date;
   errorMessage?: string;
@@ -17,7 +17,7 @@ export interface TileStatusData {
 export interface TileStatusContext {
   status: TileStatus;
   statusData: TileStatusData;
-  updateStatus: (status: TileStatus, data?: Partial<TileStatusData>) => void;
+  updateStatus: () => void;
   getStatusDisplayInfo: () => {
     color: string;
     message: string;

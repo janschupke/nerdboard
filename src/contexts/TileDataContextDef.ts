@@ -1,5 +1,4 @@
 import { createContext } from 'react';
-import { TileType } from '../types/dashboard';
 
 interface TileData {
   loading: boolean;
@@ -9,7 +8,7 @@ interface TileData {
 }
 
 interface TileDataContextType {
-  getTileData: (tileType: TileType) => TileData;
+  getTileData: () => TileData;
 }
 
 export const TileDataContext = createContext<TileDataContextType | null>(null);

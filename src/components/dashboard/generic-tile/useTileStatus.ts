@@ -5,7 +5,7 @@ import {
   determineTileStatus,
   createTileStatusData,
   getStatusDisplayInfo,
-} from '../../../utils/tileStatusUtils';
+} from '../../../services/tileStatusUtils';
 
 /**
  * Custom hook for managing tile status

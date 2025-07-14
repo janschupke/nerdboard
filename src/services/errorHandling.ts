@@ -1,6 +1,6 @@
 import type { AppError } from '../types/errors';
-import { interceptAPIError } from '../services/apiErrorInterceptor';
-import type { APIError } from '../services/apiErrorInterceptor';
+import { interceptAPIError } from './apiErrorInterceptor';
+import type { APIError } from './apiErrorInterceptor';
 
 /**
  * Centralized error handler for managing application errors

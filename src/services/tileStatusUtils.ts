@@ -8,14 +8,14 @@ import type { TileStatusData } from '../components/dashboard/generic-tile/tileSt
  * @returns The determined tile status
  */
 export const determineTileStatus = (
-  lastRequestResult: 'success' | 'error' | 'failure' | null,
+  lastRequestResult: TileStatus | null,
   hasLocalData: boolean,
 ): TileStatus => {
-  if (lastRequestResult === 'success' && hasLocalData) {
+  if (lastRequestResult === TileStatus.OK && hasLocalData) {
     return TileStatus.OK;
   }
 
-  if (lastRequestResult === 'error' || lastRequestResult === 'failure') {
+  if (lastRequestResult !== TileStatus.OK) {
     return hasLocalData ? TileStatus.STALE : TileStatus.ERROR;
   }
 
@@ -30,7 +30,7 @@ export const determineTileStatus = (
  * @returns Tile status data object
  */
 export const createTileStatusData = (
-  lastRequestResult: 'success' | 'error' | 'failure' | null,
+  lastRequestResult: TileStatus | null,
   hasLocalData: boolean,
   errorMessage?: string,
 ): TileStatusData => {

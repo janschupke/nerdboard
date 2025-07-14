@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { APILogEntry } from '../services/storageManagerUtils';
+import type { APILogEntry } from '../services/storageManager';
 
 interface LogContextType {
   logs: APILogEntry[];

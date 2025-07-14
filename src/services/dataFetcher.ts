@@ -1,4 +1,4 @@
-import { storageManager } from '../services/storageManagerUtils';
+import { storageManager } from './storageManager';
 
 export interface FetchOptions {
   forceRefresh?: boolean;
@@ -15,7 +15,7 @@ export interface FetchResult<T> {
   retryCount: number;
 }
 
-export class SmartDataFetcher {
+export class DataFetcher {
   static async fetchWithRetry<T>(
     fetchFunction: () => Promise<T>,
     storageKey: string,

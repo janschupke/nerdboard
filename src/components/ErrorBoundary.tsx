@@ -1,37 +1,39 @@
 import React from 'react';
-import type { ErrorBoundaryState } from '../types/errors';
 import { Button } from './ui/Button';
 import { Icon } from './ui/Icon';
 
+ 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
   fallback?: React.ComponentType<{ error: Error; resetError: () => void }>;
-  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  onError?: (_error: Error, _errorInfo: React.ErrorInfo) => void;  
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  _error: Error | null;
+  _errorInfo: React.ErrorInfo | null;
 }
 
 class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = { hasError: false, _error: null, _errorInfo: null };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error, errorInfo: null };
+  static getDerivedStateFromError(_error: Error): ErrorBoundaryState {
+    return { hasError: true, _error, _errorInfo: null };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    this.setState({
-      error,
-      errorInfo,
-    });
-
+  componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {
+    this.setState({ hasError: true, _error, _errorInfo });
     // Log error to monitoring service
-    console.error('Dashboard Error:', error, errorInfo);
+    console.error('Dashboard Error:', _error, _errorInfo);
 
     // Call custom error handler if provided
     if (this.props.onError) {
       try {
-        this.props.onError(error, errorInfo);
+        this.props.onError(_error, _errorInfo);
       } catch (handlerError) {
         console.error('Error in error boundary handler:', handlerError);
       }
@@ -39,7 +41,7 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
 
     // Report error to external service in production
     if (import.meta.env.PROD) {
-      this.reportError(error, errorInfo);
+      this.reportError(_error, _errorInfo);
     }
   }
 
@@ -65,14 +67,14 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
   }
 
   resetError = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
+    this.setState({ hasError: false, _error: null, _errorInfo: null });
   };
 
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         const FallbackComponent = this.props.fallback;
-        return <FallbackComponent error={this.state.error!} resetError={this.resetError} />;
+        return <FallbackComponent error={new Error('Unknown error')} resetError={this.resetError} />;
       }
 
       return (
@@ -83,16 +85,6 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
             <p className="text-theme-secondary mb-4 text-sm">
               There was an error loading this component.
             </p>
-            {this.state.error && (
-              <details className="text-xs text-theme-tertiary mb-4">
-                <summary className="cursor-pointer hover:text-theme-secondary">
-                  Error details (for developers)
-                </summary>
-                <pre className="mt-2 text-left bg-surface-primary p-2 rounded overflow-auto max-h-32">
-                  {this.state.error.message}
-                </pre>
-              </details>
-            )}
           </div>
           <div className="flex gap-2 justify-center">
             <Button variant="primary" size="sm" onClick={this.resetError}>

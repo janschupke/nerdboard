@@ -2,7 +2,7 @@ import React, { createContext, useReducer, useCallback, useMemo, useEffect } fro
 import type { DashboardTile, TileType } from '../types/dashboard';
 import { Toast } from '../components/ui/Toast';
 import { getTileSpan, DASHBOARD_GRID_CONFIG } from '../constants/dashboardGrid';
-import { useStorageManager } from '../services/storageManagerUtils';
+import { useStorageManager } from '../services/storageManager';
 
 // Helper function to rearrange tiles after removal
 const rearrangeTiles = (tiles: DashboardTile[]): DashboardTile[] => {

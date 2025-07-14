@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import type { APILogEntry } from '../services/storageManagerUtils';
-import { storageManager } from '../services/storageManagerUtils';
+import type { APILogEntry } from '../services/storageManager';
+import { storageManager } from '../services/storageManager';
 import { LogContext } from './LogContextDef';
 
 interface LogProviderProps {
