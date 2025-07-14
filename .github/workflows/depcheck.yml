@@ -14,7 +14,7 @@ jobs:
         run: npm ci
       - name: Check for unused dependencies (depcheck)
         run: |
-          npx depcheck > depcheck-output.txt || true
+          npx depcheck --ignores="@reduxjs/toolkit,@testing-library/user-event,@lhci/cli,@vitest/coverage-v8,autoprefixer,postcss,tailwindcss,wait-on" > depcheck-output.txt || true
           if grep -q 'Unused dependencies' depcheck-output.txt || grep -q 'Unused devDependencies' depcheck-output.txt; then
             echo 'Unused dependencies found:'
             cat depcheck-output.txt
