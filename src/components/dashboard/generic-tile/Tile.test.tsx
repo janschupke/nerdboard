@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Tile } from './Tile';
-import type { DashboardTile } from '../../types/dashboard';
-import { DashboardProvider } from '../../contexts/DashboardContext';
+import { GenericTile } from './GenericTile';
+import type { DashboardTile } from '../../../types/dashboard';
+import { DashboardProvider } from '../../../contexts/DashboardContext';
+
+const defaultMeta = { title: 'Test Tile', icon: 'test-icon' };
 
 // Mock Icon component
 vi.mock('../ui/Icon', () => ({
@@ -49,7 +51,7 @@ describe('Tile', () => {
   });
 
   it.skip('renders tile with correct structure', () => {
-    renderWithProvider(<Tile {...mockProps} />);
+    renderWithProvider(<GenericTile meta={defaultMeta} {...mockProps} />);
 
     expect(screen.getByTestId('cryptocurrency-tile')).toBeInTheDocument();
     expect(screen.getByText('Cryptocurrency')).toBeInTheDocument();
@@ -65,7 +67,9 @@ describe('Tile', () => {
       config: {},
     };
 
-    renderWithProvider(<Tile tile={metalsTile} onRemove={mockProps.onRemove} />);
+    renderWithProvider(
+      <GenericTile meta={defaultMeta} tile={metalsTile} onRemove={mockProps.onRemove} />,
+    );
 
     expect(screen.getByTestId('precious-metals-tile')).toBeInTheDocument();
     expect(screen.getByText('Precious Metals')).toBeInTheDocument();
@@ -81,7 +85,9 @@ describe('Tile', () => {
       config: {},
     };
 
-    renderWithProvider(<Tile tile={largeTile} onRemove={mockProps.onRemove} />);
+    renderWithProvider(
+      <GenericTile meta={defaultMeta} tile={largeTile} onRemove={mockProps.onRemove} />,
+    );
 
     const tileElement = screen.getByTestId('cryptocurrency-tile').closest('[data-tile-id]');
     expect(tileElement).toHaveStyle({
@@ -91,7 +97,7 @@ describe('Tile', () => {
   });
 
   it.skip('calls onRemove when close button is clicked', () => {
-    renderWithProvider(<Tile {...mockProps} />);
+    renderWithProvider(<GenericTile meta={defaultMeta} {...mockProps} />);
 
     const closeButton = screen.getByLabelText('Remove Cryptocurrency tile');
     fireEvent.click(closeButton);
@@ -100,7 +106,7 @@ describe('Tile', () => {
   });
 
   it.skip('does not render close button when onRemove is not provided', () => {
-    renderWithProvider(<Tile tile={mockTile} />);
+    renderWithProvider(<GenericTile meta={defaultMeta} tile={mockTile} />);
 
     expect(screen.queryByLabelText('Remove Cryptocurrency tile')).not.toBeInTheDocument();
   });
@@ -113,14 +119,16 @@ describe('Tile', () => {
       className: 'cursor-grab',
     };
 
-    renderWithProvider(<Tile {...mockProps} dragHandleProps={dragHandleProps} />);
+    renderWithProvider(
+      <GenericTile meta={defaultMeta} {...mockProps} dragHandleProps={dragHandleProps} />,
+    );
 
     const dragHandle = screen.getByLabelText('Drag Cryptocurrency tile');
     expect(dragHandle).toHaveClass('cursor-grab');
   });
 
   it.skip('applies theme classes correctly', () => {
-    renderWithProvider(<Tile {...mockProps} />);
+    renderWithProvider(<GenericTile meta={defaultMeta} {...mockProps} />);
 
     const tileElement = screen.getByTestId('cryptocurrency-tile').closest('[data-tile-id]');
     expect(tileElement).toHaveClass('bg-surface-primary');
@@ -128,7 +136,7 @@ describe('Tile', () => {
   });
 
   it.skip('renders header with theme classes', () => {
-    renderWithProvider(<Tile {...mockProps} />);
+    renderWithProvider(<GenericTile meta={defaultMeta} {...mockProps} />);
 
     const header = screen.getByText('Cryptocurrency').closest('div')?.parentElement;
     expect(header).toHaveClass('bg-surface-secondary');
@@ -144,16 +152,18 @@ describe('Tile', () => {
       config: {},
     };
 
-    renderWithProvider(<Tile tile={unknownTile} onRemove={mockProps.onRemove} />);
+    renderWithProvider(
+      <GenericTile meta={defaultMeta} tile={unknownTile} onRemove={mockProps.onRemove} />,
+    );
 
     expect(screen.getByText('Unknown tile type: unknown')).toBeInTheDocument();
   });
 
   it.skip('renders custom children when provided', () => {
     renderWithProvider(
-      <Tile {...mockProps}>
+      <GenericTile meta={defaultMeta} {...mockProps}>
         <div data-testid="custom-content">Custom Content</div>
-      </Tile>,
+      </GenericTile>,
     );
 
     expect(screen.getByTestId('custom-content')).toBeInTheDocument();
@@ -166,7 +176,9 @@ describe('Tile', () => {
       onDragStart: vi.fn(),
     };
 
-    renderWithProvider(<Tile {...mockProps} dragHandleProps={dragHandleProps} />);
+    renderWithProvider(
+      <GenericTile meta={defaultMeta} {...mockProps} dragHandleProps={dragHandleProps} />,
+    );
 
     // The drag handle is now on the header, not the main tile element
     const header = screen.getByText('Cryptocurrency').closest('div')?.parentElement;
@@ -174,7 +186,7 @@ describe('Tile', () => {
   });
 
   it.skip('renders with correct data attributes', () => {
-    renderWithProvider(<Tile {...mockProps} />);
+    renderWithProvider(<GenericTile meta={defaultMeta} {...mockProps} />);
 
     const tileElement = screen.getByTestId('cryptocurrency-tile').closest('[data-tile-id]');
     expect(tileElement).toHaveAttribute('data-tile-id', 'test-tile-1');

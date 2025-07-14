@@ -1,6 +1,6 @@
 import React from 'react';
-import { useTileStatus } from '../../../hooks/useTileStatus';
-import { StatusAwareTile } from '../StatusAwareTile';
+import { useTileStatus } from './useTileStatus';
+import { StatusAwareTile } from './StatusAwareTile';
 // Comment out or remove the import of TileState from '../../../types/tile' and any usage of TileState in this file.
 
 interface TileProviderProps {

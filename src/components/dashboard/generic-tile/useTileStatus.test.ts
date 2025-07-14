@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { TileStatus } from '../types/tileStatus';
+import { TileStatus } from '../../../types/tileStatus';
 import { useTileStatus } from './useTileStatus';
 
 describe('useTileStatus', () => {

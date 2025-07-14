@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { usePreciousMetalsData } from './hooks/usePreciousMetalsData';
-import { ChartComponent } from '../ChartComponent';
+import { ChartComponent } from '../../generic-tile/ChartComponent';
 import { PriceDisplay } from '../../../ui/PriceDisplay';
 import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { Button } from '../../../ui/Button';
-import { GenericTile } from '../GenericTile';
+import { GenericTile } from '../../generic-tile/GenericTile';
 import type { DashboardTile } from '../../../../types/dashboard';
 import type { TileMeta } from '../GenericTile';
 import type { ChartPeriod, MetalType, PreciousMetalsTileConfig } from './types';

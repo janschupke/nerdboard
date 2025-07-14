@@ -1,11 +1,11 @@
 import { useState, useCallback, useMemo } from 'react';
-import { TileStatus } from '../types/tileStatus';
+import { TileStatus } from '../../../types/tileStatus';
 import type { TileStatusData } from '../types/tileStatus';
 import {
   determineTileStatus,
   createTileStatusData,
   getStatusDisplayInfo,
-} from '../utils/tileStatusUtils';
+} from '../../../utils/tileStatusUtils';
 
 /**
  * Custom hook for managing tile status

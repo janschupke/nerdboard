@@ -5,10 +5,10 @@ import { WeatherCurrent } from './WeatherCurrent';
 import { WeatherForecast } from './WeatherForecast';
 import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { Button } from '../../../ui/Button';
-import { GenericTile } from '../GenericTile';
+import { GenericTile } from '../../generic-tile/GenericTile';
 import { WEATHER_CITIES } from './constants';
 import type { DashboardTile } from '../../../../types/dashboard';
-import type { TileMeta } from '../GenericTile';
+import type { TileMeta } from '../../generic-tile/GenericTile';
 
 function isValidWeatherTileConfig(config: unknown): config is Record<string, unknown> {
   return Boolean(

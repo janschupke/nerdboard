@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { Icon } from '../ui/Icon';
-import { TileType } from '../../types/dashboard';
+import { Icon } from '../../ui/Icon';
+import { TileType } from '../../../types/dashboard';
 
 interface SidebarItemProps {
   tileType: TileType;

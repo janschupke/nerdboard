@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import type { DashboardTile } from '../../types/dashboard';
-import { getLazyTileComponent, getTileMeta } from './tiles/TileFactoryRegistry';
-// import { TileErrorBoundary } from './tiles/TileErrorBoundary';
+import { getLazyTileComponent, getTileMeta } from './generic-tile/TileFactoryRegistry';
+// import { TileErrorBoundary } from './generic-tile/TileErrorBoundary';
 
 interface TileProps {
   tile: DashboardTile;

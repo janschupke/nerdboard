@@ -5,7 +5,7 @@ import { TimezoneInfo } from './TimezoneInfo';
 import { BusinessHours } from './BusinessHours';
 import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { Button } from '../../../ui/Button';
-import { GenericTile } from '../GenericTile';
+import { GenericTile } from '../../generic-tile/GenericTile';
 import { TIME_UI_CONFIG, TIME_ERROR_MESSAGES } from './constants';
 import type { DashboardTile } from '../../../../types/dashboard';
 import type { TileMeta } from '../GenericTile';

@@ -4,7 +4,7 @@ import { EuriborRateHeader } from './EuriborRateHeader';
 import { EuriborRateChart } from './EuriborRateChart';
 import { EuriborRateControls } from './EuriborRateControls';
 import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
-import { GenericTile } from '../GenericTile';
+import { GenericTile } from '../../generic-tile/GenericTile';
 import type { DashboardTile } from '../../../../types/dashboard';
 import type { TileMeta } from '../GenericTile';
 import { EURIBOR_RATE_ERROR_MESSAGES } from './constants';

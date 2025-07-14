@@ -1,9 +1,9 @@
-import { TileType } from '../../types/dashboard';
+import type { TileType } from '../../../types/dashboard';
 import { SidebarItem } from './SidebarItem';
-import { useDashboard } from '../../hooks/useDashboard';
-import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
+import { useDashboard } from '../../../hooks/useDashboard';
+import { useKeyboardNavigation } from '../../../hooks/useKeyboardNavigation';
 import { useEffect, useMemo, useCallback } from 'react';
-import { TILE_CATALOG } from './tiles/TileFactoryRegistry';
+import { TILE_CATALOG } from '../generic-tile/TileFactoryRegistry';
 
 interface SidebarProps {
   onToggle: () => void;

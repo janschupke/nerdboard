@@ -1,11 +1,11 @@
 import { DashboardProvider } from '../../contexts/DashboardContext';
-import { Sidebar } from './Sidebar';
+import { Sidebar } from './sidebar/Sidebar';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { Icon } from '../ui/Icon';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
 import { useContext, useCallback } from 'react';
-import { LogButton } from './LogButton';
+import { LogButton } from './log/LogButton';
 import { useLogManager } from '../../hooks/useLogManager';
 import React, { Suspense, useState, useEffect } from 'react';
 import { DragboardProvider, DragboardGrid, DragboardTile } from '../dragboard';
@@ -50,7 +50,7 @@ function DashboardContent() {
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
 
-  const LogView = React.lazy(() => import('./LogView').then((m) => ({ default: m.LogView })));
+  const LogView = React.lazy(() => import('./log/LogView').then((m) => ({ default: m.LogView })));
 
   // Bridge Dragboard actions to DashboardContext
   const handleEndTileDrag = useCallback(
