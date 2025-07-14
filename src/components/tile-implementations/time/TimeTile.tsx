@@ -1,55 +1,51 @@
-import React, { useEffect, useState } from 'react';
-import { GenericTile } from '../../tile/GenericTile';
+import React, { useState, useEffect } from 'react';
+import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
 import type { DashboardTile } from '../../dragboard/dashboard';
-import type { TileMeta } from '../../tile/GenericTile';
 import { useTimeApi } from './useTimeApi';
-import { LoadingSkeleton } from '../../ui/LoadingSkeleton';
-import { Icon } from '../../ui/Icon';
+import type { TimeData } from './types';
+
+function useTimeTileData(tileId: string): ReturnType<GenericTileDataHook<TimeData>> {
+  const { getTime } = useTimeApi();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hasData, setHasData] = useState(false);
+  const [data, setData] = useState<TimeData | undefined>(undefined);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+    setHasData(false);
+    setData(undefined);
+    getTime(tileId, { city: 'Helsinki' })
+      .then((result) => {
+        if (!mounted) return;
+        setData(result);
+        setHasData(!!result && !!result.currentTime);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        setError(err.message || 'Error');
+        setHasData(false);
+        setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [tileId, getTime]);
+  return { loading, error, hasData, data };
+}
 
 export const TimeTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
   ({ tile, meta, ...rest }) => {
-    const { getTime } = useTimeApi();
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [hasData, setHasData] = useState(false);
-
-    useEffect(() => {
-      let mounted = true;
-      setLoading(true);
-      setError(null);
-      setHasData(false);
-      // For demo, use fixed city; in real use, get from tile.config
-      getTime(tile.id, { city: 'Helsinki' })
-        .then((data) => {
-          if (!mounted) return;
-          setHasData(!!data && !!data.currentTime);
-          setLoading(false);
-        })
-        .catch((err) => {
-          if (!mounted) return;
-          setError(err.message || 'Error');
-          setLoading(false);
-        });
-      return () => {
-        mounted = false;
-      };
-    }, [tile.id, getTime]);
-
-    let content;
-    if (loading) {
-      content = <LoadingSkeleton tileSize={tile.size || 'medium'} />;
-    } else if (error) {
-      content = <Icon name="close" size="lg" className="text-red-600" />;
-    } else if (hasData) {
-      content = <Icon name="check" size="lg" className="text-green-600" />;
-    } else {
-      content = <Icon name="close" size="lg" className="text-red-600" />;
-    }
-
     return (
-      <GenericTile tile={tile} meta={meta} {...rest}>
-        <div className="flex items-center justify-center h-full w-full">{content}</div>
-      </GenericTile>
+      <GenericTile<TimeData>
+        tile={tile}
+        meta={meta}
+        useTileData={useTimeTileData}
+        {...rest}
+      />
     );
   },
 );

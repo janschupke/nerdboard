@@ -2,7 +2,8 @@ import type { TimeData } from '../time/types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { storageManager } from '../../../services/storageManager';
 import { useCallback } from 'react';
-import { TIME_API_ENDPOINT, buildApiUrl, type TimeParams } from '../../../services/apiEndpoints';
+import { TIME_API_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
+import type { TimeParams } from '../../../services/apiEndpoints';
 
 /**
  * Fetches time data for a city from WorldTimeAPI.

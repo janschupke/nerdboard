@@ -2,7 +2,8 @@ import type { PreciousMetalsData } from '../precious-metals/types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { storageManager } from '../../../services/storageManager';
 import { useCallback } from 'react';
-import { PRECIOUS_METALS_ENDPOINT, buildApiUrl, PreciousMetalsParams } from '../../../services/apiEndpoints';
+import { PRECIOUS_METALS_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
+import type { PreciousMetalsParams } from '../../../services/apiEndpoints';
 
 /**
  * Fetches precious metals data (gold, silver).

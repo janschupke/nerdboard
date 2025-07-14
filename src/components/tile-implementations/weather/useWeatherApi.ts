@@ -2,7 +2,8 @@ import type { WeatherApiResponse } from '../weather/types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { storageManager } from '../../../services/storageManager';
 import { useCallback } from 'react';
-import { OPENWEATHERMAP_ONECALL_ENDPOINT, buildApiUrl, WeatherParams } from '../../../services/apiEndpoints';
+import { OPENWEATHERMAP_ONECALL_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
+import type { WeatherParams } from '../../../services/apiEndpoints';
 
 /**
  * Fetches weather data for a location from OpenWeatherMap.

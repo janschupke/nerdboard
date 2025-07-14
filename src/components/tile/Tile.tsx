@@ -1,56 +1,33 @@
 import React, { Suspense } from 'react';
 import type { DashboardTile } from '../dragboard/dashboard';
 import { getLazyTileComponent, getTileMeta } from './TileFactoryRegistry';
-// import { TileErrorBoundary } from './generic-tile/TileErrorBoundary';
+import { TileErrorBoundary } from './TileErrorBoundary';
 
 interface TileProps {
   tile: DashboardTile;
-  onRemove?: (id: string) => void;
-  children?: React.ReactNode;
-  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
-  loading?: boolean;
-  error?: Error | null;
-  className?: string;
 }
 
-export function Tile({
-  tile,
-  onRemove,
-  children,
-  dragHandleProps,
-  loading,
-  error,
-  className,
-}: TileProps) {
+export function Tile({ tile }: TileProps) {
   const LazyTileComponent = getLazyTileComponent(tile.type);
   const meta = getTileMeta(tile.type);
-  if (!LazyTileComponent) {
+
+  if (!LazyTileComponent || !meta) {
     return (
-      <div className="flex items-center justify-center h-full text-theme-secondary">
+      <div className="flex items-center justify-center h-full p-4 text-theme-text-tertiary">
         <p>Unknown tile type: {tile.type}</p>
       </div>
     );
   }
-  if (!meta) {
-    return (
-      <div className="flex items-center justify-center h-full text-error-600">
-        <p>Tile meta missing for type: {tile.type}</p>
-      </div>
+
+      return (
+      <TileErrorBoundary>
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-full p-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-theme-accent-primary"></div>
+          </div>
+        }>
+          <LazyTileComponent tile={tile} meta={meta} />
+        </Suspense>
+      </TileErrorBoundary>
     );
-  }
-  return (
-    <Suspense fallback={<div className="flex items-center justify-center h-full">Loading...</div>}>
-      <LazyTileComponent
-        tile={tile}
-        meta={meta}
-        onRemove={onRemove}
-        dragHandleProps={dragHandleProps}
-        loading={loading}
-        error={error}
-        className={className}
-      >
-        {children}
-      </LazyTileComponent>
-    </Suspense>
-  );
-}
+} 

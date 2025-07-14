@@ -2,7 +2,8 @@ import type { UraniumApiResponse } from '../uranium/types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { storageManager } from '../../../services/storageManager';
 import { useCallback } from 'react';
-import { TRADINGECONOMICS_URANIUM_ENDPOINT, buildApiUrl, UraniumParams } from '../../../services/apiEndpoints';
+import { TRADINGECONOMICS_URANIUM_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
+import type { UraniumParams } from '../../../services/apiEndpoints';
 
 /**
  * Fetches uranium price data from TradingEconomics.

@@ -2,7 +2,8 @@ import type { FederalFundsRateData } from '../federal-funds-rate/types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { storageManager } from '../../../services/storageManager';
 import { useCallback } from 'react';
-import { FRED_SERIES_OBSERVATIONS_ENDPOINT, buildApiUrl, FredSeriesObservationsParams } from '../../../services/apiEndpoints';
+import { FRED_SERIES_OBSERVATIONS_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
+import type { FredSeriesObservationsParams } from '../../../services/apiEndpoints';
 
 /**
  * Fetches Federal Funds Rate data from FRED.

@@ -2,7 +2,8 @@ import type { CryptocurrencyData } from '../cryptocurrency/types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { storageManager } from '../../../services/storageManager';
 import { useCallback } from 'react';
-import { COINGECKO_MARKETS_ENDPOINT, buildApiUrl, CryptoMarketsParams } from '../../../services/apiEndpoints';
+import { COINGECKO_MARKETS_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
+import type { CryptoMarketsParams } from '../../../services/apiEndpoints';
 
 /**
  * Fetches cryptocurrency market data from CoinGecko.
