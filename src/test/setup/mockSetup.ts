@@ -1,4 +1,4 @@
-import { MockApiService } from '../mocks/apiMockService';
+import { MockApiService, type MockApiErrorType } from '../mocks/apiMockService';
 
 export function setupMockApiService(): MockApiService {
   const mockService = MockApiService.getInstance();
@@ -10,7 +10,7 @@ export function configureMockForTest(
   endpoint: string,
   config: {
     shouldFail?: boolean;
-    errorType?: 'network' | 'timeout' | 'api' | 'malformed';
+    errorType?: MockApiErrorType;
     responseData?: unknown;
     delay?: number;
   },

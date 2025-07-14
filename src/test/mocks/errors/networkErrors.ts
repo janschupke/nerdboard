@@ -1,3 +1,5 @@
+import type { MockApiErrorType } from '../apiMockService';
+
 export class MockNetworkError extends Error {
   constructor(message: string = 'Network error') {
     super(message);
@@ -22,7 +24,7 @@ export class MockApiError extends Error {
   }
 }
 
-export function createMockNetworkError(type: 'network' | 'timeout' | 'api' | 'malformed'): Error {
+export function createMockNetworkError(type: MockApiErrorType): Error {
   switch (type) {
     case 'network':
       return new MockNetworkError('Failed to fetch');
