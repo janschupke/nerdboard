@@ -15,7 +15,8 @@
     "prettier:write": "prettier --write .",
     "unimported": "unimported --fail-on-unused",
     "depcheck": "depcheck --ignores='@reduxjs/toolkit,@testing-library/user-event,@lhci/cli,@vitest/coverage-v8,autoprefixer,postcss,tailwindcss,wait-on'",
-    "ts-unused-exports": "ts-unused-exports ./tsconfig.json"
+    "ts-unused-exports": "ts-unused-exports ./tsconfig.json",
+    "clean:unimported": "npx unimported --silent --list-unimported | xargs rm -f"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
