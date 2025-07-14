@@ -1,6 +1,6 @@
 import React from 'react';
 import { Icon } from '../../ui/Icon';
-import { useLogContext } from '../../../hooks/useLogContext';
+import { useLogContext } from './useLogContext';
 
 interface LogButtonProps {
   isOpen: boolean;

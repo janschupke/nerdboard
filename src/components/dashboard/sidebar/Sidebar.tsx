@@ -1,6 +1,6 @@
 import type { TileType } from '../../../types/dashboard';
 import { SidebarItem } from './SidebarItem';
-import { useDashboard } from '../../../hooks/useDashboard';
+import { useDashboard } from '../useDashboard';
 import { useKeyboardNavigation } from '../../../hooks/useKeyboardNavigation';
 import { useEffect, useMemo, useCallback } from 'react';
 import { TILE_CATALOG } from '../generic-tile/TileFactoryRegistry';

@@ -1,8 +1,8 @@
 import React from 'react';
 import type { DashboardTile } from '../../../types/dashboard';
-import { getTileSpan } from '../../../constants/dashboardGrid';
+import { getTileSpan } from '../dashboardGrid';
 import { Icon } from '../../ui/Icon';
-import { useDashboard } from '../../../hooks/useDashboard';
+import { useDashboard } from '../useDashboard';
 import { useCallback } from 'react';
 
 export interface TileMeta {

@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { Icon } from '../../ui/Icon';
-import { useLogContext } from '../../../hooks/useLogContext';
+import { useLogContext } from './useLogContext.ts';
 import type { APILogEntry } from '../../../services/storageManager.ts';
 
 interface LogViewProps {

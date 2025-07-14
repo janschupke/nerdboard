@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Dashboard } from './components/dashboard/Dashboard';
-import { LogProvider } from './contexts/LogContext';
+import { LogProvider } from './components/dashboard/log/LogContext';
 import { setupGlobalErrorHandling } from './services/apiErrorInterceptor';
 
 function App() {

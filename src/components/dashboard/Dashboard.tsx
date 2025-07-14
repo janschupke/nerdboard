@@ -1,12 +1,12 @@
-import { DashboardProvider } from '../../contexts/DashboardContext';
+import { DashboardProvider } from './DashboardContext';
 import { Sidebar } from './sidebar/Sidebar';
-import { DashboardContext } from '../../contexts/DashboardContext';
+import { DashboardContext } from './DashboardContext';
 import { Icon } from '../ui/Icon';
-import { ErrorBoundary } from '../ErrorBoundary';
+import { ErrorBoundary } from '../AppErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
 import { useContext, useCallback } from 'react';
 import { LogButton } from './log/LogButton';
-import { useLogManager } from '../../hooks/useLogManager';
+import { useLogManager } from './log/useLogManager';
 import React, { Suspense, useState, useEffect } from 'react';
 import { DragboardProvider, DragboardGrid, DragboardTile } from '../dragboard';
 import type { DragboardConfig } from '../dragboard';
