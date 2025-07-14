@@ -12,7 +12,10 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "prettier": "prettier --check .",
-    "prettier:write": "prettier --write ."
+    "prettier:write": "prettier --write .",
+    "unimported": "unimported --fail-on-unused",
+    "depcheck": "depcheck",
+    "ts-unused-exports": "ts-unused-exports ./tsconfig.json"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
@@ -39,6 +42,7 @@
     "@vitejs/plugin-react": "^4.6.0",
     "@vitest/coverage-v8": "^3.2.4",
     "autoprefixer": "^10.4.21",
+    "depcheck": "^1.4.7",
     "eslint": "^9.30.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
@@ -48,8 +52,10 @@
     "prettier": "^3.6.2",
     "rollup-plugin-visualizer": "^6.0.3",
     "tailwindcss": "^3.4.17",
+    "ts-unused-exports": "^11.0.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
+    "unimported": "^1.31.0",
     "vite": "^7.0.3",
     "vitest": "^3.2.4",
     "wait-on": "^8.0.3"
