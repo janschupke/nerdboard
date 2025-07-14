@@ -37,8 +37,8 @@ function useCryptoTileData(tileId: string): ReturnType<GenericTileDataHook<Crypt
   return { loading, error, hasData, data };
 }
 
-export const CryptocurrencyTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
-  ({ tile, meta, ...rest }) => {
+export const CryptocurrencyTile = React.memo(
+  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
     return (
       <GenericTile<CryptocurrencyData[]>
         tile={tile}

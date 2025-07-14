@@ -3,7 +3,7 @@ import { Sidebar } from '../sidebar/Sidebar';
 import { DashboardContext } from './PageContext';
 import { ErrorBoundary } from './AppErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import { useLogManager } from '../api-log/useLogManager';
 import React, { Suspense, useState, useEffect } from 'react';
 import { DragboardProvider, DragboardGrid, DragboardTile } from '../dragboard';
@@ -38,6 +38,20 @@ function DashboardContent() {
     isRefreshing,
   });
 
+  // Memoize the tiles rendering to prevent unnecessary re-renders
+  const tilesElements = useMemo(() => {
+    return tiles.map((tile) => (
+      <DragboardTile
+        key={tile.id}
+        id={tile.id}
+        position={tile.position || { x: 0, y: 0 }}
+        size={typeof tile.size === 'string' ? tile.size : 'medium'}
+      >
+        <Tile tile={tile} />
+      </DragboardTile>
+    ));
+  }, [tiles]);
+
   const LogView = React.lazy(() => import('../api-log/LogView').then((m) => ({ default: m.LogView })));
 
   return (
@@ -70,21 +84,7 @@ function DashboardContent() {
             reorderTiles={reorderTiles}
           >
             <DragboardGrid>
-              {tiles.map((tile) => (
-                <DragboardTile
-                  key={tile.id}
-                  id={tile.id}
-                  position={tile.position || { x: 0, y: 0 }}
-                  size={typeof tile.size === 'string' ? tile.size : 'medium'}
-                >
-                  <Tile 
-                    tile={tile} 
-                    id={tile.id}
-                    position={tile.position || { x: 0, y: 0 }}
-                    size={typeof tile.size === 'string' ? tile.size : 'medium'}
-                  />
-                </DragboardTile>
-              ))}
+              {tilesElements}
             </DragboardGrid>
             <Suspense fallback={null}>
               <LogView isOpen={isLogViewOpen} onClose={closeLogView} />

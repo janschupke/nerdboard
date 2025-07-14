@@ -1,4 +1,4 @@
-import React, { useCallback, forwardRef } from 'react';
+import React, { useCallback, forwardRef, memo, useMemo } from 'react';
 import type { DashboardTile } from '../dragboard/dashboard';
 import type { DraggableTileProps } from '../dragboard/DragboardTile';
 import { Icon } from '../ui/Icon';
@@ -25,7 +25,7 @@ export interface GenericTileProps<T = unknown> extends DraggableTileProps {
   renderContent?: (status: GenericTileStatus, data?: T) => React.ReactNode;
 }
 
-export const GenericTile = forwardRef<HTMLDivElement, GenericTileProps<unknown>>(
+export const GenericTile = memo(forwardRef<HTMLDivElement, GenericTileProps<unknown>>(
   ({ tile, meta, onRemove, dragHandleProps, className, style, useTileData, renderContent }, ref) => {
     // Call the data hook at the top level
     const tileData = useTileData(tile.id);
@@ -58,6 +58,13 @@ export const GenericTile = forwardRef<HTMLDivElement, GenericTileProps<unknown>>
       return `${baseClasses} ${borderClass} ${className || ''}`;
     };
 
+    // Memoize the header props to prevent re-renders
+    const headerProps = useMemo(() => ({
+      className: "flex items-center justify-between px-4 py-2 border-b border-theme-border-primary bg-theme-surface-secondary cursor-grab active:cursor-grabbing relative min-h-[2.5rem]",
+      style: { minHeight: '2.5rem' },
+      ...dragHandleProps,
+    }), [dragHandleProps]);
+
     // Render content based on status
     const renderStatusContent = () => {
       if (renderContent) return renderContent(status, data);
@@ -87,11 +94,7 @@ export const GenericTile = forwardRef<HTMLDivElement, GenericTileProps<unknown>>
         aria-label={`${meta.title} tile`}
       >
         {/* Tile Header - Grabbable */}
-        <div
-          className="flex items-center justify-between px-4 py-2 border-b border-theme-border-primary bg-theme-surface-secondary cursor-grab active:cursor-grabbing relative min-h-[2.5rem]"
-          style={{ minHeight: '2.5rem' }}
-          {...dragHandleProps}
-        >
+        <div {...headerProps}>
           <div className="flex items-center space-x-3">
             <Icon name={meta.icon} size="sm" className="text-theme-accent-primary" aria-hidden="true" />
             <h3 className="text-base font-semibold text-theme-text-primary truncate">{meta.title}</h3>
@@ -118,6 +121,6 @@ export const GenericTile = forwardRef<HTMLDivElement, GenericTileProps<unknown>>
       </div>
     );
   }
-);
+));
 
 GenericTile.displayName = 'GenericTile';

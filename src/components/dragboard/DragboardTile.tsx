@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useDragboard } from './DragboardContext';
 
 export interface DraggableTileProps {
@@ -24,26 +24,32 @@ export interface DragboardTileProps {
   children: React.ReactNode;
 }
 
-export const DragboardTile: React.FC<DragboardTileProps> = ({ id, position, size, children }) => {
+const DragboardTileComponent: React.FC<DragboardTileProps> = ({ id, position, size, children }) => {
   const { config, dragState, startTileDrag, endTileDrag, removeTile } = useDragboard();
   const isDragging = dragState.draggingTileId === id;
 
-  // Native drag-and-drop handlers
-  const handleDragStart = (e: React.DragEvent) => {
+  // Native drag-and-drop handlers - memoized to prevent recreation
+  const handleDragStart = useCallback((e: React.DragEvent) => {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('application/nerdboard-tile-id', id);
     startTileDrag(id, position);
-  };
-  const handleDragEnd = () => {
-    endTileDrag(dragState.dropTarget, id);
-  };
+  }, [id, position, startTileDrag]);
 
-  // Pass drag handle props to the child tile
-  const dragHandleProps: React.HTMLAttributes<HTMLDivElement> = {
+  const handleDragEnd = useCallback(() => {
+    endTileDrag(dragState.dropTarget, id);
+  }, [dragState.dropTarget, endTileDrag, id]);
+
+  // Pass drag handle props to the child tile - memoized to prevent recreation
+  const dragHandleProps = useMemo<React.HTMLAttributes<HTMLDivElement>>(() => ({
     draggable: true,
     onDragStart: handleDragStart,
     onDragEnd: handleDragEnd,
-  };
+  }), [handleDragStart, handleDragEnd]);
+
+  // Memoize the remove function to prevent recreation
+  const handleRemove = useCallback((tileId: string) => {
+    removeTile(tileId);
+  }, [removeTile]);
 
   return (
     <div
@@ -61,12 +67,9 @@ export const DragboardTile: React.FC<DragboardTileProps> = ({ id, position, size
       {/* Render the child tile with drag handle props */}
       {React.isValidElement(children) 
         ? React.cloneElement(children, {
-            id,
-            position,
-            size,
             dragHandleProps,
-            onRemove: removeTile,
-          } as DraggableTileProps)
+            onRemove: handleRemove,
+          } as Partial<DraggableTileProps>)
         : children}
       
       {/* Ghost/preview tile when dragging (optional) */}
@@ -76,3 +79,5 @@ export const DragboardTile: React.FC<DragboardTileProps> = ({ id, position, size
     </div>
   );
 };
+
+export const DragboardTile = React.memo(DragboardTileComponent);

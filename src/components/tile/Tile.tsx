@@ -1,14 +1,15 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, memo } from 'react';
 import type { DashboardTile } from '../dragboard/dashboard';
-import type { DraggableTileProps } from '../dragboard/DragboardTile';
 import { getLazyTileComponent, getTileMeta } from './TileFactoryRegistry';
 import { TileErrorBoundary } from './TileErrorBoundary';
 
-interface TileProps extends DraggableTileProps {
+interface TileProps {
   tile: DashboardTile;
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
+  onRemove?: (id: string) => void;
 }
 
-export function Tile({ tile, dragHandleProps, onRemove, ...draggableProps }: TileProps) {
+const TileComponent = ({ tile, dragHandleProps, onRemove }: TileProps) => {
   const LazyTileComponent = getLazyTileComponent(tile.type);
   const meta = getTileMeta(tile.type);
 
@@ -32,9 +33,10 @@ export function Tile({ tile, dragHandleProps, onRemove, ...draggableProps }: Til
           meta={meta} 
           dragHandleProps={dragHandleProps}
           onRemove={onRemove}
-          {...draggableProps}
         />
       </Suspense>
     </TileErrorBoundary>
   );
-} 
+};
+
+export const Tile = memo(TileComponent); 
