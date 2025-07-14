@@ -1,16 +1,20 @@
 import type { TileType } from '../dragboard/dashboard';
 import { SidebarItem } from './SidebarItem';
-import { useDragboard } from '../dragboard';
 import { useComponentNavigation } from '../../hooks/useKeyboardNavigation';
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useContext } from 'react';
 import { TILE_CATALOG } from '../tile/TileFactoryRegistry';
+import { DashboardContext } from '../overlay/PageContext';
+import { findNextFreePosition } from '../dragboard/rearrangeTiles';
+import { DASHBOARD_GRID_CONFIG } from '../overlay/gridConfig';
 
 interface SidebarProps {
   onToggle: () => void;
 }
 
 export function Sidebar({ onToggle }: SidebarProps) {
-  const { tiles, addTile, removeTile } = useDragboard();
+  const dashboardContext = useContext(DashboardContext);
+  if (!dashboardContext) throw new Error('Sidebar must be used within DashboardProvider');
+  const { tiles, addTile, removeTile } = dashboardContext;
   // Sidebar collapse state should come from DashboardContext or props if needed
   const isCollapsed = false; // Replace with actual collapse state if available
 
@@ -42,10 +46,11 @@ export function Sidebar({ onToggle }: SidebarProps) {
         const tile = tiles.find((t) => t.type === tileType);
         if (tile) removeTile(tile.id);
       } else {
+        const position = findNextFreePosition(tiles, DASHBOARD_GRID_CONFIG, 'medium') || { x: 0, y: 0 };
         await addTile({
           id: `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           type: tileType,
-          position: { x: 0, y: 0 },
+          position,
           size: 'medium',
           createdAt: Date.now(),
         });

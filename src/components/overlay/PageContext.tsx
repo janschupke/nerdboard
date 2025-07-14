@@ -1,6 +1,7 @@
 import React, { createContext, useReducer, useCallback, useMemo, useEffect } from 'react';
 import { Toast } from '../ui/Toast';
 import { useStorageManager } from '../../services/storageManager';
+import type { DashboardTile } from '../dragboard/dashboard';
 
 interface DashboardState {
   layout: {
@@ -23,7 +24,12 @@ interface DashboardContextType {
   isRefreshing: boolean;
   lastRefreshTime: Date | null;
   isInitialized: boolean;
-  // Add any other dashboard-specific actions/state here
+  // Tiles
+  tiles: DashboardTile[];
+  addTile: (tile: DashboardTile) => void;
+  removeTile: (id: string) => void;
+  updateTile: (id: string, updates: Partial<DashboardTile>) => void;
+  reorderTiles: (tiles: DashboardTile[]) => void;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -73,16 +79,65 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
   });
   const hideToast = useCallback(() => setToast({ ...toast, visible: false }), [toast]);
 
+  // --- Tile state management ---
   const storage = useStorageManager();
+  const [tiles, setTiles] = React.useState<DashboardTile[]>([]);
+  const [hasLoadedTiles, setHasLoadedTiles] = React.useState(false);
 
-  // Save state to storage manager whenever it changes
+  type DashboardTilesStorage = { tiles: DashboardTile[] };
+
+  // Load tiles from storage only on first mount
+  useEffect(() => {
+    if (!hasLoadedTiles) {
+      const stored = storage.getTileConfig('dashboard-tiles');
+      const data = stored?.data as DashboardTilesStorage | undefined;
+      if (data && Array.isArray(data.tiles)) {
+        setTiles(data.tiles);
+      }
+      setHasLoadedTiles(true);
+    }
+  }, [storage, hasLoadedTiles]);
+
+  // Save tiles to storage whenever they change
+  useEffect(() => {
+    if (hasLoadedTiles) {
+      storage.setTileConfig('dashboard-tiles', {
+        data: { tiles },
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
+    }
+  }, [tiles, storage, hasLoadedTiles]);
+
+  // Tile handlers
+  const addTile = useCallback((tile: DashboardTile) => {
+    setTiles((prev) => [...prev, tile]);
+  }, []);
+
+  const removeTile = useCallback((id: string) => {
+    setTiles((prev) => prev.filter((tile) => tile.id !== id));
+  }, []);
+
+  const updateTile = useCallback((id: string, updates: Partial<DashboardTile>) => {
+    setTiles((prev) => prev.map((tile) => tile.id === id ? { ...tile, ...updates } : tile));
+  }, []);
+
+  const reorderTiles = useCallback((newTiles: DashboardTile[]) => {
+    setTiles(newTiles);
+  }, []);
+
+  const moveTile = useCallback((tileId: string, newPosition: { x: number; y: number }) => {
+    setTiles((prev) => prev.map((tile) => tile.id === tileId ? { ...tile, position: newPosition } : tile));
+  }, []);
+
+  // Save state to storage manager whenever it changes (UI state)
   useEffect(() => {
     storage.setTileConfig('dashboard-state', {
-      data: state as unknown as Record<string, unknown>,
+      data: { ...state, tiles },
       lastDataRequest: Date.now(),
       lastDataRequestSuccessful: true,
     });
-  }, [state, storage]);
+  }, [state, storage, tiles]);
 
   // Load sidebar state on mount
   useEffect(() => {
@@ -96,13 +151,13 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
   // Save sidebar state when relevant changes
   useEffect(() => {
     if (!isInitialized) return;
-    const activeTileTypes: string[] = []; // No longer managing tiles here
+    const activeTileTypes: string[] = tiles.map((t) => t.type); // Now tracks active tiles
     storage.setSidebarState({
       activeTiles: activeTileTypes,
       isCollapsed: state.layout.isCollapsed,
       lastUpdated: Date.now(),
     });
-  }, [state.layout.isCollapsed, isInitialized, storage]);
+  }, [state.layout.isCollapsed, isInitialized, storage, tiles]);
 
   const toggleCollapse = useCallback(() => {
     dispatch({ type: 'TOGGLE_COLLAPSE' });
@@ -125,9 +180,14 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       isRefreshing: state.isRefreshing,
       lastRefreshTime: state.lastRefreshTime,
       isInitialized,
-      // ... add any other dashboard-specific actions/state here ...
+      tiles,
+      addTile,
+      removeTile,
+      updateTile,
+      moveTile,
+      reorderTiles,
     }),
-    [state, toggleCollapse, refreshAllTiles, isInitialized],
+    [state, toggleCollapse, refreshAllTiles, isInitialized, tiles, addTile, removeTile, updateTile, moveTile, reorderTiles],
   );
 
   return (

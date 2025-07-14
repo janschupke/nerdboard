@@ -3,13 +3,12 @@ import { Sidebar } from '../sidebar/Sidebar';
 import { DashboardContext } from './PageContext';
 import { ErrorBoundary } from './AppErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
-import { useContext, useCallback } from 'react';
+import { useContext } from 'react';
 import { useLogManager } from '../api-log/useLogManager';
 import React, { Suspense, useState, useEffect } from 'react';
-import { DragboardProvider, DragboardGrid, DragboardTile, useDragboard } from '../dragboard';
+import { DragboardProvider, DragboardGrid, DragboardTile } from '../dragboard';
 import { DASHBOARD_GRID_CONFIG } from './gridConfig';
 import { Tile } from '../tile/Tile';
-import type { TileType } from '../../types';
 import { Header } from './Header';
 
 function DashboardContent() {
@@ -21,63 +20,17 @@ function DashboardContent() {
     tiles,
     addTile,
     removeTile,
+    updateTile,
     moveTile,
-  } = useDragboard();
-
-  // Dynamic row count for square-like tiles
-  const [rowCount, setRowCount] = useState(() => {
-    const columns = DASHBOARD_GRID_CONFIG.columns;
-    return Math.max(1, Math.round((window.innerHeight / window.innerWidth) * columns));
-  });
-
-  useEffect(() => {
-    function handleResize() {
-      const columns = DASHBOARD_GRID_CONFIG.columns;
-      setRowCount(Math.max(1, Math.round((window.innerHeight / window.innerWidth) * columns)));
-    }
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const { toggleCollapse, refreshAllTiles, isRefreshing } = dashboardContext;
+    reorderTiles,
+    toggleCollapse,
+    refreshAllTiles,
+    isRefreshing,
+  } = dashboardContext;
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
 
   const LogView = React.lazy(() => import('../api-log/LogView').then((m) => ({ default: m.LogView })));
-
-  // Bridge Dragboard actions to DashboardContext
-  const handleEndTileDrag = useCallback(
-    (dropTarget: { x: number; y: number } | null, tileId?: string) => {
-      if (tileId && dropTarget) {
-        moveTile(tileId, dropTarget);
-      }
-    },
-    [moveTile],
-  );
-
-  const handleEndSidebarDrag = useCallback(
-    async (dropTarget: { x: number; y: number } | null, tileType?: string) => {
-      if (tileType && dropTarget) {
-        await addTile({
-          id: `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          type: tileType as TileType,
-          position: dropTarget,
-          size: 'medium',
-          createdAt: Date.now(),
-        });
-      }
-    },
-    [addTile],
-  );
-
-  const handleRemoveTile = useCallback(
-    (tileId: string) => {
-      if (tileId) {
-        removeTile(tileId);
-      }
-    },
-    [removeTile],
-  );
 
   return (
     <div className="h-screen w-full flex flex-col bg-theme-primary overflow-hidden">
@@ -100,10 +53,13 @@ function DashboardContent() {
         {/* Scrollable Dashboard Content */}
         <main className="flex-1 overflow-auto relative scrollbar-hide">
           <DragboardProvider
-            config={{ ...DASHBOARD_GRID_CONFIG, rows: rowCount }}
-            endTileDrag={handleEndTileDrag}
-            endSidebarDrag={handleEndSidebarDrag}
-            removeTile={handleRemoveTile}
+            config={DASHBOARD_GRID_CONFIG}
+            tiles={tiles}
+            addTile={addTile}
+            removeTile={removeTile}
+            updateTile={updateTile}
+            moveTile={moveTile}
+            reorderTiles={reorderTiles}
           >
             <DragboardGrid>
               {tiles.map((tile) => (
@@ -117,10 +73,10 @@ function DashboardContent() {
                 </DragboardTile>
               ))}
             </DragboardGrid>
+            <Suspense fallback={null}>
+              <LogView isOpen={isLogViewOpen} onClose={closeLogView} />
+            </Suspense>
           </DragboardProvider>
-          <Suspense fallback={null}>
-            <LogView isOpen={isLogViewOpen} onClose={closeLogView} />
-          </Suspense>
         </main>
       </div>
     </div>
@@ -128,10 +84,38 @@ function DashboardContent() {
 }
 
 export function Dashboard() {
+  // Dynamic row count for square-like tiles
+  const [rowCount, setRowCount] = useState(() => {
+    const columns = DASHBOARD_GRID_CONFIG.columns;
+    return Math.max(1, Math.round((window.innerHeight / window.innerWidth) * columns));
+  });
+
+  useEffect(() => {
+    function handleResize() {
+      const columns = DASHBOARD_GRID_CONFIG.columns;
+      setRowCount(Math.max(1, Math.round((window.innerHeight / window.innerWidth) * columns)));
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Pass the correct config with dynamic rows
+  const dragboardConfig = { ...DASHBOARD_GRID_CONFIG, rows: rowCount };
+
   return (
     <ErrorBoundary>
       <DashboardProvider>
-        <DashboardContent />
+        <DragboardProvider
+          config={dragboardConfig}
+          tiles={[]}
+          addTile={() => {}}
+          removeTile={() => {}}
+          updateTile={() => {}}
+          moveTile={() => {}}
+          reorderTiles={() => {}}
+        >
+          <DashboardContent />
+        </DragboardProvider>
       </DashboardProvider>
     </ErrorBoundary>
   );

@@ -1,16 +1,20 @@
 import type { TileType } from '../../dragboard/dashboard';
-import { SidebarItem } from './SidebarItem';
-import { useDragboard } from '../../dragboard';
+import { SidebarItem } from '../../sidebar/SidebarItem';
 import { useComponentNavigation } from '../../../hooks/useKeyboardNavigation';
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useContext } from 'react';
 import { TILE_CATALOG } from '../../tile/TileFactoryRegistry';
+import { DashboardContext } from '../../overlay/PageContext';
 
 interface SidebarProps {
   onToggle: () => void;
 }
 
 export function Sidebar({ onToggle }: SidebarProps) {
-  const { tiles, addTile, removeTile } = useDragboard();
+  const dashboardContext = useContext(DashboardContext);
+  if (!dashboardContext) {
+    throw new Error('Sidebar must be used within DashboardProvider');
+  }
+  const { tiles, addTile, removeTile } = dashboardContext;
   // Sidebar collapse state should come from DashboardContext or props if needed
   const isCollapsed = false; // Replace with actual collapse state if available
 
