@@ -2,8 +2,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GDXETFTile } from './GDXETFTile';
 import { useGDXETFData } from './hooks/useGDXETFData';
-import type { DashboardTile } from '../../../../types/dashboard';
+import { meta } from './meta';
 import { TileSize } from '../../../../types/dashboard';
+import type { DashboardTile } from '../../../../types/dashboard';
 import { DashboardProvider } from '../../../../contexts/DashboardContext';
 
 // Mock the hook
@@ -64,7 +65,7 @@ describe('GDXETFTile', () => {
       setSelectedPeriod: vi.fn(),
     });
 
-    renderWithProviders(<GDXETFTile tile={baseTile} />);
+    renderWithProviders(<GDXETFTile tile={baseTile} meta={meta} />);
 
     expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument();
   });
@@ -81,7 +82,7 @@ describe('GDXETFTile', () => {
       setSelectedPeriod: vi.fn(),
     });
 
-    renderWithProviders(<GDXETFTile tile={baseTile} />);
+    renderWithProviders(<GDXETFTile tile={baseTile} meta={meta} />);
 
     // Match the actual rendered error message
     expect(screen.getByText(/error loading gdx etf data/i)).toBeInTheDocument();
@@ -99,7 +100,7 @@ describe('GDXETFTile', () => {
       setSelectedPeriod: vi.fn(),
     });
 
-    renderWithProviders(<GDXETFTile tile={baseTile} />);
+    renderWithProviders(<GDXETFTile tile={baseTile} meta={meta} />);
 
     expect(screen.getByText('No GDX ETF data available')).toBeInTheDocument();
   });
@@ -116,7 +117,7 @@ describe('GDXETFTile', () => {
       setSelectedPeriod: vi.fn(),
     });
 
-    renderWithProviders(<GDXETFTile tile={baseTile} />);
+    renderWithProviders(<GDXETFTile tile={baseTile} meta={meta} />);
     // Use getAllByText for GDX
     expect(screen.getAllByText(/GDX/).length).toBeGreaterThan(0);
     expect(screen.getByText(/Gold Miners ETF/)).toBeInTheDocument();
@@ -136,7 +137,7 @@ describe('GDXETFTile', () => {
       setSelectedPeriod: vi.fn(),
     });
 
-    renderWithProviders(<GDXETFTile tile={baseTile} />);
+    renderWithProviders(<GDXETFTile tile={baseTile} meta={meta} />);
 
     expect(screen.getByText('1D')).toBeInTheDocument();
     expect(screen.getByText('1W')).toBeInTheDocument();
@@ -158,7 +159,7 @@ describe('GDXETFTile', () => {
       setSelectedPeriod: vi.fn(),
     });
 
-    renderWithProviders(<GDXETFTile tile={baseTile} />);
+    renderWithProviders(<GDXETFTile tile={baseTile} meta={meta} />);
 
     const threeMonthButton = screen.getByText('3M');
     fireEvent.click(threeMonthButton);
@@ -180,7 +181,7 @@ describe('GDXETFTile', () => {
       setSelectedPeriod: vi.fn(),
     });
 
-    renderWithProviders(<GDXETFTile tile={baseTile} />);
+    renderWithProviders(<GDXETFTile tile={baseTile} meta={meta} />);
 
     expect(screen.getByText('Market Open')).toBeInTheDocument();
   });
@@ -202,7 +203,7 @@ describe('GDXETFTile', () => {
       setSelectedPeriod: vi.fn(),
     });
 
-    renderWithProviders(<GDXETFTile tile={baseTile} />);
+    renderWithProviders(<GDXETFTile tile={baseTile} meta={meta} />);
 
     expect(screen.getByText('Market Closed')).toBeInTheDocument();
   });
@@ -222,12 +223,12 @@ describe('GDXETFTile', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <DashboardProvider>{children}</DashboardProvider>
     );
-    const { rerender } = render(<GDXETFTile tile={{ ...baseTile, size: TileSize.SMALL }} />, {
+    const { rerender } = render(<GDXETFTile tile={{ ...baseTile, size: TileSize.SMALL }} meta={meta} />, {
       wrapper,
     });
     expect(screen.getAllByText(/GDX/).length).toBeGreaterThan(0);
 
-    rerender(<GDXETFTile tile={{ ...baseTile, size: TileSize.LARGE }} />);
+    rerender(<GDXETFTile tile={{ ...baseTile, size: TileSize.LARGE }} meta={meta} />);
     expect(screen.getAllByText(/GDX/).length).toBeGreaterThan(0);
   });
 
@@ -243,7 +244,7 @@ describe('GDXETFTile', () => {
       setSelectedPeriod: vi.fn(),
     });
 
-    renderWithProviders(<GDXETFTile tile={baseTile} />);
+    renderWithProviders(<GDXETFTile tile={baseTile} meta={meta} />);
     // Use flexible matcher for chart title
     expect(screen.getByText(/Price \(1M\)/)).toBeInTheDocument();
   });
@@ -260,7 +261,7 @@ describe('GDXETFTile', () => {
       setSelectedPeriod: vi.fn(),
     });
 
-    renderWithProviders(<GDXETFTile tile={baseTile} />);
+    renderWithProviders(<GDXETFTile tile={baseTile} meta={meta} />);
 
     const retryButton = screen.getByRole('button', { name: /retry/i });
     fireEvent.click(retryButton);

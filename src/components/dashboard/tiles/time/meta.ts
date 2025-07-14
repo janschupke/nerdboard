@@ -15,3 +15,4 @@ export const timeTileMeta = (city: string) => {
   }
   return { title, icon: 'clock' };
 };
+export const meta = timeTileMeta('Helsinki');

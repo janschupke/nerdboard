@@ -4,19 +4,20 @@ import { ChartComponent } from '../ChartComponent';
 import { PriceDisplay } from '../../../ui/PriceDisplay';
 import { Button } from '../../../ui/Button';
 import { GenericTile } from '../GenericTile';
-import type { CryptocurrencyTileProps, CryptocurrencyTileConfig, ChartPeriod } from './types';
-import { cryptocurrencyTileMeta } from './meta';
+import type { DashboardTile } from '../../../../types/dashboard';
+import type { TileMeta } from '../GenericTile';
+import type { CryptocurrencyTileConfig, ChartPeriod } from './types';
 
 function isValidCryptocurrencyTileConfig(config: unknown): config is CryptocurrencyTileConfig {
   return Boolean(config && typeof config === 'object');
 }
 
-export const CryptocurrencyTile = React.memo<CryptocurrencyTileProps>(
-  ({ size, config, ...rest }) => {
-    const configError = !isValidCryptocurrencyTileConfig(config);
+export const CryptocurrencyTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
+  ({ tile, meta, ...rest }) => {
+    const configError = !isValidCryptocurrencyTileConfig(tile.config);
     const safeConfig: CryptocurrencyTileConfig = configError
       ? { chartPeriod: '7d', selectedCoin: 'bitcoin', refreshInterval: 0 }
-      : config;
+      : (tile.config as CryptocurrencyTileConfig);
 
     const { data, loading, error, refetch } = useCryptocurrencyData({
       refreshInterval: safeConfig.refreshInterval,
@@ -103,10 +104,10 @@ export const CryptocurrencyTile = React.memo<CryptocurrencyTileProps>(
               {/* Chart */}
               <div className="h-32">
                 <ChartComponent
-                  data={[]} // Will be populated with historical data in future implementation
+                  data={[]}
                   title={`${selectedCoinData.name} Price (${chartPeriod})`}
                   color={'#00BFFF'}
-                  height={size === 'large' ? 200 : 120}
+                  height={tile.size === 'large' ? 200 : 120}
                 />
               </div>
             </div>
@@ -122,17 +123,7 @@ export const CryptocurrencyTile = React.memo<CryptocurrencyTileProps>(
     }
 
     return (
-      <GenericTile
-        tile={{
-          id: 'cryptocurrency',
-          type: 'cryptocurrency',
-          size,
-          config: safeConfig as Record<string, unknown>,
-          position: { x: 0, y: 0 },
-        }}
-        meta={cryptocurrencyTileMeta}
-        {...rest}
-      >
+      <GenericTile tile={tile} meta={meta} {...rest}>
         {content}
       </GenericTile>
     );

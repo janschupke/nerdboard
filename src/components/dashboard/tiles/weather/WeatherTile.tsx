@@ -7,11 +7,10 @@ import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { Button } from '../../../ui/Button';
 import { GenericTile } from '../GenericTile';
 import { WEATHER_CITIES } from './constants';
-import type { WeatherTileProps } from './types';
-import { TileType } from '../../../../types/dashboard';
-import { weatherTileMeta } from './meta';
+import type { DashboardTile } from '../../../../types/dashboard';
+import type { TileMeta } from '../GenericTile';
 
-function isValidWeatherTileConfig(config: unknown): config is WeatherTileProps['config'] {
+function isValidWeatherTileConfig(config: unknown): config is Record<string, unknown> {
   return Boolean(
     config &&
       typeof config === 'object' &&
@@ -20,91 +19,77 @@ function isValidWeatherTileConfig(config: unknown): config is WeatherTileProps['
   );
 }
 
-export const WeatherTile = React.memo<WeatherTileProps>(({ size, config, ...rest }) => {
-  const configError = !isValidWeatherTileConfig(config);
-  const safeConfig: WeatherTileProps['config'] = configError
-    ? { city: '', country: '', refreshInterval: 0 }
-    : config;
+export const WeatherTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
+  ({ tile, meta, ...rest }) => {
+    const configError = !isValidWeatherTileConfig(tile.config);
+    const safeConfig = configError
+      ? { city: '', country: '', refreshInterval: 0 }
+      : (tile.config as Record<string, unknown>);
 
-  const { data, forecast, loading, error, refetch } = useWeatherData(
-    safeConfig.city,
-    safeConfig.refreshInterval,
-  );
-
-  // Get city configuration
-  const cityConfig = WEATHER_CITIES[safeConfig.city.toUpperCase?.() as keyof typeof WEATHER_CITIES];
-  const cityName = cityConfig?.name || safeConfig.city;
-  const countryName = cityConfig?.country || '';
-
-  let content: React.ReactNode = null;
-  if (configError) {
-    content = (
-      <div className="text-error-600 p-2">
-        <span className="font-semibold">Tile Error:</span> Invalid or missing config for
-        WeatherTile.
-      </div>
+    const { data, forecast, loading, error, refetch } = useWeatherData(
+      safeConfig.city as string,
+      safeConfig.refreshInterval as number,
     );
-  } else if (loading) {
-    const tileSize = typeof size === 'string' ? size : 'medium';
-    content = <LoadingSkeleton tileSize={tileSize as 'small' | 'medium' | 'large'} />;
-  } else if (error) {
-    content = (
-      <div className="p-4 text-center">
-        <p className="text-error-600 mb-2">{error}</p>
-        <Button variant="primary" size="sm" onClick={refetch}>
-          Retry
-        </Button>
-      </div>
-    );
-  } else if (!data) {
-    content = (
-      <div className="p-4 text-center">
-        <p className="text-theme-muted">No weather data available</p>
-      </div>
-    );
-  } else {
-    content = (
-      <div className="space-y-4">
-        <WeatherHeader
-          city={cityName}
-          country={countryName}
-          conditions={data.conditions}
-          timestamp={data.timestamp}
-        />
 
-        <WeatherCurrent
-          temperature={data.temperature}
-          conditions={data.conditions}
-          humidity={data.humidity}
-          wind={data.wind}
-        />
+    // Get city configuration
+    const cityConfig = WEATHER_CITIES[(safeConfig.city as string)?.toUpperCase?.() as keyof typeof WEATHER_CITIES];
+    const cityName = cityConfig?.name || (safeConfig.city as string);
+    const countryName = cityConfig?.country || '';
 
-        {size === 'large' && <WeatherForecast forecast={forecast} />}
-      </div>
+    let content: React.ReactNode = null;
+    if (configError) {
+      content = (
+        <div className="text-error-600 p-2">
+          <span className="font-semibold">Tile Error:</span> Invalid or missing config for
+          WeatherTile.
+        </div>
+      );
+    } else if (loading) {
+      const tileSize = typeof tile.size === 'string' ? tile.size : 'medium';
+      content = <LoadingSkeleton tileSize={tileSize as 'small' | 'medium' | 'large'} />;
+    } else if (error) {
+      content = (
+        <div className="p-4 text-center">
+          <p className="text-error-600 mb-2">{error}</p>
+          <Button variant="primary" size="sm" onClick={refetch}>
+            Retry
+          </Button>
+        </div>
+      );
+    } else if (!data) {
+      content = (
+        <div className="p-4 text-center">
+          <p className="text-theme-muted">No weather data available</p>
+        </div>
+      );
+    } else {
+      content = (
+        <div className="space-y-4">
+          <WeatherHeader
+            city={cityName}
+            country={countryName}
+            conditions={data.conditions}
+            timestamp={data.timestamp}
+          />
+
+          <WeatherCurrent
+            temperature={data.temperature}
+            conditions={data.conditions}
+            humidity={data.humidity}
+            wind={data.wind}
+          />
+
+          {tile.size === 'large' && <WeatherForecast forecast={forecast} />}
+        </div>
+      );
+    }
+
+    return (
+      <GenericTile tile={tile} meta={meta} {...rest}>
+        {content}
+      </GenericTile>
     );
-  }
-
-  const cityTypeMap: Record<string, TileType> = {
-    helsinki: TileType.WEATHER_HELSINKI,
-    prague: TileType.WEATHER_PRAGUE,
-    taipei: TileType.WEATHER_TAIPEI,
-  };
-  const tileType = cityTypeMap[safeConfig.city.toLowerCase?.()] || TileType.WEATHER_HELSINKI;
-  return (
-    <GenericTile
-      tile={{
-        id: `weather-${safeConfig.city}`,
-        type: tileType,
-        size: size || 'medium',
-        config: safeConfig as unknown as Record<string, unknown>,
-        position: { x: 0, y: 0 },
-      }}
-      meta={weatherTileMeta(cityName)}
-      {...rest}
-    >
-      {content}
-    </GenericTile>
-  );
-});
+  },
+);
 
 WeatherTile.displayName = 'WeatherTile';

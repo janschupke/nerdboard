@@ -4,6 +4,9 @@ import { TimeTile } from './TimeTile';
 import { useTimeData } from './hooks/useTimeData';
 import type { TimeData } from './types';
 import { DashboardProvider } from '../../../../contexts/DashboardContext';
+import { meta } from './meta';
+import { TileType, TileSize } from '../../../../types/dashboard';
+import type { DashboardTile } from '../../../../types/dashboard';
 
 function renderWithProviders(ui: React.ReactElement) {
   return render(<DashboardProvider>{ui}</DashboardProvider>);
@@ -27,18 +30,21 @@ const mockTimeData: TimeData = {
   lastUpdate: '2024-01-15T14:30:25.000Z',
 };
 
-const defaultProps = {
-  id: 'test-time-tile',
-  size: 'medium' as const,
-  config: {
-    city: 'helsinki' as const,
-    showBusinessHours: true,
-  },
+const tile: DashboardTile = {
+  id: 'test-id',
+  type: TileType.TIME_HELSINKI,
+  config: { city: 'helsinki', showBusinessHours: true },
+  position: { x: 0, y: 0 },
+  size: TileSize.MEDIUM,
 };
 
 describe('TimeTile', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('renders without crashing', () => {
+    renderWithProviders(<TimeTile tile={tile} meta={meta} />);
   });
 
   it('should render loading state', () => {
@@ -51,7 +57,7 @@ describe('TimeTile', () => {
       refetch: vi.fn(),
     });
 
-    renderWithProviders(<TimeTile {...defaultProps} />);
+    renderWithProviders(<TimeTile tile={tile} meta={meta} />);
 
     expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument();
   });
@@ -66,7 +72,7 @@ describe('TimeTile', () => {
       refetch: vi.fn(),
     });
 
-    renderWithProviders(<TimeTile {...defaultProps} />);
+    renderWithProviders(<TimeTile tile={tile} meta={meta} />);
     expect(screen.getAllByText(/Helsinki/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/14:30:25/)).toBeInTheDocument();
     expect(screen.getByText(/Monday/)).toBeInTheDocument();
@@ -84,7 +90,7 @@ describe('TimeTile', () => {
       refetch: mockRefetch,
     });
 
-    renderWithProviders(<TimeTile {...defaultProps} />);
+    renderWithProviders(<TimeTile tile={tile} meta={meta} />);
 
     const retryButton = screen.getByRole('button', { name: /retry/i });
     fireEvent.click(retryButton);
@@ -104,7 +110,7 @@ describe('TimeTile', () => {
       refetch: mockRefetch,
     });
 
-    renderWithProviders(<TimeTile {...defaultProps} />);
+    renderWithProviders(<TimeTile tile={tile} meta={meta} />);
     // Use flexible matcher for error message
     expect(screen.getByText(/Unable to display time/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
@@ -120,7 +126,7 @@ describe('TimeTile', () => {
       refetch: vi.fn(),
     });
 
-    renderWithProviders(<TimeTile {...defaultProps} />);
+    renderWithProviders(<TimeTile tile={tile} meta={meta} />);
     // Use flexible matcher for 'Open'
     expect(screen.getByText('Open')).toBeInTheDocument();
   });
@@ -140,7 +146,7 @@ describe('TimeTile', () => {
       refetch: vi.fn(),
     });
 
-    renderWithProviders(<TimeTile {...defaultProps} />);
+    renderWithProviders(<TimeTile tile={tile} meta={meta} />);
     // Use flexible matcher for 'Closed'
     expect(screen.getByText('Closed')).toBeInTheDocument();
   });
@@ -158,10 +164,10 @@ describe('TimeTile', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <DashboardProvider>{children}</DashboardProvider>
     );
-    const { rerender } = render(<TimeTile {...defaultProps} size="small" />, { wrapper });
+    const { rerender } = render(<TimeTile tile={tile} meta={meta} />, { wrapper });
     expect(screen.getAllByText(/Helsinki/i).length).toBeGreaterThan(0);
 
-    rerender(<TimeTile {...defaultProps} size="large" />);
+    rerender(<TimeTile tile={tile} meta={meta} />);
     expect(screen.getAllByText(/Helsinki/i).length).toBeGreaterThan(0);
   });
 
@@ -175,7 +181,7 @@ describe('TimeTile', () => {
       refetch: vi.fn(),
     });
 
-    renderWithProviders(<TimeTile {...defaultProps} />);
+    renderWithProviders(<TimeTile tile={tile} meta={meta} />);
     // Use flexible matcher for timezone
     expect(screen.getByText(/EET/)).toBeInTheDocument();
     expect(screen.getByText(/UTC/)).toBeInTheDocument();
@@ -203,7 +209,7 @@ describe('TimeTile', () => {
       refetch: vi.fn(),
     });
 
-    renderWithProviders(<TimeTile {...defaultProps} config={{ city: 'prague' }} />);
+    renderWithProviders(<TimeTile tile={{ ...tile, config: { city: 'prague', showBusinessHours: true } }} meta={meta} />);
     expect(screen.getAllByText(/Prague/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/09:30:00/)).toBeInTheDocument();
   });
@@ -218,7 +224,7 @@ describe('TimeTile', () => {
       refetch: vi.fn(),
     });
 
-    renderWithProviders(<TimeTile {...defaultProps} />);
+    renderWithProviders(<TimeTile tile={tile} meta={meta} />);
 
     expect(screen.getByText('No time data available')).toBeInTheDocument();
   });
@@ -245,7 +251,7 @@ describe('TimeTile', () => {
       refetch: vi.fn(),
     });
 
-    renderWithProviders(<TimeTile {...defaultProps} config={{ city: 'taipei' }} />);
+    renderWithProviders(<TimeTile tile={{ ...tile, config: { city: 'taipei', showBusinessHours: true } }} meta={meta} />);
     expect(screen.getAllByText(/Taipei/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/16:30:00/)).toBeInTheDocument();
   });

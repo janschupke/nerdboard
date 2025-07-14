@@ -3,6 +3,7 @@ import { SidebarItem } from './SidebarItem';
 import { useDashboard } from '../../hooks/useDashboard';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useEffect, useMemo, useCallback } from 'react';
+import { TILE_CATALOG } from './tiles/TileFactoryRegistry';
 
 interface SidebarProps {
   onToggle: () => void;
@@ -11,81 +12,18 @@ interface SidebarProps {
 export function Sidebar({ onToggle }: SidebarProps) {
   const { isTileActive, addTile, removeTile, state } = useDashboard();
 
+  // Use TILE_CATALOG for available tiles
   const availableTiles = useMemo(
-    () => [
-      {
-        type: TileType.CRYPTOCURRENCY,
-        name: 'Cryptocurrency',
-        description: 'Real-time cryptocurrency market data',
-        icon: 'crypto',
-      },
-      {
-        type: TileType.PRECIOUS_METALS,
-        name: 'Precious Metals',
-        description: 'Gold and silver price data',
-        icon: 'metals',
-      },
-      {
-        type: TileType.FEDERAL_FUNDS_RATE,
-        name: 'Federal Funds Rate',
-        description: 'Federal Reserve interest rate monitoring',
-        icon: 'chart',
-      },
-      {
-        type: TileType.EURIBOR_RATE,
-        name: 'Euribor Rate',
-        description: 'European interbank lending rate monitoring',
-        icon: 'chart',
-      },
-      {
-        type: TileType.WEATHER_HELSINKI,
-        name: 'Helsinki Weather',
-        description: 'Current weather conditions in Helsinki, Finland',
-        icon: 'weather',
-      },
-      {
-        type: TileType.WEATHER_PRAGUE,
-        name: 'Prague Weather',
-        description: 'Current weather conditions in Prague, Czech Republic',
-        icon: 'weather',
-      },
-      {
-        type: TileType.WEATHER_TAIPEI,
-        name: 'Taipei Weather',
-        description: 'Current weather conditions in Taipei, Taiwan',
-        icon: 'weather',
-      },
-      {
-        type: TileType.GDX_ETF,
-        name: 'GDX ETF',
-        description: 'VanEck Vectors Gold Miners ETF tracking',
-        icon: 'chart',
-      },
-      {
-        type: TileType.TIME_HELSINKI,
-        name: 'Helsinki Time',
-        description: 'Current time and timezone for Helsinki, Finland',
-        icon: 'clock',
-      },
-      {
-        type: TileType.TIME_PRAGUE,
-        name: 'Prague Time',
-        description: 'Current time and timezone for Prague, Czech Republic',
-        icon: 'clock',
-      },
-      {
-        type: TileType.TIME_TAIPEI,
-        name: 'Taipei Time',
-        description: 'Current time and timezone for Taipei, Taiwan',
-        icon: 'clock',
-      },
-      {
-        type: TileType.URANIUM,
-        name: 'Uranium Price',
-        description: 'Real-time uranium price tracking and market data',
-        icon: 'chart',
-      },
-    ],
+    () =>
+      TILE_CATALOG.map((entry) => {
+        // Prefer static meta, fallback to getMeta
+        const meta = entry.meta || (entry.getMeta ? entry.getMeta() : { title: '', icon: '' });
+        return {
+          type: entry.type,
+          name: meta.title,
+          icon: meta.icon,
+        };
+      }),
     [],
   );
 

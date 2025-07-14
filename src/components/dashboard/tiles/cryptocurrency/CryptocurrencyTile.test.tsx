@@ -4,6 +4,7 @@ import { CryptocurrencyTile } from './CryptocurrencyTile';
 import { TileSize } from '../../../../types/dashboard';
 import * as coinGeckoApiModule from '../../../../services/coinGeckoApi';
 import { DashboardProvider } from '../../../../contexts/DashboardContext';
+import { cryptocurrencyTileMeta } from './meta';
 
 type Coin = {
   id: string;
@@ -26,12 +27,14 @@ type Coin = {
 };
 
 describe('CryptocurrencyTile', () => {
-  const baseProps = {
+  const baseTile = {
     id: 'test',
+    type: 'cryptocurrency',
     size: TileSize.MEDIUM,
     config: {
       refreshInterval: 0, // Force immediate fetches for tests
     },
+    position: { x: 0, y: 0 },
   };
 
   let mockResolvedValue: Coin[] | null = null;
@@ -60,7 +63,7 @@ describe('CryptocurrencyTile', () => {
   };
 
   it('renders loading state', () => {
-    renderWithProvider(<CryptocurrencyTile {...baseProps} />);
+    renderWithProvider(<CryptocurrencyTile tile={baseTile} meta={cryptocurrencyTileMeta} />);
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
@@ -86,7 +89,7 @@ describe('CryptocurrencyTile', () => {
         last_updated: '2024-07-12T23:00:00Z',
       },
     ];
-    const { container } = renderWithProvider(<CryptocurrencyTile {...baseProps} />);
+    const { container } = renderWithProvider(<CryptocurrencyTile tile={baseTile} meta={cryptocurrencyTileMeta} />);
     await waitFor(
       () => {
         expect(container.textContent?.toLowerCase()).toMatch(/bitcoin/);

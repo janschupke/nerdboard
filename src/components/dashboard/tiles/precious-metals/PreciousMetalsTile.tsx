@@ -5,24 +5,20 @@ import { PriceDisplay } from '../../../ui/PriceDisplay';
 import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { Button } from '../../../ui/Button';
 import { GenericTile } from '../GenericTile';
-import type {
-  PreciousMetalsTileProps,
-  ChartPeriod,
-  MetalType,
-  PreciousMetalsTileConfig,
-} from './types';
-import { preciousMetalsTileMeta } from './meta';
+import type { DashboardTile } from '../../../../types/dashboard';
+import type { TileMeta } from '../GenericTile';
+import type { ChartPeriod, MetalType, PreciousMetalsTileConfig } from './types';
 
 function isValidPreciousMetalsTileConfig(config: unknown): config is PreciousMetalsTileConfig {
   return Boolean(config && typeof config === 'object');
 }
 
-export const PreciousMetalsTile = React.memo<PreciousMetalsTileProps>(
-  ({ size, config, ...rest }) => {
-    const configError = !isValidPreciousMetalsTileConfig(config);
+export const PreciousMetalsTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
+  ({ tile, meta, ...rest }) => {
+    const configError = !isValidPreciousMetalsTileConfig(tile.config);
     const safeConfig: PreciousMetalsTileConfig = configError
       ? { chartPeriod: '7d', selectedMetal: 'gold', refreshInterval: 0 }
-      : config;
+      : (tile.config as PreciousMetalsTileConfig);
 
     const { data, loading, error, refetch } = usePreciousMetalsData(safeConfig.refreshInterval);
     const [selectedMetal, setSelectedMetal] = useState<MetalType>(
@@ -50,7 +46,7 @@ export const PreciousMetalsTile = React.memo<PreciousMetalsTileProps>(
         </div>
       );
     } else if (loading) {
-      const tileSize = typeof size === 'string' ? size : 'medium';
+      const tileSize = typeof tile.size === 'string' ? tile.size : 'medium';
       content = <LoadingSkeleton tileSize={tileSize as 'small' | 'medium' | 'large'} />;
     } else if (error) {
       content = (
@@ -109,10 +105,10 @@ export const PreciousMetalsTile = React.memo<PreciousMetalsTileProps>(
               {/* Chart */}
               <div className="h-32">
                 <ChartComponent
-                  data={[]} // Will be populated with historical data in future implementation
+                  data={[]}
                   title={`${selectedMetal.charAt(0).toUpperCase() + selectedMetal.slice(1)} Price (${chartPeriod})`}
                   color={chartColor}
-                  height={size === 'large' ? 200 : 120}
+                  height={tile.size === 'large' ? 200 : 120}
                 />
               </div>
             </div>
@@ -122,17 +118,7 @@ export const PreciousMetalsTile = React.memo<PreciousMetalsTileProps>(
     }
 
     return (
-      <GenericTile
-        tile={{
-          id: 'precious-metals',
-          type: 'precious-metals',
-          size,
-          config: safeConfig as Record<string, unknown>,
-          position: { x: 0, y: 0 },
-        }}
-        meta={preciousMetalsTileMeta}
-        {...rest}
-      >
+      <GenericTile tile={tile} meta={meta} {...rest}>
         {content}
       </GenericTile>
     );

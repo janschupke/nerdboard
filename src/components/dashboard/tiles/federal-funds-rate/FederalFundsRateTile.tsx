@@ -5,32 +5,35 @@ import { LoadingSkeleton } from '../../../ui/LoadingSkeleton';
 import { Button } from '../../../ui/Button';
 import { GenericTile } from '../GenericTile';
 import { FEDERAL_FUNDS_UI_CONFIG, TIME_RANGE_CONFIG } from './constants';
-import type { FederalFundsRateTileProps, FederalFundsRateTileConfig } from './types';
-import { federalFundsRateTileMeta } from './meta';
+import type { DashboardTile } from '../../../../types/dashboard';
+import type { TileMeta } from '../GenericTile';
+import type { FederalFundsRateTileConfig } from './types';
+import type { PriceHistory } from '../../../../types';
 
 function isValidFederalFundsRateTileConfig(config: unknown): config is FederalFundsRateTileConfig {
   return Boolean(config && typeof config === 'object');
 }
 
-export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(
-  ({ size, config, ...rest }) => {
-    const configError = !isValidFederalFundsRateTileConfig(config);
+export const FederalFundsRateTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
+  ({ tile, meta, ...rest }) => {
+    const configError = !isValidFederalFundsRateTileConfig(tile.config);
     const safeConfig: FederalFundsRateTileConfig = configError
       ? { timeRange: '1M', refreshInterval: 0 }
-      : config;
+      : (tile.config as FederalFundsRateTileConfig);
 
     const { data, loading, error, timeRange, setTimeRange, refetch } = useFederalFundsRateData(
       safeConfig.refreshInterval,
     );
 
     // Memoize chart data to prevent unnecessary re-renders
-    const chartData = useMemo(() => {
-      if (!data?.historicalData) return [];
-      return data.historicalData.map((item) => ({
-        timestamp: item.date.getTime(),
-        price: item.rate,
-      }));
-    }, [data?.historicalData]);
+    // const chartData = useMemo(() => {
+    //   if (!data?.historicalData) return [];
+    //   return data.historicalData.map((item) => ({
+    //     timestamp: item.date.getTime(),
+    //     price: item.rate,
+    //   }));
+    // }, [data?.historicalData]);
+    const chartData: PriceHistory[] = [];
 
     // Memoize the current rate change
     const rateChange = useMemo(() => {
@@ -49,7 +52,7 @@ export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(
         </div>
       );
     } else if (loading) {
-      const tileSize = typeof size === 'string' ? size : 'medium';
+      const tileSize = typeof tile.size === 'string' ? tile.size : 'medium';
       content = <LoadingSkeleton tileSize={tileSize as 'small' | 'medium' | 'large'} />;
     } else if (error) {
       content = (
@@ -113,7 +116,7 @@ export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(
               data={chartData}
               title={`Federal Funds Rate (${timeRange})`}
               color="var(--color-primary-500)"
-              height={size === 'large' ? 200 : 120}
+              height={tile.size === 'large' ? 200 : 120}
             />
           </div>
 
@@ -126,17 +129,7 @@ export const FederalFundsRateTile = React.memo<FederalFundsRateTileProps>(
     }
 
     return (
-      <GenericTile
-        tile={{
-          id: 'federal-funds-rate',
-          type: 'federal_funds_rate',
-          size,
-          config: safeConfig as Record<string, unknown>,
-          position: { x: 0, y: 0 },
-        }}
-        meta={federalFundsRateTileMeta}
-        {...rest}
-      >
+      <GenericTile tile={tile} meta={meta} {...rest}>
         {content}
       </GenericTile>
     );

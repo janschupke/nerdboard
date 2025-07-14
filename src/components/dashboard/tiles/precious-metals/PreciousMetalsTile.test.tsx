@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { PreciousMetalsTile } from './PreciousMetalsTile';
 import { TileSize } from '../../../../types/dashboard';
 import { DashboardProvider } from '../../../../contexts/DashboardContext';
+import { preciousMetalsTileMeta } from './meta';
 
 function renderWithProviders(ui: React.ReactElement) {
   return render(<DashboardProvider>{ui}</DashboardProvider>);
@@ -16,10 +17,12 @@ vi.mock('../../../../utils/smartDataFetcher', () => ({
 }));
 
 describe('PreciousMetalsTile', () => {
-  const baseProps = {
+  const baseTile = {
     id: 'test',
+    type: 'precious-metals',
     size: TileSize.MEDIUM,
     config: {},
+    position: { x: 0, y: 0 },
   };
 
   afterEach(() => {
@@ -27,7 +30,7 @@ describe('PreciousMetalsTile', () => {
   });
 
   it('renders loading state', () => {
-    renderWithProviders(<PreciousMetalsTile {...baseProps} />);
+    renderWithProviders(<PreciousMetalsTile tile={baseTile} meta={preciousMetalsTileMeta} />);
     expect(document.querySelector('.animate-pulse')).toBeInTheDocument();
   });
 
@@ -46,7 +49,7 @@ describe('PreciousMetalsTile', () => {
       retryCount: 0,
     });
 
-    renderWithProviders(<PreciousMetalsTile {...baseProps} />);
+    renderWithProviders(<PreciousMetalsTile tile={baseTile} meta={preciousMetalsTileMeta} />);
     await waitFor(() => {
       expect(screen.getByText('Silver')).toBeInTheDocument();
       expect(screen.getByText('$1,950.50')).toBeInTheDocument();
@@ -65,7 +68,7 @@ describe('PreciousMetalsTile', () => {
       retryCount: 0,
     });
 
-    renderWithProviders(<PreciousMetalsTile {...baseProps} />);
+    renderWithProviders(<PreciousMetalsTile tile={baseTile} meta={preciousMetalsTileMeta} />);
     await waitFor(() => {
       expect(screen.getByText(/error loading precious metals data/i)).toBeInTheDocument();
     });

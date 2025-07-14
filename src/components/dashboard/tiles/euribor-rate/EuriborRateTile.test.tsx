@@ -1,6 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { EuriborRateTile } from './EuriborRateTile';
+import { TileType, TileSize } from '../../../../types/dashboard';
+import type { DashboardTile } from '../../../../types/dashboard';
 import type { EuriborRateData } from './types';
 import { DashboardProvider } from '../../../../contexts/DashboardContext';
 
@@ -91,6 +93,16 @@ vi.mock('../../../ui/LoadingSkeleton', () => ({
   LoadingSkeleton: () => <div data-testid="loading-skeleton">Loading...</div>,
 }));
 
+const meta = { title: 'Euribor Rate', icon: 'chart' };
+
+const tile: DashboardTile = {
+  id: 'test-id',
+  type: TileType.EURIBOR_RATE,
+  config: { refreshInterval: 60000 },
+  position: { x: 0, y: 0 },
+  size: TileSize.MEDIUM,
+};
+
 describe('EuriborRateTile', () => {
   const mockData: EuriborRateData = {
     currentRate: 3.85,
@@ -118,6 +130,10 @@ describe('EuriborRateTile', () => {
     });
   });
 
+  it('renders without crashing', () => {
+    renderWithProviders(<EuriborRateTile tile={tile} meta={meta} />);
+  });
+
   it('should render loading skeleton when loading and no data', () => {
     mockUseEuriborRateData.mockReturnValue({
       data: null,
@@ -130,7 +146,7 @@ describe('EuriborRateTile', () => {
       hasData: false,
     });
 
-    renderWithProviders(<EuriborRateTile />);
+    renderWithProviders(<EuriborRateTile tile={tile} meta={meta} />);
 
     expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument();
   });
@@ -147,7 +163,7 @@ describe('EuriborRateTile', () => {
       hasData: false,
     });
 
-    renderWithProviders(<EuriborRateTile />);
+    renderWithProviders(<EuriborRateTile tile={tile} meta={meta} />);
 
     expect(screen.getByText('API Error')).toBeInTheDocument();
     expect(screen.getByText('Retry')).toBeInTheDocument();
@@ -165,7 +181,7 @@ describe('EuriborRateTile', () => {
       hasData: false,
     });
 
-    renderWithProviders(<EuriborRateTile />);
+    renderWithProviders(<EuriborRateTile tile={tile} meta={meta} />);
 
     expect(screen.getByText('No Euribor rate data available')).toBeInTheDocument();
   });
@@ -182,7 +198,7 @@ describe('EuriborRateTile', () => {
       hasData: true,
     });
 
-    renderWithProviders(<EuriborRateTile />);
+    renderWithProviders(<EuriborRateTile tile={tile} meta={meta} />);
 
     expect(screen.getByTestId('euribor-rate-header')).toBeInTheDocument();
     expect(screen.getByTestId('euribor-rate-chart')).toBeInTheDocument();
@@ -201,7 +217,7 @@ describe('EuriborRateTile', () => {
       hasData: true,
     });
 
-    renderWithProviders(<EuriborRateTile />);
+    renderWithProviders(<EuriborRateTile tile={tile} meta={meta} />);
 
     expect(screen.getByTestId('current-rate')).toHaveTextContent('3.85');
   });
@@ -218,7 +234,7 @@ describe('EuriborRateTile', () => {
       hasData: true,
     });
 
-    renderWithProviders(<EuriborRateTile />);
+    renderWithProviders(<EuriborRateTile tile={tile} meta={meta} />);
 
     expect(screen.getByTestId('last-update')).toHaveTextContent('2024-01-15T10:30:00.000Z');
   });
@@ -235,7 +251,7 @@ describe('EuriborRateTile', () => {
       hasData: true,
     });
 
-    renderWithProviders(<EuriborRateTile />);
+    renderWithProviders(<EuriborRateTile tile={tile} meta={meta} />);
 
     expect(screen.getByTestId('chart-data-points')).toHaveTextContent('2');
     expect(screen.getByTestId('chart-time-range')).toHaveTextContent('1Y');
@@ -253,7 +269,7 @@ describe('EuriborRateTile', () => {
       hasData: true,
     });
 
-    renderWithProviders(<EuriborRateTile />);
+    renderWithProviders(<EuriborRateTile tile={tile} meta={meta} />);
 
     expect(screen.getByTestId('controls-time-range')).toHaveTextContent('1Y');
     expect(screen.getByTestId('controls-refresh')).toBeInTheDocument();
@@ -272,7 +288,7 @@ describe('EuriborRateTile', () => {
       hasData: true,
     });
 
-    renderWithProviders(<EuriborRateTile />);
+    renderWithProviders(<EuriborRateTile tile={tile} meta={meta} />);
 
     const refreshButton = screen.getByTestId('controls-refresh');
     fireEvent.click(refreshButton);
@@ -293,7 +309,7 @@ describe('EuriborRateTile', () => {
       hasData: true,
     });
 
-    renderWithProviders(<EuriborRateTile />);
+    renderWithProviders(<EuriborRateTile tile={tile} meta={meta} />);
 
     const timeRangeButton = screen.getByTestId('controls-time-1m');
     fireEvent.click(timeRangeButton);
