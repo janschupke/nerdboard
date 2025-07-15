@@ -5,7 +5,7 @@ import type {
   DragboardDragState,
   DragboardContextValue,
 } from './DragboardContext';
-import type { DashboardTile } from './dashboard.ts';
+import type { DashboardTile, TileType } from './dashboard';
 import { findNextFreePosition } from './rearrangeTiles';
 
 interface DragboardProviderProps {
@@ -117,7 +117,7 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
       if (snappedTarget && tileType) {
         addTile({
           id: `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          type: tileType as import('./dashboard').TileType,
+          type: tileType as TileType,
           position: snappedTarget,
           size: 'medium',
           createdAt: Date.now(),

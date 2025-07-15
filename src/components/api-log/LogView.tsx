@@ -66,7 +66,7 @@ export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
 
   // Position exactly over the tile grid area
   return (
-    <div className="absolute inset-0 z-40 flex flex-col bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50 rounded-lg shadow-lg overflow-hidden">
+    <div className="relative w-full h-full z-40 flex flex-col bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50 rounded-lg shadow-lg overflow-hidden">
       {/* Header */}
       <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95 z-10">
         <div className="flex items-center gap-3">

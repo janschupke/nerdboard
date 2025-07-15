@@ -1,4 +1,6 @@
-export const timeTileMeta = (city: string) => {
+import type { TileCategory } from '../../../types/tileCategories';
+import type { TileMeta } from '../../tile/GenericTile';
+export const timeTileMeta = (city: string): TileMeta => {
   let title = 'Time';
   switch (city.toLowerCase()) {
     case 'helsinki':
@@ -13,6 +15,6 @@ export const timeTileMeta = (city: string) => {
     default:
       title = 'Time';
   }
-  return { title, icon: 'clock' };
+  return { title, icon: 'clock', category: 'Time' as TileCategory };
 };
-export const meta = timeTileMeta('Helsinki');
+export const meta: TileMeta = timeTileMeta('Helsinki');

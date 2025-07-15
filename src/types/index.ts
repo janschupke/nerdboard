@@ -1,7 +1,6 @@
-export * from '../components/dragboard/dashboard';
+export * from './tile';
 export * from './animations';
 export * from './errors';
-export { TileType, TileSize } from '../components/dragboard/dashboard';
 
 // Common types
 export interface BaseComponentProps {

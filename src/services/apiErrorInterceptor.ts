@@ -1,4 +1,5 @@
 import { storageManager } from './storageManager';
+import type { APILogDetails } from './storageManager';
 
 export interface APIError {
   apiCall: string;
@@ -16,7 +17,7 @@ export const interceptAPIError = (error: APIError): void => {
     level: 'error',
     apiCall: error.apiCall,
     reason: error.reason,
-    details: error.details as import('./storageManager').APILogDetails,
+    details: error.details as APILogDetails,
   });
 
   // Restore console.error
@@ -33,7 +34,7 @@ export const interceptAPIWarning = (warning: APIError): void => {
     level: 'warning',
     apiCall: warning.apiCall,
     reason: warning.reason,
-    details: warning.details as import('./storageManager').APILogDetails,
+    details: warning.details as APILogDetails,
   });
 
   // Restore console.warn

@@ -1,5 +1,5 @@
 import React from 'react';
-import { TileType } from '../dragboard/dashboard';
+import { TileType } from '../../types/tile';
 import type { DashboardTile } from '../dragboard/dashboard';
 import type { TileMeta } from './GenericTile';
 import { cryptocurrencyTileMeta } from '../tile-implementations/cryptocurrency/meta';
@@ -9,9 +9,7 @@ import { gdxEtfTileMeta } from '../tile-implementations/gdx-etf/meta';
 import { uraniumTileMeta } from '../tile-implementations/uranium/meta';
 import { timeTileMeta } from '../tile-implementations/time/meta';
 import { weatherTileMeta } from '../tile-implementations/weather/meta';
-
-// Inline meta for EuriborRateTile
-const euriborRateTileMeta = { title: 'Euribor Rate', icon: 'chart' };
+import { euriborRateTileMeta } from '../tile-implementations/euribor-rate/meta';
 
 export interface TileCatalogEntry {
   type: TileType;
