@@ -5,4 +5,4 @@ export interface SidebarProps extends BaseComponentProps {
   isOpen: boolean;
   onToggle: () => void;
   onTileSelect: (tileType: TileType) => void;
-} 
+}

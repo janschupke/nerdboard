@@ -24,4 +24,4 @@ export type TileSize = (typeof TileSize)[keyof typeof TileSize];
 
 // Type aliases for backward compatibility
 export type TileTypeValue = string;
-export type TileSizeValue = string; 
+export type TileSizeValue = string;

@@ -16,14 +16,21 @@ interface SidebarProps {
   setSelectedIndex: (index: number) => void;
 }
 
-export function Sidebar({ isCollapsed, onSidebarToggle, selectedIndex, setSelectedIndex }: SidebarProps) {
+export function Sidebar({
+  isCollapsed,
+  onSidebarToggle,
+  selectedIndex,
+  setSelectedIndex,
+}: SidebarProps) {
   const { tiles, addTile, removeTile } = useDragboard();
 
   // Use TILE_CATALOG for available tiles
   const availableTiles = useMemo(
     () =>
       TILE_CATALOG.map((entry) => {
-        const meta = entry.meta || (entry.getMeta ? entry.getMeta() : { title: '', icon: '', category: undefined });
+        const meta =
+          entry.meta ||
+          (entry.getMeta ? entry.getMeta() : { title: '', icon: '', category: undefined });
         return {
           type: entry.type,
           name: meta.title,
@@ -51,7 +58,10 @@ export function Sidebar({ isCollapsed, onSidebarToggle, selectedIndex, setSelect
   }, [availableTiles]);
 
   // Flattened list for hotkey navigation
-  const flatTiles = useMemo(() => TILE_CATEGORIES.flatMap((cat) => tilesByCategory[cat]), [tilesByCategory]);
+  const flatTiles = useMemo(
+    () => TILE_CATEGORIES.flatMap((cat) => tilesByCategory[cat]),
+    [tilesByCategory],
+  );
 
   const isTileActive = useCallback(
     (tileType: TileType) => tiles.some((tile) => tile.type === tileType),
@@ -116,7 +126,9 @@ export function Sidebar({ isCollapsed, onSidebarToggle, selectedIndex, setSelect
         className={`h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out flex-shrink-0 ${isCollapsed ? 'w-0 opacity-0 pointer-events-none' : 'w-64 opacity-100'}`}
         style={{ minWidth: isCollapsed ? 0 : 256 }}
       >
-        <div className={`flex flex-col h-full transition-all duration-300 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <div
+          className={`flex flex-col h-full transition-all duration-300 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        >
           {!isCollapsed && (
             <>
               <div className="flex-shrink-0 p-4 border-b border-theme-primary">
@@ -125,10 +137,18 @@ export function Sidebar({ isCollapsed, onSidebarToggle, selectedIndex, setSelect
                 </h2>
               </div>
               <div className="relative flex-1 p-4 overflow-y-auto scrollbar-hide">
-                <div role="listbox" aria-labelledby="tiles-heading" aria-label="Available dashboard tiles">
+                <div
+                  role="listbox"
+                  aria-labelledby="tiles-heading"
+                  aria-label="Available dashboard tiles"
+                >
                   {TILE_CATEGORIES.map((category) => (
                     <section key={category} className="mb-4">
-                      <h3 className="text-base font-bold text-theme-primary mb-1" role="heading" aria-level={3}>
+                      <h3
+                        className="text-base font-bold text-theme-primary mb-1"
+                        role="heading"
+                        aria-level={3}
+                      >
                         {category}
                       </h3>
                       <hr className="border-theme-primary mb-2" />
