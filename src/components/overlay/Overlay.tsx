@@ -8,7 +8,11 @@ import { DASHBOARD_GRID_CONFIG } from './gridConfig';
 import { Tile } from '../tile/Tile';
 import { Header } from '../header/Header';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { useStorageManager } from '../../services/storageManager';
+import {
+  useStorageManager,
+  type DashboardTileWithConfig,
+  type TileConfig,
+} from '../../services/storageManager';
 import type { DashboardTile } from '../dragboard/dashboard';
 
 function OverlayContent() {
@@ -68,7 +72,7 @@ function OverlayContent() {
   );
 }
 
-// Simple storage wrapper for tile management
+// Fixed storage wrapper for tile management
 function useTileStorage() {
   const storage = useStorageManager();
   const [tiles, setTiles] = React.useState<DashboardTile[]>([]);
@@ -76,19 +80,30 @@ function useTileStorage() {
   // Load tiles from storage on mount
   React.useEffect(() => {
     const stored = storage.getTileConfig('dashboard-tiles');
-    const data = stored?.data as { tiles: DashboardTile[] } | undefined;
-    if (data && Array.isArray(data.tiles)) {
-      setTiles(data.tiles);
+    if (stored && Array.isArray(stored)) {
+      // Convert DashboardTileWithConfig back to DashboardTile for the dragboard
+      const dashboardTiles: DashboardTile[] = stored.map(
+        (tileWithConfig: DashboardTileWithConfig) => ({
+          id: tileWithConfig.id,
+          type: tileWithConfig.type,
+          position: tileWithConfig.position,
+          size: tileWithConfig.size,
+          config: tileWithConfig.config as unknown as Record<string, unknown>,
+          createdAt: tileWithConfig.createdAt,
+        }),
+      );
+      setTiles(dashboardTiles);
     }
   }, [storage]);
 
   // Save tiles to storage whenever they change
   React.useEffect(() => {
-    storage.setTileConfig('dashboard-tiles', {
-      data: { tiles },
-      lastDataRequest: Date.now(),
-      lastDataRequestSuccessful: true,
-    });
+    // Convert DashboardTile to DashboardTileWithConfig for storage
+    const tilesWithConfig: DashboardTileWithConfig[] = tiles.map((tile) => ({
+      ...tile,
+      config: tile.config as unknown as TileConfig,
+    }));
+    storage.setTileConfig('dashboard-tiles', tilesWithConfig);
   }, [tiles, storage]);
 
   const addTile = React.useCallback((tile: DashboardTile) => {

@@ -1,4 +1,6 @@
-export interface EuriborRateData {
+import type { TileDataType } from '../../../services/storageManager';
+
+export interface EuriborRateData extends TileDataType {
   currentRate: number;
   lastUpdate: Date;
   historicalData: EuriborRatePoint[];

@@ -1,6 +1,7 @@
 import type { TileSize } from '../../dragboard/dashboard';
+import type { TileDataType } from '../../../services/storageManager';
 
-export interface CryptocurrencyData {
+export interface CryptocurrencyData extends TileDataType {
   id: string;
   symbol: string;
   name: string;
@@ -38,3 +39,4 @@ export interface CryptocurrencyTileProps {
 }
 
 export type ChartPeriod = '7d' | '30d' | '1y';
+export type CoinId = string;

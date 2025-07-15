@@ -1,6 +1,7 @@
 import type { TileSize } from '../../dragboard/dashboard';
+import type { TileDataType } from '../../../services/storageManager';
 
-export interface GDXETFData {
+export interface GDXETFData extends TileDataType {
   symbol: string;
   name: string;
   currentPrice: number;

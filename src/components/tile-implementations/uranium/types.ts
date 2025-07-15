@@ -1,6 +1,7 @@
 import type { TileSize } from '../../dragboard/dashboard';
+import type { TileDataType } from '../../../services/storageManager';
 
-export interface UraniumPriceData {
+export interface UraniumPriceData extends TileDataType {
   spotPrice: number;
   change: number;
   changePercent: number;
@@ -12,7 +13,7 @@ export interface UraniumPriceData {
 }
 
 export interface UraniumPriceHistory {
-  timestamp: number;
+  date: string;
   price: number;
 }
 
@@ -27,7 +28,7 @@ export interface UraniumTileProps {
   config: UraniumTileConfig;
 }
 
-export type UraniumTimeRange = '1M' | '3M' | '6M' | '1Y' | '5Y' | 'MAX';
+export type UraniumTimeRange = '1M' | '3M' | '6M' | '1Y' | '5Y' | 'Max';
 
 export interface UraniumApiResponse {
   spotPrice: number;

@@ -1,4 +1,6 @@
 import React from 'react';
+import type { DashboardTile } from '../components/dragboard/dashboard';
+
 // --- Types ---
 export const AppTheme = {
   light: 'light',
@@ -33,11 +35,21 @@ export interface APILogEntry {
   details?: APILogDetails;
 }
 
-// Generic TileConfig with typed data for tile content only
-export interface TileConfig<TData> {
+export interface TileDataType {
+  // Base properties that all tile data should have
+  lastUpdated?: string;
+}
+
+// Generic TileConfig with typed data for tile content
+export interface TileConfig<TData extends TileDataType = TileDataType> extends TileDataType {
   data: TData | null;
   lastDataRequest: number;
   lastDataRequestSuccessful: boolean;
+}
+
+// Extended DashboardTile that includes TileConfig in the config property
+export interface DashboardTileWithConfig extends Omit<DashboardTile, 'config'> {
+  config: TileConfig;
 }
 
 // --- Constants ---
@@ -54,10 +66,20 @@ export const DEFAULT_APPCONFIG: AppConfig = {
   theme: AppTheme.light,
 };
 
+// --- StorageManager Types ---
+export interface TileConfigMap {
+  // Dashboard tiles (board state) - now stores array of tiles with their configs
+  'dashboard-tiles': DashboardTileWithConfig[];
+}
+
+type TileConfigKey = keyof TileConfigMap;
+
+type TileConfigType<K extends TileConfigKey> = TileConfigMap[K];
+
 // --- Storage Manager Implementation ---
 export class StorageManager {
   private appConfig: AppConfig = DEFAULT_APPCONFIG;
-  private tileConfig: Record<string, TileConfig> = {};
+  private tileConfig: Partial<TileConfigMap> & Record<string, any> = {};
   private sidebarState: SidebarState | null = null;
   private logs: APILogEntry[] = [];
   private initialized = false;
@@ -92,13 +114,33 @@ export class StorageManager {
     }
   }
 
-  getTileConfig<TData = unknown>(tileName: string): TileConfig<TData> | null {
+  // Type-safe getter for known keys
+  getTileConfig<K extends TileConfigKey>(tileName: K): TileConfigType<K> | null {
     this.init();
     const config = this.tileConfig[tileName];
+    return config ? (config as TileConfigType<K>) : null;
+  }
+
+  // Type-safe setter for known keys
+  setTileConfig<K extends TileConfigKey>(tileName: K, config: TileConfigType<K>) {
+    this.tileConfig[tileName] = config;
+    try {
+      localStorage.setItem(STORAGE_KEYS.TILECONFIG, JSON.stringify(this.tileConfig));
+    } catch (error) {
+      console.error('Failed to save tile config:', error);
+    }
+  }
+
+  // Generic getter for dynamic keys (tile instances)
+  getTileInstanceConfig<TData extends TileDataType>(tileId: string): TileConfig<TData> | null {
+    this.init();
+    const config = this.tileConfig[tileId];
     return config ? (config as TileConfig<TData>) : null;
   }
-  setTileConfig<TData = unknown>(tileName: string, config: TileConfig<TData>) {
-    this.tileConfig[tileName] = config as TileConfig;
+
+  // Generic setter for dynamic keys (tile instances)
+  setTileInstanceConfig<TData extends TileDataType>(tileId: string, config: TileConfig<TData>) {
+    this.tileConfig[tileId] = config;
     try {
       localStorage.setItem(STORAGE_KEYS.TILECONFIG, JSON.stringify(this.tileConfig));
     } catch (error) {

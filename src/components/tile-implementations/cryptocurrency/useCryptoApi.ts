@@ -21,7 +21,7 @@ export function useCryptoApi() {
           tileId,
           { apiCall: 'CoinGecko Markets API' },
         );
-        storageManager.setTileConfig<CryptocurrencyData[]>(tileId, {
+        storageManager.setTileInstanceConfig<CryptocurrencyData[]>(tileId, {
           data: result.data as CryptocurrencyData[],
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: !result.error,
@@ -29,7 +29,7 @@ export function useCryptoApi() {
         if (result.error) throw new Error(result.error);
         return result.data ?? [];
       } catch (error) {
-        storageManager.setTileConfig<CryptocurrencyData[]>(tileId, {
+        storageManager.setTileInstanceConfig<CryptocurrencyData[]>(tileId, {
           data: null,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,

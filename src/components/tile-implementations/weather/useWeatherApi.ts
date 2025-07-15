@@ -21,7 +21,7 @@ export function useWeatherApi() {
           tileId,
           { apiCall: 'OpenWeatherMap API' },
         );
-        storageManager.setTileConfig<WeatherApiResponse>(tileId, {
+        storageManager.setTileInstanceConfig<WeatherApiResponse>(tileId, {
           data: result.data as WeatherApiResponse,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: !result.error,
@@ -29,7 +29,7 @@ export function useWeatherApi() {
         if (result.error) throw new Error(result.error);
         return result.data as WeatherApiResponse;
       } catch (error) {
-        storageManager.setTileConfig<WeatherApiResponse>(tileId, {
+        storageManager.setTileInstanceConfig<WeatherApiResponse>(tileId, {
           data: null,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,

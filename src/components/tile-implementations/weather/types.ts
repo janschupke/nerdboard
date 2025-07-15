@@ -1,4 +1,6 @@
-export interface WeatherData {
+import type { TileDataType } from '../../../services/storageManager';
+
+export interface WeatherData extends TileDataType {
   city: string;
   country: string;
   temperature: {
@@ -71,7 +73,13 @@ export interface WeatherIconProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export type WeatherApiResponse = {
+export interface WeatherTileConfig {
+  city: string;
+  country: string;
+  refreshInterval?: number;
+}
+
+export interface WeatherApiResponse {
   current: {
     temp: number;
     feels_like: number;
@@ -102,7 +110,9 @@ export type WeatherApiResponse = {
     }>;
   }>;
   timezone: string;
-};
+}
+
+export type WeatherApiResponseType = WeatherApiResponse;
 
 export type WeatherError = {
   message: string;

@@ -1,12 +1,13 @@
 import type { TileSize } from '../../dragboard/dashboard';
+import type { TileDataType } from '../../../services/storageManager';
 
-export interface PreciousMetalData {
+export interface PreciousMetalData extends TileDataType {
   price: number;
   change_24h: number;
   change_percentage_24h: number;
 }
 
-export interface PreciousMetalsData {
+export interface PreciousMetalsData extends TileDataType {
   gold: PreciousMetalData;
   silver: PreciousMetalData;
 }

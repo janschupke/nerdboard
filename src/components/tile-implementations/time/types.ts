@@ -1,6 +1,7 @@
 import type { TileSize } from '../../dragboard/dashboard';
+import type { TileDataType } from '../../../services/storageManager';
 
-export interface TimeData {
+export interface TimeData extends TileDataType {
   currentTime: string;
   timezone: string;
   abbreviation: string;

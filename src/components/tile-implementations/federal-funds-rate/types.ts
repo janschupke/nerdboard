@@ -1,6 +1,7 @@
 import type { TileSize } from '../../dragboard/dashboard';
+import type { TileDataType } from '../../../services/storageManager';
 
-export interface FederalFundsRateData {
+export interface FederalFundsRateData extends TileDataType {
   currentRate: number;
   lastUpdate: Date;
   historicalData: HistoricalRateData[];
