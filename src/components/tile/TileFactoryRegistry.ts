@@ -1,5 +1,5 @@
 import React from 'react';
-import { TileType } from '../dragboard/dashboard';
+import { TileType } from '../../types/tile';
 import type { DashboardTile } from '../dragboard/dashboard';
 import type { TileMeta } from './GenericTile';
 import { cryptocurrencyTileMeta } from '../tile-implementations/cryptocurrency/meta';

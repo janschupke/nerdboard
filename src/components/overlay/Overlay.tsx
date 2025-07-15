@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { ErrorBoundary } from './ErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
@@ -20,6 +20,11 @@ function OverlayContent() {
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
 
+  // Sidebar collapsed state and selected index
+  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarSelectedIndex, setSidebarSelectedIndex] = useState(0);
+  const toggleCollapse = () => setSidebarCollapsed((prev) => !prev);
+
   // Register hotkeys
   useKeyboardNavigation({
     toggleLogView,
@@ -40,16 +45,17 @@ function OverlayContent() {
         isRefreshing={false}
         toggleTheme={toggleTheme}
         theme={theme}
-        toggleCollapse={() => {}}
+        toggleCollapse={toggleCollapse}
         tilesCount={tiles.length}
       />
-
-      {/* Main Content Area */}
       <div className="flex h-full pt-16 relative">
-        {/* Fixed Sidebar */}
-        <Sidebar onToggle={() => {}} />
-
-        {/* Scrollable Dashboard Content */}
+        {/* Always render Sidebar for hotkey support and animation */}
+        <Sidebar
+          isCollapsed={isSidebarCollapsed}
+          onSidebarToggle={() => setSidebarCollapsed((prev) => !prev)}
+          selectedIndex={sidebarSelectedIndex}
+          setSelectedIndex={setSidebarSelectedIndex}
+        />
         <main className="flex-1 overflow-auto relative scrollbar-hide">
           <DragboardGrid>
             {tiles.map((tile) => (

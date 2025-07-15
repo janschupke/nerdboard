@@ -1,4 +1,4 @@
-import type { TileSize } from '../../dragboard/dashboard';
+import type { TileSize } from '../../../types/tile';
 import type { TileDataType } from '../../../services/storageManager';
 
 export interface CryptocurrencyData extends TileDataType {
