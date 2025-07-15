@@ -26,6 +26,8 @@ function OverlayContent() {
     toggleLogView,
     refreshAllTiles,
     isRefreshing,
+    selectedIndex: sidebarSelectedIndex,
+    setSelectedIndex: setSidebarSelectedIndex,
   });
 
   const LogView = React.lazy(() =>

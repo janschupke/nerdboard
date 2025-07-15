@@ -51,9 +51,9 @@ export const WeatherTile = React.memo(
     meta: TileMeta;
     refreshKey?: number;
   }) => {
-    // Call the hook at the top level, not inside a callback
-    const useTileData = (id: string) => useWeatherTileData(id, refreshKey);
-    return <GenericTile tile={tile} meta={meta} useTileData={useTileData} {...rest} />;
+    // Call the hook at the top level
+    const tileData = useWeatherTileData(tile.id, refreshKey);
+    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
   (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
 );

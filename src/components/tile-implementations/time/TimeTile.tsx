@@ -51,8 +51,8 @@ export const TimeTile = React.memo(
     meta: TileMeta;
     refreshKey?: number;
   }) => {
-    const useTileData = (id: string) => useTimeTileData(id, refreshKey);
-    return <GenericTile tile={tile} meta={meta} useTileData={useTileData} {...rest} />;
+    const tileData = useTimeTileData(tile.id, refreshKey);
+    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
   (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
 );

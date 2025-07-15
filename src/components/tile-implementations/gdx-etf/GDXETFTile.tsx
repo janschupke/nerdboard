@@ -50,8 +50,8 @@ export const GDXETFTile = React.memo(
     meta: TileMeta;
     refreshKey?: number;
   }) => {
-    const useTileData = (id: string) => useGdxEtfTileData(id, refreshKey);
-    return <GenericTile tile={tile} meta={meta} useTileData={useTileData} {...rest} />;
+    const tileData = useGdxEtfTileData(tile.id, refreshKey);
+    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
   (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
 );

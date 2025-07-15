@@ -21,19 +21,14 @@ export interface GenericTileDataHook<T = unknown> {
 export interface GenericTileProps<T = unknown> extends DraggableTileProps {
   tile: DashboardTile;
   meta: TileMeta;
-  useTileData: GenericTileDataHook<T>;
+  tileData: GenericTileStatus & { data?: T };
   renderContent?: (status: GenericTileStatus, data?: T) => React.ReactNode;
   style?: React.CSSProperties;
 }
 
 export const GenericTile = React.memo(
   forwardRef<HTMLDivElement, GenericTileProps<unknown>>(
-    (
-      { tile, meta, onRemove, dragHandleProps, className, style, useTileData, renderContent },
-      ref,
-    ) => {
-      // Memoize tileData so it only re-fetches if tile.id changes
-      const tileData = useTileData(tile.id);
+    ({ tile, meta, onRemove, dragHandleProps, className, style, tileData, renderContent }, ref) => {
       const status: GenericTileStatus = {
         loading: tileData.loading,
         error: tileData.error,
@@ -158,7 +153,7 @@ export const GenericTile = React.memo(
       );
     },
   ),
-  (prev, next) => prev.tile.id === next.tile.id && prev.useTileData === next.useTileData,
+  (prev, next) => prev.tile.id === next.tile.id && prev.tileData === next.tileData,
 );
 
 GenericTile.displayName = 'GenericTile';

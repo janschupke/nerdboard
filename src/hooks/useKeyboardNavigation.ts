@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 // Types for keyboard navigation configuration
 export interface KeyboardNavigationConfig {
@@ -14,8 +14,8 @@ export interface KeyboardNavigationOptions {
   toggleLogView?: () => void;
   refreshAllTiles?: () => void;
   isRefreshing?: boolean;
-  selectedIndex?: number;
-  setSelectedIndex?: (index: number) => void;
+  selectedIndex: number;
+  setSelectedIndex: (index: number) => void;
 }
 
 /**
@@ -24,20 +24,16 @@ export interface KeyboardNavigationOptions {
  * in a hierarchical manner to prevent conflicts.
  * Handles L (log) and R (refresh) hotkeys directly.
  */
-export const useKeyboardNavigation = (options: KeyboardNavigationOptions = {}) => {
+export const useKeyboardNavigation = (options: KeyboardNavigationOptions) => {
   const {
     navigation,
     enabled = true,
     toggleLogView,
     refreshAllTiles,
     isRefreshing,
-    selectedIndex: controlledIndex,
-    setSelectedIndex: controlledSetIndex,
+    selectedIndex,
+    setSelectedIndex,
   } = options;
-  const [uncontrolledIndex, setUncontrolledIndex] = useState(0);
-  const isControlled = controlledIndex !== undefined && controlledSetIndex !== undefined;
-  const selectedIndex = isControlled ? controlledIndex : uncontrolledIndex;
-  const setSelectedIndex = isControlled ? controlledSetIndex : setUncontrolledIndex;
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -79,33 +75,17 @@ export const useKeyboardNavigation = (options: KeyboardNavigationOptions = {}) =
         switch (event.key) {
           case 'ArrowUp':
             event.preventDefault();
-            if (isControlled) {
-              setSelectedIndex(
-                selectedIndex === 0 ? navigation.items.length - 1 : selectedIndex - 1,
-              );
-            } else {
-              setUncontrolledIndex((prev) =>
-                prev === 0 ? navigation.items!.length - 1 : prev - 1,
-              );
-            }
+            setSelectedIndex(selectedIndex === 0 ? navigation.items.length - 1 : selectedIndex - 1);
             break;
           case 'ArrowDown':
             event.preventDefault();
-            if (isControlled) {
-              setSelectedIndex(
-                selectedIndex === navigation.items.length - 1 ? 0 : selectedIndex + 1,
-              );
-            } else {
-              setUncontrolledIndex((prev) =>
-                prev === navigation.items!.length - 1 ? 0 : prev + 1,
-              );
-            }
+            setSelectedIndex(selectedIndex === navigation.items.length - 1 ? 0 : selectedIndex + 1);
             break;
           case 'Enter':
           case ' ': // Spacebar
             event.preventDefault();
-            if (navigation.items![selectedIndex] && navigation.onToggle) {
-              navigation.onToggle(navigation.items![selectedIndex]);
+            if (navigation.items[selectedIndex] && navigation.onToggle) {
+              navigation.onToggle(navigation.items[selectedIndex]);
             }
             break;
           case 'ArrowLeft':
@@ -130,7 +110,6 @@ export const useKeyboardNavigation = (options: KeyboardNavigationOptions = {}) =
       toggleLogView,
       refreshAllTiles,
       isRefreshing,
-      isControlled,
       setSelectedIndex,
     ],
   );
@@ -145,24 +124,4 @@ export const useKeyboardNavigation = (options: KeyboardNavigationOptions = {}) =
     selectedIndex,
     setSelectedIndex,
   };
-};
-
-/**
- * Convenience hook for component-specific navigation
- * Use this for component-level navigation like sidebar tile selection
- */
-export const useComponentNavigation = <T extends string>(
-  items: T[],
-  onToggle: (itemId: T) => void,
-  onSidebarToggle?: () => void,
-  isCollapsed?: boolean,
-) => {
-  const navigation: KeyboardNavigationConfig = {
-    items: items as string[],
-    onToggle: onToggle as (itemId: string) => void,
-    onSidebarToggle,
-    isCollapsed,
-  };
-
-  return useKeyboardNavigation({ navigation, enabled: true });
 };
