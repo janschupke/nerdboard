@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useWeatherApi } from './useWeatherApi';
@@ -13,6 +13,7 @@ function useWeatherTileData(
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
   const [data, setData] = useState<WeatherTileData | undefined>(undefined);
+  const prevRefreshKeyRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     let mounted = true;
@@ -20,7 +21,12 @@ function useWeatherTileData(
     setError(null);
     setHasData(false);
     setData(undefined);
-    getWeather(tileId, { lat: 60.1699, lon: 24.9384 })
+    
+    // Determine if this is a force refresh (refreshKey changed)
+    const isForceRefresh = refreshKey !== undefined && refreshKey !== prevRefreshKeyRef.current;
+    prevRefreshKeyRef.current = refreshKey;
+    
+    getWeather(tileId, { lat: 60.1699, lon: 24.9384 }, isForceRefresh)
       .then((result) => {
         if (!mounted) return;
         setData(result);

@@ -197,4 +197,82 @@ describe('DataFetcher', () => {
       });
     });
   });
+
+  describe('fetchWithRetry - Data Age Validation', () => {
+    it('should return cached data if less than 10 minutes old', async () => {
+      // Arrange
+      const mockFetch = vi.mocked(fetch);
+      mockFetch.mockResolvedValueOnce({
+        json: () => Promise.resolve({ data: 'fresh' }),
+      } as Response);
+
+      const storageKey = 'test-storage-key';
+      const apiCall = 'Test API';
+
+      // Mock storage with recent data (5 minutes old)
+      const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+      storageManager.setTileState(storageKey, {
+        data: { cached: 'data' },
+        lastDataRequest: fiveMinutesAgo,
+        lastDataRequestSuccessful: true,
+      });
+
+      // Act
+      const result = await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey, {
+        apiCall,
+      });
+
+      // Assert
+      expect(result.data).toEqual({ cached: 'data' });
+      expect(result.isCached).toBe(true);
+      expect(mockFetch).not.toHaveBeenCalled(); // Should not fetch fresh data
+    });
+
+    it('should fetch fresh data if cached data is older than 10 minutes', async () => {
+      // Arrange
+      const storageKey = 'test-storage-key';
+      const apiCall = 'Test API';
+
+      // Mock storage with old data (15 minutes old)
+      const fifteenMinutesAgo = Date.now() - (15 * 60 * 1000);
+      storageManager.setTileState(storageKey, {
+        data: { cached: 'data' },
+        lastDataRequest: fifteenMinutesAgo,
+        lastDataRequestSuccessful: true,
+      });
+
+      // Act
+      const result = await DataFetcher.fetchWithRetry(() => Promise.resolve({ data: 'fresh' }), storageKey, {
+        apiCall,
+      });
+
+      // Assert
+      expect(result.data).toEqual({ data: 'fresh' });
+      expect(result.isCached).toBe(false);
+    });
+
+    it('should bypass cache when forceRefresh is true', async () => {
+      // Arrange
+      const storageKey = 'test-storage-key';
+      const apiCall = 'Test API';
+
+      // Mock storage with recent data (5 minutes old)
+      const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+      storageManager.setTileState(storageKey, {
+        data: { cached: 'data' },
+        lastDataRequest: fiveMinutesAgo,
+        lastDataRequestSuccessful: true,
+      });
+
+      // Act
+      const result = await DataFetcher.fetchWithRetry(() => Promise.resolve({ data: 'fresh' }), storageKey, {
+        apiCall,
+        forceRefresh: true,
+      });
+
+      // Assert
+      expect(result.data).toEqual({ data: 'fresh' });
+      expect(result.isCached).toBe(false);
+    });
+  });
 });

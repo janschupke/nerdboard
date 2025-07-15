@@ -1,14 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useEuriborApi } from './useEuriborApi';
+import type { EuriborRateData } from './types';
 
-function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<unknown>> {
+function useEuriborTileData(
+  tileId: string,
+  refreshKey?: number,
+): ReturnType<GenericTileDataHook<EuriborRateData>> {
   const { getEuriborRate } = useEuriborApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
-  const [data, setData] = useState<unknown>(undefined);
+  const [data, setData] = useState<EuriborRateData | undefined>(undefined);
+  const prevRefreshKeyRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     let mounted = true;
@@ -16,11 +21,16 @@ function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<unkn
     setError(null);
     setHasData(false);
     setData(undefined);
-    getEuriborRate()
+    
+    // Determine if this is a force refresh (refreshKey changed)
+    const isForceRefresh = refreshKey !== undefined && refreshKey !== prevRefreshKeyRef.current;
+    prevRefreshKeyRef.current = refreshKey;
+    
+    getEuriborRate(tileId, {}, isForceRefresh)
       .then((result) => {
         if (!mounted) return;
         setData(result);
-        setHasData(!!result);
+        setHasData(!!result && typeof result.currentRate === 'number');
         setLoading(false);
       })
       .catch((err) => {
@@ -32,7 +42,7 @@ function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<unkn
     return () => {
       mounted = false;
     };
-  }, [getEuriborRate, tileId]);
+  }, [tileId, getEuriborRate, refreshKey]);
   return { loading, error, hasData, data };
 }
 

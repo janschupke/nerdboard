@@ -10,17 +10,21 @@ import type { WeatherParams } from '../../../services/apiEndpoints';
  * Fetches weather data for a location from OpenWeatherMap.
  * @param tileId - Unique tile identifier for storage
  * @param params - Query params for OpenWeatherMap endpoint
+ * @param forceRefresh - Whether to bypass cache and force a fresh fetch
  * @returns Promise<WeatherApiResponse>
  */
 export function useWeatherApi() {
   const getWeather = useCallback(
-    async (tileId: string, params: WeatherParams): Promise<WeatherTileData> => {
+    async (tileId: string, params: WeatherParams, forceRefresh = false): Promise<WeatherTileData> => {
       const url = buildApiUrl(OPENWEATHERMAP_ONECALL_ENDPOINT, params);
       try {
         const result = await DataFetcher.fetchWithRetry<WeatherApiResponse>(
           () => fetch(url).then((res) => res.json()),
           tileId,
-          { apiCall: 'Weather API' },
+          { 
+            apiCall: 'Weather API',
+            forceRefresh,
+          },
         );
         const tileData: WeatherTileData = {
           weather: result.data as WeatherApiResponse,

@@ -1,6 +1,9 @@
 import { storageManager, type APILogDetails, type TileDataType } from './storageManager';
 import { DataMapperRegistry, type BaseApiResponse } from './dataMapper';
 
+// 10-minute interval constant for data freshness
+export const DATA_FRESHNESS_INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
+
 export interface FetchOptions {
   forceRefresh?: boolean;
   retryCount?: number;
@@ -30,13 +33,21 @@ export class DataFetcher {
       if (!forceRefresh) {
         const cached = storageManager.getTileState<T>(storageKey);
         if (cached && cached.data) {
-          return {
-            data: cached.data as T,
-            isCached: true,
-            error: null,
-            lastUpdated: new Date(cached.lastDataRequest),
-            retryCount: 0,
-          };
+          // Check if data is fresh (less than 10 minutes old)
+          const now = Date.now();
+          const dataAge = now - cached.lastDataRequest;
+          const isDataFresh = dataAge < DATA_FRESHNESS_INTERVAL;
+          
+          if (isDataFresh) {
+            return {
+              data: cached.data as T,
+              isCached: true,
+              error: null,
+              lastUpdated: new Date(cached.lastDataRequest),
+              retryCount: 0,
+            };
+          }
+          // Data is stale, continue to fetch fresh data
         }
       }
 

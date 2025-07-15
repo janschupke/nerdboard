@@ -9,16 +9,20 @@ import type { TimeParams } from '../../../services/apiEndpoints';
  * Fetches time data for a city from WorldTimeAPI.
  * @param tileId - Unique tile identifier for storage
  * @param params - Query params for time endpoint
+ * @param forceRefresh - Whether to bypass cache and force a fresh fetch
  * @returns Promise<TimeData>
  */
 export function useTimeApi() {
-  const getTime = useCallback(async (tileId: string, params: TimeParams): Promise<TimeData> => {
+  const getTime = useCallback(async (tileId: string, params: TimeParams, forceRefresh = false): Promise<TimeData> => {
     const url = buildApiUrl(TIME_API_ENDPOINT, params);
     try {
       const result = await DataFetcher.fetchWithRetry<TimeData>(
         () => fetch(url).then((res) => res.json()),
         tileId,
-        { apiCall: 'WorldTimeAPI' },
+        { 
+          apiCall: 'WorldTimeAPI',
+          forceRefresh,
+        },
       );
       storageManager.setTileState<TimeData>(tileId, {
         data: result.data as TimeData,

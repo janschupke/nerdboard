@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useCallback } from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { ErrorBoundary } from './ErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
@@ -30,10 +30,30 @@ function OverlayContent({
 }) {
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Refresh all tiles function
+  const refreshAllTiles = useCallback(async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      // Increment refresh key to trigger re-renders of all tiles
+      setRefreshKey(prev => prev + 1);
+      
+      // Small delay to show loading state
+      await new Promise(resolve => setTimeout(resolve, 100));
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing]);
 
   // Register hotkeys
   useKeyboardNavigation({
     toggleLogView,
+    refreshAllTiles,
+    isRefreshing,
     selectedIndex: sidebarSelectedIndex,
     setSelectedIndex: setSidebarSelectedIndex,
   });
@@ -52,6 +72,8 @@ function OverlayContent({
         theme={theme}
         toggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
         tilesCount={tiles.length}
+        refreshAllTiles={refreshAllTiles}
+        isRefreshing={isRefreshing}
       />
       <div className="flex h-full pt-16 relative">
         {/* Always render Sidebar for hotkey support and animation */}
@@ -80,7 +102,7 @@ function OverlayContent({
                 position={tile.position || { x: 0, y: 0 }}
                 size={typeof tile.size === 'string' ? tile.size : 'medium'}
               >
-                <Tile tile={tile} />
+                <Tile tile={tile} refreshKey={refreshKey} />
               </DragboardTile>
             ))}
           </DragboardGrid>

@@ -10,17 +10,21 @@ import type { CryptocurrencyTileData } from './types';
  * Fetches cryptocurrency market data from CoinGecko.
  * @param tileId - Unique tile identifier for storage
  * @param params - Query params for CoinGecko markets endpoint
+ * @param forceRefresh - Whether to bypass cache and force a fresh fetch
  * @returns Promise<CryptocurrencyData[]>
  */
 export function useCryptoApi() {
   const getCryptocurrencyMarkets = useCallback(
-    async (tileId: string, params: CryptoMarketsParams): Promise<CryptocurrencyTileData> => {
+    async (tileId: string, params: CryptoMarketsParams, forceRefresh = false): Promise<CryptocurrencyTileData> => {
       const url = buildApiUrl(COINGECKO_MARKETS_ENDPOINT, params);
       try {
         const result = await DataFetcher.fetchWithRetry<CryptocurrencyData[]>(
           () => fetch(url).then((res) => res.json()),
           tileId,
-          { apiCall: 'CoinGecko Markets API' },
+          { 
+            apiCall: 'CoinGecko Markets API',
+            forceRefresh,
+          },
         );
         const tileData: CryptocurrencyTileData = {
           coins: result.data ?? [],

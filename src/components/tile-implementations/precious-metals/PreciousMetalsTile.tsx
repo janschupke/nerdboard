@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { usePreciousMetalsApi } from './usePreciousMetalsApi';
@@ -13,6 +13,7 @@ function usePreciousMetalsTileData(
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
   const [data, setData] = useState<PreciousMetalsData | undefined>(undefined);
+  const prevRefreshKeyRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     let mounted = true;
@@ -20,7 +21,12 @@ function usePreciousMetalsTileData(
     setError(null);
     setHasData(false);
     setData(undefined);
-    getPreciousMetals(tileId, {})
+    
+    // Determine if this is a force refresh (refreshKey changed)
+    const isForceRefresh = refreshKey !== undefined && refreshKey !== prevRefreshKeyRef.current;
+    prevRefreshKeyRef.current = refreshKey;
+    
+    getPreciousMetals(tileId, {}, isForceRefresh)
       .then((result) => {
         if (!mounted) return;
         setData(result);

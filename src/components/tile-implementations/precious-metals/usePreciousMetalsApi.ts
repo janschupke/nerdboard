@@ -9,17 +9,21 @@ import type { PreciousMetalsParams } from '../../../services/apiEndpoints';
  * Fetches precious metals data (gold, silver).
  * @param tileId - Unique tile identifier for storage
  * @param params - Query params for precious metals endpoint
+ * @param forceRefresh - Whether to bypass cache and force a fresh fetch
  * @returns Promise<PreciousMetalsData>
  */
 export function usePreciousMetalsApi() {
   const getPreciousMetals = useCallback(
-    async (tileId: string, params: PreciousMetalsParams): Promise<PreciousMetalsData> => {
+    async (tileId: string, params: PreciousMetalsParams, forceRefresh = false): Promise<PreciousMetalsData> => {
       const url = buildApiUrl(PRECIOUS_METALS_ENDPOINT, params);
       try {
         const result = await DataFetcher.fetchWithRetry<PreciousMetalsData>(
           () => fetch(url).then((res) => res.json()),
           tileId,
-          { apiCall: 'Precious Metals API' },
+          { 
+            apiCall: 'Precious Metals API',
+            forceRefresh,
+          },
         );
         storageManager.setTileState<PreciousMetalsData>(tileId, {
           data: result.data as PreciousMetalsData,
