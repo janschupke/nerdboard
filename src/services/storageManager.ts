@@ -56,7 +56,8 @@ export interface DashboardTileWithConfig extends Omit<DashboardTile, 'config'> {
 export const STORAGE_KEYS = {
   VERSION: 'nerdboard-data-version',
   APPCONFIG: 'nerdboard-app-config',
-  TILECONFIG: 'nerdboard-tile-config',
+  DASHBOARD_STATE: 'nerdboard-dashboard-state', // new: layout/config
+  TILE_STATE: 'nerdboard-tile-state', // new: per-tile data
   SIDEBAR: 'nerdboard-sidebar-state',
   LOGS: 'nerdboard_api_logs',
 };
@@ -67,19 +68,27 @@ export const DEFAULT_APPCONFIG: AppConfig = {
 };
 
 // --- StorageManager Types ---
-export interface TileConfigMap {
-  // Dashboard tiles (board state) - now stores array of tiles with their configs
-  'dashboard-tiles': DashboardTileWithConfig[];
+export interface DashboardState {
+  tiles: Array<{
+    id: string;
+    type: string;
+    position: { x: number; y: number };
+    size: string;
+    createdAt: number;
+    config?: Record<string, unknown>;
+  }>;
 }
 
-type TileConfigKey = keyof TileConfigMap;
+export interface TileState<TData = unknown> {
+  data: TData | null;
+  lastDataRequest: number;
+  lastDataRequestSuccessful: boolean;
+}
 
-type TileConfigType<K extends TileConfigKey> = TileConfigMap[K];
-
-// --- Storage Manager Implementation ---
 export class StorageManager {
   private appConfig: AppConfig = DEFAULT_APPCONFIG;
-  private tileConfig: Partial<TileConfigMap> & Record<string, unknown> = {};
+  private dashboardState: DashboardState | null = null;
+  private tileState: Record<string, TileState> = {};
   private sidebarState: SidebarState | null = null;
   private logs: APILogEntry[] = [];
   private initialized = false;
@@ -89,8 +98,10 @@ export class StorageManager {
     try {
       const appConfigRaw = localStorage.getItem(STORAGE_KEYS.APPCONFIG);
       this.appConfig = appConfigRaw ? JSON.parse(appConfigRaw) : DEFAULT_APPCONFIG;
-      const tileConfigRaw = localStorage.getItem(STORAGE_KEYS.TILECONFIG);
-      this.tileConfig = tileConfigRaw ? JSON.parse(tileConfigRaw) : {};
+      const dashboardRaw = localStorage.getItem(STORAGE_KEYS.DASHBOARD_STATE);
+      this.dashboardState = dashboardRaw ? JSON.parse(dashboardRaw) : null;
+      const tileStateRaw = localStorage.getItem(STORAGE_KEYS.TILE_STATE);
+      this.tileState = tileStateRaw ? JSON.parse(tileStateRaw) : {};
       const sidebarRaw = localStorage.getItem(STORAGE_KEYS.SIDEBAR);
       this.sidebarState = sidebarRaw ? JSON.parse(sidebarRaw) : null;
       const logsRaw = localStorage.getItem(STORAGE_KEYS.LOGS);
@@ -114,37 +125,31 @@ export class StorageManager {
     }
   }
 
-  // Type-safe getter for known keys
-  getTileConfig<K extends TileConfigKey>(tileName: K): TileConfigType<K> | null {
+  // Dashboard state (layout/config)
+  getDashboardState(): DashboardState | null {
     this.init();
-    const config = this.tileConfig[tileName];
-    return config ? (config as TileConfigType<K>) : null;
+    return this.dashboardState;
   }
-
-  // Type-safe setter for known keys
-  setTileConfig<K extends TileConfigKey>(tileName: K, config: TileConfigType<K>) {
-    this.tileConfig[tileName] = config;
+  setDashboardState(state: DashboardState) {
+    this.dashboardState = state;
     try {
-      localStorage.setItem(STORAGE_KEYS.TILECONFIG, JSON.stringify(this.tileConfig));
+      localStorage.setItem(STORAGE_KEYS.DASHBOARD_STATE, JSON.stringify(state));
     } catch (error) {
-      console.error('Failed to save tile config:', error);
+      console.error('Failed to save dashboard state:', error);
     }
   }
 
-  // Generic getter for dynamic keys (tile instances)
-  getTileInstanceConfig<TData extends TileDataType>(tileId: string): TileConfig<TData> | null {
+  // Per-tile state (data/fetch)
+  getTileState<TData = unknown>(tileId: string): TileState<TData> | null {
     this.init();
-    const config = this.tileConfig[tileId];
-    return config ? (config as TileConfig<TData>) : null;
+    return (this.tileState[tileId] as TileState<TData>) || null;
   }
-
-  // Generic setter for dynamic keys (tile instances)
-  setTileInstanceConfig<TData extends TileDataType>(tileId: string, config: TileConfig<TData>) {
-    this.tileConfig[tileId] = config;
+  setTileState<TData = unknown>(tileId: string, state: TileState<TData>) {
+    this.tileState[tileId] = state;
     try {
-      localStorage.setItem(STORAGE_KEYS.TILECONFIG, JSON.stringify(this.tileConfig));
+      localStorage.setItem(STORAGE_KEYS.TILE_STATE, JSON.stringify(this.tileState));
     } catch (error) {
-      console.error('Failed to save tile config:', error);
+      console.error('Failed to save tile state:', error);
     }
   }
 
@@ -191,15 +196,6 @@ export class StorageManager {
       localStorage.removeItem(STORAGE_KEYS.LOGS);
     } catch (error) {
       console.error('Failed to clear logs:', error);
-    }
-  }
-
-  clearTileConfigs() {
-    this.tileConfig = {};
-    try {
-      localStorage.removeItem(STORAGE_KEYS.TILECONFIG);
-    } catch (error) {
-      console.error('Failed to clear tile configs:', error);
     }
   }
 }

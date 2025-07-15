@@ -28,7 +28,7 @@ export class DataFetcher {
     try {
       // Check cache first unless forcing refresh
       if (!forceRefresh) {
-        const cached = storageManager.getTileInstanceConfig(storageKey);
+        const cached = storageManager.getTileState<T>(storageKey);
         if (cached && cached.data) {
           return {
             data: cached.data as T,
@@ -96,8 +96,8 @@ export class DataFetcher {
       }
 
       // Cache the fresh data
-      storageManager.setTileInstanceConfig(storageKey, {
-        data: data as unknown as Record<string, unknown>,
+      storageManager.setTileState<T>(storageKey, {
+        data: data as unknown as T,
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: true,
       });
@@ -162,7 +162,7 @@ export class DataFetcher {
     options: FetchOptions = {},
   ): Promise<FetchResult<T>> {
     // First, try to get cached data immediately
-    const cached = storageManager.getTileInstanceConfig(storageKey);
+    const cached = storageManager.getTileState<T>(storageKey);
 
     if (cached && cached.data) {
       // Schedule background refresh
@@ -247,7 +247,7 @@ export class DataFetcher {
         const mappedData = mapper.safeMap(result.data);
 
         // Cache the mapped data
-        storageManager.setTileInstanceConfig(storageKey, {
+        storageManager.setTileState<TTileData>(storageKey, {
           data: mappedData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: true,
@@ -264,7 +264,7 @@ export class DataFetcher {
         // Return default data if no API data
         const defaultData = mapper.createDefault();
 
-        storageManager.setTileInstanceConfig(storageKey, {
+        storageManager.setTileState<TTileData>(storageKey, {
           data: defaultData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,
@@ -282,7 +282,7 @@ export class DataFetcher {
       // Return default data on error
       const defaultData = mapper.createDefault();
 
-      storageManager.setTileInstanceConfig(storageKey, {
+      storageManager.setTileState<TTileData>(storageKey, {
         data: defaultData,
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: false,

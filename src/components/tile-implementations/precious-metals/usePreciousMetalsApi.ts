@@ -21,7 +21,7 @@ export function usePreciousMetalsApi() {
           tileId,
           { apiCall: 'Precious Metals API' },
         );
-        storageManager.setTileInstanceConfig<PreciousMetalsData>(tileId, {
+        storageManager.setTileState<PreciousMetalsData>(tileId, {
           data: result.data as PreciousMetalsData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: !result.error,
@@ -29,7 +29,7 @@ export function usePreciousMetalsApi() {
         if (result.error) throw new Error(result.error);
         return result.data as PreciousMetalsData;
       } catch (error) {
-        storageManager.setTileInstanceConfig<PreciousMetalsData>(tileId, {
+        storageManager.setTileState<PreciousMetalsData>(tileId, {
           data: null,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,

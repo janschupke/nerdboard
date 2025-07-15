@@ -60,6 +60,11 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
   // Internal tile state
   const [tiles, setTiles] = useState<DashboardTile[]>(initialTiles);
 
+  // Sync tiles state with initialTiles prop (for reload/restore)
+  React.useEffect(() => {
+    setTiles(initialTiles);
+  }, [initialTiles]);
+
   // Track current row count (for dynamic extension/reduction)
   const [rows, setRows] = useState(defaultRows);
   const defaultRowsRef = useRef(defaultRows);

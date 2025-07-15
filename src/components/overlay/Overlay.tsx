@@ -10,8 +10,6 @@ import { Header } from '../header/Header';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import {
   useStorageManager,
-  type DashboardTileWithConfig,
-  type TileConfig,
 } from '../../services/storageManager';
 import type { DashboardTile } from '../dragboard';
 
@@ -93,20 +91,15 @@ function useTileStorage() {
 
   // Load tiles from storage on mount (only once)
   React.useEffect(() => {
-    const stored = storage.getTileConfig('dashboard-tiles');
-    if (stored && Array.isArray(stored)) {
-      // Convert DashboardTileWithConfig back to DashboardTile for the dragboard
-      const dashboardTiles: DashboardTile[] = stored.map(
-        (tileWithConfig: DashboardTileWithConfig) => ({
-          id: tileWithConfig.id,
-          type: tileWithConfig.type,
-          position: tileWithConfig.position,
-          size: tileWithConfig.size,
-          config: tileWithConfig.config as unknown as Record<string, unknown>,
-          createdAt: tileWithConfig.createdAt,
-        }),
-      );
-      setInitialTiles(dashboardTiles);
+    const dashboard = storage.getDashboardState();
+    if (dashboard && Array.isArray(dashboard.tiles)) {
+      setInitialTiles(dashboard.tiles.map((tile) => ({
+        ...tile,
+        type: tile.type as DashboardTile['type'],
+        size: tile.size as DashboardTile['size'],
+        createdAt: typeof tile.createdAt === 'number' ? tile.createdAt : Date.now(),
+        config: tile.config || {},
+      })));
     }
   }, [storage]);
 
@@ -115,14 +108,25 @@ function useTileStorage() {
 
 function TilePersistenceListener({ storage }: { storage: ReturnType<typeof useStorageManager> }) {
   const { tiles } = useDragboard();
+  const prevTilesRef = React.useRef<DashboardTile[] | null>(null);
+
   React.useEffect(() => {
-    if (tiles && tiles.length > 0) {
-      const tilesWithConfig: DashboardTileWithConfig[] = tiles.map((tile) => ({
-        ...tile,
-        config: tile.config as unknown as TileConfig,
-      }));
-      storage.setTileConfig('dashboard-tiles', tilesWithConfig);
+    const prevTiles = prevTilesRef.current;
+    const shouldPersist =
+      tiles.length > 0 || (prevTiles && prevTiles.length > 0 && tiles.length === 0);
+    if (shouldPersist) {
+      storage.setDashboardState({
+        tiles: tiles.map((tile) => ({
+          id: tile.id,
+          type: tile.type as string,
+          position: tile.position,
+          size: tile.size as string,
+          createdAt: typeof tile.createdAt === 'number' ? tile.createdAt : Date.now(),
+          config: tile.config || {},
+        })),
+      });
     }
+    prevTilesRef.current = tiles;
   }, [tiles, storage]);
   return null;
 }
