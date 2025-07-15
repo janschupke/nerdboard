@@ -54,10 +54,9 @@ export interface DashboardTileWithConfig extends Omit<DashboardTile, 'config'> {
 
 // --- Constants ---
 export const STORAGE_KEYS = {
-  VERSION: 'nerdboard-data-version',
   APPCONFIG: 'nerdboard-app-config',
-  DASHBOARD_STATE: 'nerdboard-dashboard-state', // new: layout/config
-  TILE_STATE: 'nerdboard-tile-state', // new: per-tile data
+  DASHBOARD_STATE: 'nerdboard-dashboard-state',
+  TILE_STATE: 'nerdboard-tile-state',
   SIDEBAR: 'nerdboard-sidebar-state',
   LOGS: 'nerdboard_api_logs',
 };
