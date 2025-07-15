@@ -4,11 +4,11 @@ import { DragboardProvider } from './DragboardProvider';
 import { DragboardGrid } from './DragboardGrid';
 import { DragboardTile } from './DragboardTile';
 import { useDragboard } from './DragboardContext';
-import type { DashboardTile } from './dashboard';
+import type { DragboardTileData } from './dragboardTypes';
 import type { DragboardConfig, DragboardContextValue } from './DragboardContext';
 import { describe, it, expect } from 'vitest';
 
-const makeTile = (id: string, y = 0): DashboardTile => ({
+const makeTile = (id: string, y = 0): DragboardTileData => ({
   id,
   type: 'cryptocurrency', // use a valid TileType for test tiles
   position: { x: 0, y },
@@ -29,7 +29,7 @@ const configBase: DragboardConfig = {
 
 type TestBoardProps = {
   config: DragboardConfig;
-  initialTiles?: DashboardTile[];
+  initialTiles?: DragboardTileData[];
   children?: React.ReactNode;
 };
 

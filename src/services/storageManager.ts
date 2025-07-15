@@ -61,11 +61,15 @@ export const STORAGE_KEYS = {
   LOGS: 'nerdboard_api_logs',
 };
 
+// Log retention time: 1 hour in milliseconds
+export const LOG_RETENTION_TIME = 60 * 60 * 1000;
+
 export const DEFAULT_APPCONFIG: AppConfig = {
   isSidebarCollapsed: false,
   theme: AppTheme.light,
 };
 
+// TODO: is this retrieved from Dragboard or calculated in app?
 // --- StorageManager Types ---
 export interface DashboardState {
   tiles: Array<{
@@ -91,6 +95,7 @@ export class StorageManager {
   private sidebarState: SidebarState | null = null;
   private logs: APILogEntry[] = [];
   private initialized = false;
+  // TODO: research, also LogContext. It's weird.
   private logListeners: Array<() => void> = [];
 
   init() {
@@ -116,6 +121,7 @@ export class StorageManager {
     this.init();
     return this.appConfig;
   }
+
   setAppConfig(config: AppConfig) {
     this.appConfig = config;
     try {
@@ -130,6 +136,7 @@ export class StorageManager {
     this.init();
     return this.dashboardState;
   }
+
   setDashboardState(state: DashboardState) {
     this.dashboardState = state;
     try {
@@ -144,6 +151,7 @@ export class StorageManager {
     this.init();
     return (this.tileState[tileId] as TileState<TData>) || null;
   }
+
   setTileState<TData = unknown>(tileId: string, state: TileState<TData>) {
     this.tileState[tileId] = state;
     try {
@@ -166,6 +174,7 @@ export class StorageManager {
     this.init();
     return this.sidebarState;
   }
+
   setSidebarState(state: SidebarState) {
     this.sidebarState = state;
     try {
@@ -193,23 +202,26 @@ export class StorageManager {
     }
   }
 
+  private clearExpiredLogs() {
+    const retentionThreshold = Date.now() - LOG_RETENTION_TIME;
+    this.logs = this.logs.filter((log) => log.timestamp >= retentionThreshold);
+  }
+
   getLogs(): APILogEntry[] {
     this.init();
-    const oneHourAgo = Date.now() - 60 * 60 * 1000;
-    // Filter logs to only those from the last hour
-    this.logs = this.logs.filter((log) => log.timestamp >= oneHourAgo);
+    this.clearExpiredLogs();
     return this.logs;
   }
+
   addLog(entry: Omit<APILogEntry, 'id' | 'timestamp'>) {
     const newLog: APILogEntry = {
       ...entry,
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
     };
-    const oneHourAgo = Date.now() - 60 * 60 * 1000;
     // Add new log and filter out old logs
     this.logs.unshift(newLog);
-    this.logs = this.logs.filter((log) => log.timestamp >= oneHourAgo);
+    this.clearExpiredLogs();
     if (this.logs.length > 1000) this.logs.splice(1000);
     try {
       localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(this.logs));
@@ -218,6 +230,7 @@ export class StorageManager {
     }
     this.notifyLogListeners();
   }
+
   clearLogs() {
     this.logs = [];
     try {

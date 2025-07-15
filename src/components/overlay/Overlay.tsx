@@ -116,7 +116,13 @@ function useTileStorage() {
   return { initialTiles, storage };
 }
 
-function TilePersistenceListener({ storage, tiles }: { storage: ReturnType<typeof useStorageManager>; tiles: DragboardTileData[] }) {
+function TilePersistenceListener({
+  storage,
+  tiles,
+}: {
+  storage: ReturnType<typeof useStorageManager>;
+  tiles: DragboardTileData[];
+}) {
   const prevTilesRef = React.useRef<DragboardTileData[] | null>(null);
 
   React.useEffect(() => {
@@ -143,6 +149,10 @@ function TilePersistenceListener({ storage, tiles }: { storage: ReturnType<typeo
 export function Overlay() {
   const { initialTiles, storage } = useTileStorage();
   const [tiles, setTiles] = React.useState<DragboardTileData[]>(initialTiles);
+  // Sync tiles state with initialTiles when it changes (e.g., after storage loads)
+  React.useEffect(() => {
+    setTiles(initialTiles);
+  }, [initialTiles]);
   const [isSidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [sidebarSelectedIndex, setSidebarSelectedIndex] = React.useState(0);
 

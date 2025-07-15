@@ -3,6 +3,7 @@ import { StorageManager, STORAGE_KEYS, DEFAULT_APPCONFIG } from './storageManage
 import type { AppConfig, DashboardState, SidebarState, TileState } from './storageManager';
 
 describe('StorageManager', () => {
+  // TODO: add to central mock system?
   let localStorageMock: Record<string, unknown>;
   let storageManager: StorageManager;
 
