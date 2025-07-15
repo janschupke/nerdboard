@@ -2,13 +2,11 @@ import React from 'react';
 import { Icon } from '../ui/Icon';
 import { LogButton } from '../api-log/LogButton';
 
-interface HeaderProps {
+export interface HeaderProps {
   isLogViewOpen: boolean;
   toggleLogView: () => void;
-  refreshAllTiles: () => void;
-  isRefreshing: boolean;
   toggleTheme: () => void;
-  theme: string;
+  theme: 'light' | 'dark';
   toggleCollapse: () => void;
   tilesCount: number;
 }
@@ -16,8 +14,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   isLogViewOpen,
   toggleLogView,
-  refreshAllTiles,
-  isRefreshing,
   toggleTheme,
   theme,
   toggleCollapse,
@@ -36,14 +32,6 @@ export const Header: React.FC<HeaderProps> = ({
     </div>
     <div className="flex items-center space-x-2">
       <LogButton isOpen={isLogViewOpen} onToggle={toggleLogView} />
-      <button
-        onClick={refreshAllTiles}
-        disabled={isRefreshing}
-        className="p-2 text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary rounded-lg transition-colors disabled:opacity-50"
-        aria-label="Refresh all tiles"
-      >
-        <Icon name="refresh" size="md" className={isRefreshing ? 'animate-spin' : ''} />
-      </button>
       <button
         onClick={toggleTheme}
         className="p-2 text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary rounded-lg transition-colors"

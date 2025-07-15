@@ -84,7 +84,7 @@ const dragboardConfig = {
 
 ### Types
 
-- **DashboardTile**: Represents a tile on the dashboard.
+- **DragboardTileData**: Represents a tile on the dragboard.
 - **TileType**: Union of allowed tile type strings.
 - **TileSize**: Union of allowed tile size strings.
 - **DraggableTileProps**: Props for draggable tile components.
@@ -95,10 +95,10 @@ const dragboardConfig = {
 
 ## Types
 
-### DashboardTile
+### DragboardTileData
 
 ```ts
-interface DashboardTile {
+interface DragboardTileData {
   id: string;
   type: TileType;
   position: { x: number; y: number };

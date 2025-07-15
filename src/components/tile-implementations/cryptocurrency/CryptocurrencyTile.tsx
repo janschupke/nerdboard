@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
-import type { DashboardTile } from '../../dragboard/dashboard';
+import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useCryptoApi } from './useCryptoApi';
 import type { CryptocurrencyTileData } from './types';
 
@@ -47,7 +47,7 @@ export const CryptocurrencyTile = React.memo(
     refreshKey,
     ...rest
   }: {
-    tile: DashboardTile;
+    tile: DragboardTileData;
     meta: TileMeta;
     refreshKey?: number;
   }) => {

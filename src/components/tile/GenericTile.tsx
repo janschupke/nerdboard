@@ -1,5 +1,5 @@
 import React, { useCallback, forwardRef, useMemo } from 'react';
-import type { DashboardTile, DraggableTileProps } from '../dragboard';
+import type { DragboardTileData, DraggableTileProps } from '../dragboard';
 import { Icon } from '../ui/Icon';
 
 export interface TileMeta {
@@ -19,7 +19,7 @@ export interface GenericTileDataHook<T = unknown> {
 }
 
 export interface GenericTileProps<T = unknown> extends DraggableTileProps {
-  tile: DashboardTile;
+  tile: DragboardTileData;
   meta: TileMeta;
   tileData: GenericTileStatus & { data?: T };
   renderContent?: (status: GenericTileStatus, data?: T) => React.ReactNode;

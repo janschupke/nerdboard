@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
-import type { DashboardTile } from '../../dragboard/dashboard';
+import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useGdxEtfApi } from './useGdxEtfApi';
 
 function useGdxEtfTileData(
@@ -46,7 +46,7 @@ export const GDXETFTile = React.memo(
     refreshKey,
     ...rest
   }: {
-    tile: DashboardTile;
+    tile: DragboardTileData;
     meta: TileMeta;
     refreshKey?: number;
   }) => {

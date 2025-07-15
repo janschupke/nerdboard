@@ -2,7 +2,7 @@ import type { BaseComponentProps } from '../../types/index';
 import type { TileType, TileSize } from '../../types/tile';
 export type { TileType, TileSize } from '../../types/tile';
 
-export interface DashboardTile {
+export interface DragboardTileData {
   id: string;
   type: TileType;
   position: {
@@ -15,17 +15,17 @@ export interface DashboardTile {
 }
 
 export interface DashboardLayout {
-  tiles: DashboardTile[];
+  tiles: DragboardTileData[];
   isCollapsed: boolean;
   theme: 'light' | 'dark';
 }
 
 export interface DashboardContextType {
   layout: DashboardLayout;
-  addTile: (tileOrType: DashboardTile | TileType) => void;
+  addTile: (tileOrType: DragboardTileData | TileType) => void;
   removeTile: (id: string) => void;
-  updateTile: (id: string, updates: Partial<DashboardTile>) => void;
-  reorderTiles: (tiles: DashboardTile[]) => void;
+  updateTile: (id: string, updates: Partial<DragboardTileData>) => void;
+  reorderTiles: (tiles: DragboardTileData[]) => void;
   toggleCollapse: () => void;
   setTheme: (theme: 'light' | 'dark') => void;
   refreshAllTiles: () => Promise<void>;
@@ -34,13 +34,13 @@ export interface DashboardContextType {
 }
 
 export interface TileGridProps extends BaseComponentProps {
-  tiles: DashboardTile[];
+  tiles: DragboardTileData[];
   onTileRemove?: (id: string) => void;
   onTileMove?: (from: number, to: number) => void;
 }
 
 export interface DraggableTileProps extends BaseComponentProps {
-  tile: DashboardTile;
+  tile: DragboardTileData;
   onRemove?: (id: string) => void;
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
 }

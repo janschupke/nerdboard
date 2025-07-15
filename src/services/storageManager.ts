@@ -1,5 +1,5 @@
 import React from 'react';
-import type { DashboardTile } from '../components/dragboard/dashboard';
+import type { DragboardTileData } from '../components/dragboard/dragboardTypes';
 
 // --- Types ---
 export const AppTheme = {
@@ -48,7 +48,7 @@ export interface TileConfig<TData extends TileDataType = TileDataType> extends T
 }
 
 // Extended DashboardTile that includes TileConfig in the config property
-export interface DashboardTileWithConfig extends Omit<DashboardTile, 'config'> {
+export interface DashboardTileWithConfig extends Omit<DragboardTileData, 'config'> {
   config: TileConfig;
 }
 

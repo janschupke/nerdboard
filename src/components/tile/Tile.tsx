@@ -1,10 +1,10 @@
 import React, { Suspense, memo } from 'react';
-import type { DashboardTile } from '../dragboard';
+import type { DragboardTileData } from '../dragboard';
 import { getLazyTileComponent, getTileMeta } from './TileFactoryRegistry';
 import { TileErrorBoundary } from './TileErrorBoundary';
 
 export interface TileProps {
-  tile: DashboardTile;
+  tile: DragboardTileData;
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
   onRemove?: (id: string) => void;
   refreshKey?: number;

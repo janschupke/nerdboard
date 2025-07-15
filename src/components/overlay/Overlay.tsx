@@ -1,35 +1,44 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense } from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { ErrorBoundary } from './ErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
 import { useLogManager } from '../api-log/useLogManager';
-import { DragboardProvider, DragboardGrid, DragboardTile, useDragboard } from '../dragboard';
+import { DragboardProvider, DragboardGrid, DragboardTile } from '../dragboard';
 import { DASHBOARD_GRID_CONFIG } from './gridConfig';
 import { Tile } from '../tile/Tile';
 import { Header } from '../header/Header';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useStorageManager } from '../../services/storageManager';
-import type { DashboardTile } from '../dragboard';
+import type { DragboardTileData } from '../dragboard';
 
-function OverlayContent() {
-  const { tiles, refreshAllTiles, isRefreshing, refreshKey } = useDragboard();
+function OverlayContent({
+  tiles,
+  addTile,
+  removeTile,
+  isSidebarCollapsed,
+  setSidebarCollapsed,
+  sidebarSelectedIndex,
+  setSidebarSelectedIndex,
+}: {
+  tiles: DragboardTileData[];
+  addTile: (tile: DragboardTileData) => void;
+  removeTile: (id: string) => void;
+  isSidebarCollapsed: boolean;
+  setSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+  sidebarSelectedIndex: number;
+  setSidebarSelectedIndex: React.Dispatch<React.SetStateAction<number>>;
+}) {
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
-
-  // Sidebar collapsed state and selected index
-  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [sidebarSelectedIndex, setSidebarSelectedIndex] = useState(0);
-  const toggleCollapse = () => setSidebarCollapsed((prev) => !prev);
 
   // Register hotkeys
   useKeyboardNavigation({
     toggleLogView,
-    refreshAllTiles,
-    isRefreshing,
     selectedIndex: sidebarSelectedIndex,
     setSelectedIndex: setSidebarSelectedIndex,
   });
 
+  // TODO: what is this?
   const LogView = React.lazy(() =>
     import('../api-log/LogView').then((m) => ({ default: m.LogView })),
   );
@@ -39,11 +48,9 @@ function OverlayContent() {
       <Header
         isLogViewOpen={isLogViewOpen}
         toggleLogView={toggleLogView}
-        refreshAllTiles={refreshAllTiles}
-        isRefreshing={isRefreshing}
         toggleTheme={toggleTheme}
         theme={theme}
-        toggleCollapse={toggleCollapse}
+        toggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
         tilesCount={tiles.length}
       />
       <div className="flex h-full pt-16 relative">
@@ -53,6 +60,9 @@ function OverlayContent() {
           onSidebarToggle={() => setSidebarCollapsed((prev) => !prev)}
           selectedIndex={sidebarSelectedIndex}
           setSelectedIndex={setSidebarSelectedIndex}
+          tiles={tiles}
+          addTile={addTile}
+          removeTile={removeTile}
         />
         <main
           className="overflow-auto relative scrollbar-hide transition-all duration-300 ease-in-out"
@@ -70,8 +80,7 @@ function OverlayContent() {
                 position={tile.position || { x: 0, y: 0 }}
                 size={typeof tile.size === 'string' ? tile.size : 'medium'}
               >
-                {/* Pass refreshKey as a prop to force tile reload on refresh */}
-                <Tile tile={tile} refreshKey={refreshKey} />
+                <Tile tile={tile} />
               </DragboardTile>
             ))}
           </DragboardGrid>
@@ -84,10 +93,9 @@ function OverlayContent() {
   );
 }
 
-// Fixed storage wrapper for tile management
 function useTileStorage() {
   const storage = useStorageManager();
-  const [initialTiles, setInitialTiles] = React.useState<DashboardTile[]>([]);
+  const [initialTiles, setInitialTiles] = React.useState<DragboardTileData[]>([]);
 
   // Load tiles from storage on mount (only once)
   React.useEffect(() => {
@@ -96,8 +104,8 @@ function useTileStorage() {
       setInitialTiles(
         dashboard.tiles.map((tile) => ({
           ...tile,
-          type: tile.type as DashboardTile['type'],
-          size: tile.size as DashboardTile['size'],
+          type: tile.type as DragboardTileData['type'],
+          size: tile.size as DragboardTileData['size'],
           createdAt: typeof tile.createdAt === 'number' ? tile.createdAt : Date.now(),
           config: tile.config || {},
         })),
@@ -108,9 +116,8 @@ function useTileStorage() {
   return { initialTiles, storage };
 }
 
-function TilePersistenceListener({ storage }: { storage: ReturnType<typeof useStorageManager> }) {
-  const { tiles } = useDragboard();
-  const prevTilesRef = React.useRef<DashboardTile[] | null>(null);
+function TilePersistenceListener({ storage, tiles }: { storage: ReturnType<typeof useStorageManager>; tiles: DragboardTileData[] }) {
+  const prevTilesRef = React.useRef<DragboardTileData[] | null>(null);
 
   React.useEffect(() => {
     const prevTiles = prevTilesRef.current;
@@ -135,11 +142,27 @@ function TilePersistenceListener({ storage }: { storage: ReturnType<typeof useSt
 
 export function Overlay() {
   const { initialTiles, storage } = useTileStorage();
+  const [tiles, setTiles] = React.useState<DragboardTileData[]>(initialTiles);
+  const [isSidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const [sidebarSelectedIndex, setSidebarSelectedIndex] = React.useState(0);
+
+  // Tile actions
+  const addTile = (tile: DragboardTileData) => setTiles((prev) => [...prev, tile]);
+  const removeTile = (id: string) => setTiles((prev) => prev.filter((t) => t.id !== id));
+
   return (
     <ErrorBoundary variant="app">
-      <DragboardProvider config={DASHBOARD_GRID_CONFIG} initialTiles={initialTiles}>
-        <TilePersistenceListener storage={storage} />
-        <OverlayContent />
+      <DragboardProvider config={DASHBOARD_GRID_CONFIG} initialTiles={tiles}>
+        <TilePersistenceListener storage={storage} tiles={tiles} />
+        <OverlayContent
+          tiles={tiles}
+          addTile={addTile}
+          removeTile={removeTile}
+          isSidebarCollapsed={isSidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+          sidebarSelectedIndex={sidebarSelectedIndex}
+          setSidebarSelectedIndex={setSidebarSelectedIndex}
+        />
       </DragboardProvider>
     </ErrorBoundary>
   );
