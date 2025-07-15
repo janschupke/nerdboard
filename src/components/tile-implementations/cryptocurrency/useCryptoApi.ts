@@ -19,6 +19,7 @@ export function useCryptoApi() {
         const result = await DataFetcher.fetchWithRetry<CryptocurrencyData[]>(
           () => fetch(url).then((res) => res.json()),
           tileId,
+          { apiCall: 'CoinGecko Markets API' }
         );
         storageManager.setTileConfig(tileId, {
           data: result.data as unknown as Record<string, unknown>,

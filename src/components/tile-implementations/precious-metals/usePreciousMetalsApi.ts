@@ -19,6 +19,7 @@ export function usePreciousMetalsApi() {
         const result = await DataFetcher.fetchWithRetry<PreciousMetalsData>(
           () => fetch(url).then((res) => res.json()),
           tileId,
+          { apiCall: 'Precious Metals API' }
         );
         storageManager.setTileConfig(tileId, {
           data: result.data as unknown as Record<string, unknown>,

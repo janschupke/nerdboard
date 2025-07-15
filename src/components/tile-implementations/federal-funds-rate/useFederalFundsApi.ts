@@ -19,6 +19,7 @@ export function useFederalFundsApi() {
         const result = await DataFetcher.fetchWithRetry<FederalFundsRateData>(
           () => fetch(url).then((res) => res.json()),
           tileId,
+          { apiCall: 'FRED Federal Funds Rate API' }
         );
         storageManager.setTileConfig(tileId, {
           data: result.data as unknown as Record<string, unknown>,

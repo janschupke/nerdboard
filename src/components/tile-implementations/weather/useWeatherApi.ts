@@ -19,6 +19,7 @@ export function useWeatherApi() {
         const result = await DataFetcher.fetchWithRetry<WeatherApiResponse>(
           () => fetch(url).then((res) => res.json()),
           tileId,
+          { apiCall: 'OpenWeatherMap API' }
         );
         storageManager.setTileConfig(tileId, {
           data: result.data as unknown as Record<string, unknown>,

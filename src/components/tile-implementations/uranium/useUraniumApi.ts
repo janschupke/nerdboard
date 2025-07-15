@@ -19,6 +19,7 @@ export function useUraniumApi() {
         const result = await DataFetcher.fetchWithRetry<UraniumApiResponse>(
           () => fetch(url).then((res) => res.json()),
           tileId,
+          { apiCall: 'TradingEconomics Uranium API' }
         );
         storageManager.setTileConfig(tileId, {
           data: result.data as unknown as Record<string, unknown>,

@@ -18,6 +18,7 @@ export function useTimeApi() {
       const result = await DataFetcher.fetchWithRetry<TimeData>(
         () => fetch(url).then((res) => res.json()),
         tileId,
+        { apiCall: 'WorldTimeAPI' }
       );
       storageManager.setTileConfig(tileId, {
         data: result.data as unknown as Record<string, unknown>,
