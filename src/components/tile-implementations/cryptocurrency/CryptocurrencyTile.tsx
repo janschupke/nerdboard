@@ -41,18 +41,9 @@ function useCryptoTileData(
 
 export const CryptocurrencyTile = React.memo(
   ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
-    return (
-      <GenericTile
-        tile={tile}
-        meta={meta}
-        id={tile.id}
-        position={tile.position}
-        size={tile.size}
-        useTileData={useCryptoTileData}
-        {...rest}
-      />
-    );
+    return <GenericTile tile={tile} meta={meta} useTileData={useCryptoTileData} {...rest} />;
   },
+  (prev, next) => prev.tile.id === next.tile.id,
 );
 
 CryptocurrencyTile.displayName = 'CryptocurrencyTile';

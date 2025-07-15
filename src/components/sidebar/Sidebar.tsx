@@ -4,7 +4,7 @@ import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useEffect, useMemo, useCallback } from 'react';
 import { TILE_CATALOG } from '../tile/TileFactoryRegistry';
 import { useDragboard } from '../dragboard';
-import { findNextFreePosition } from '../dragboard/rearrangeTiles';
+import { findNextFreePosition } from '../dragboard';
 import { DASHBOARD_GRID_CONFIG } from '../overlay/gridConfig';
 import { TILE_CATEGORIES } from '../../types/tileCategories';
 import type { TileCategory } from '../../types/tileCategories';

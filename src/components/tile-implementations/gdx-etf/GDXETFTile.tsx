@@ -38,18 +38,9 @@ function useGdxEtfTileData(tileId: string): ReturnType<GenericTileDataHook<unkno
 
 export const GDXETFTile = React.memo(
   ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
-    return (
-      <GenericTile
-        tile={tile}
-        meta={meta}
-        id={tile.id}
-        position={tile.position}
-        size={tile.size}
-        useTileData={useGdxEtfTileData}
-        {...rest}
-      />
-    );
+    return <GenericTile tile={tile} meta={meta} useTileData={useGdxEtfTileData} {...rest} />;
   },
+  (prev, next) => prev.tile.id === next.tile.id,
 );
 
 GDXETFTile.displayName = 'GDXETFTile';

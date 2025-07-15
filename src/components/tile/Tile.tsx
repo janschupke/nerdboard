@@ -1,5 +1,5 @@
 import React, { Suspense, memo } from 'react';
-import type { DashboardTile } from '../dragboard/dashboard';
+import type { DashboardTile } from '../dragboard';
 import { getLazyTileComponent, getTileMeta } from './TileFactoryRegistry';
 import { TileErrorBoundary } from './TileErrorBoundary';
 
