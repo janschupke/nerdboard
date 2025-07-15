@@ -28,7 +28,8 @@ export class EndpointTestUtils {
 
   static setupMockEnvironment(): void {
     // Clear any cached data that might interfere with tests
-    storageManager.clearTileConfigs();
+    storageManager.setDashboardState({ tiles: [] });
+    storageManager.clearTileState();
 
     // Store the current fetch (which may be the patched version from setup.ts)
     this.originalFetch = globalThis.fetch;

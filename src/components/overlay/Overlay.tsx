@@ -8,9 +8,7 @@ import { DASHBOARD_GRID_CONFIG } from './gridConfig';
 import { Tile } from '../tile/Tile';
 import { Header } from '../header/Header';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import {
-  useStorageManager,
-} from '../../services/storageManager';
+import { useStorageManager } from '../../services/storageManager';
 import type { DashboardTile } from '../dragboard';
 
 function OverlayContent() {
@@ -93,13 +91,15 @@ function useTileStorage() {
   React.useEffect(() => {
     const dashboard = storage.getDashboardState();
     if (dashboard && Array.isArray(dashboard.tiles)) {
-      setInitialTiles(dashboard.tiles.map((tile) => ({
-        ...tile,
-        type: tile.type as DashboardTile['type'],
-        size: tile.size as DashboardTile['size'],
-        createdAt: typeof tile.createdAt === 'number' ? tile.createdAt : Date.now(),
-        config: tile.config || {},
-      })));
+      setInitialTiles(
+        dashboard.tiles.map((tile) => ({
+          ...tile,
+          type: tile.type as DashboardTile['type'],
+          size: tile.size as DashboardTile['size'],
+          createdAt: typeof tile.createdAt === 'number' ? tile.createdAt : Date.now(),
+          config: tile.config || {},
+        })),
+      );
     }
   }, [storage]);
 

@@ -4,7 +4,10 @@ import type { DashboardTile } from '../../dragboard/dashboard';
 import { useUraniumApi } from './useUraniumApi';
 import type { UraniumPriceData } from './types';
 
-function useUraniumTileData(tileId: string, refreshKey?: number): ReturnType<GenericTileDataHook<UraniumPriceData>> {
+function useUraniumTileData(
+  tileId: string,
+  refreshKey?: number,
+): ReturnType<GenericTileDataHook<UraniumPriceData>> {
   const { getUraniumPrice } = useUraniumApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +41,16 @@ function useUraniumTileData(tileId: string, refreshKey?: number): ReturnType<Gen
 }
 
 export const UraniumTile = React.memo(
-  ({ tile, meta, refreshKey, ...rest }: { tile: DashboardTile; meta: TileMeta; refreshKey?: number }) => {
+  ({
+    tile,
+    meta,
+    refreshKey,
+    ...rest
+  }: {
+    tile: DashboardTile;
+    meta: TileMeta;
+    refreshKey?: number;
+  }) => {
     const useTileData = (id: string) => useUraniumTileData(id, refreshKey);
     return <GenericTile tile={tile} meta={meta} useTileData={useTileData} {...rest} />;
   },

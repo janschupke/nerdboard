@@ -41,7 +41,16 @@ function usePreciousMetalsTileData(
 }
 
 export const PreciousMetalsTile = React.memo(
-  ({ tile, meta, refreshKey, ...rest }: { tile: DashboardTile; meta: TileMeta; refreshKey?: number }) => {
+  ({
+    tile,
+    meta,
+    refreshKey,
+    ...rest
+  }: {
+    tile: DashboardTile;
+    meta: TileMeta;
+    refreshKey?: number;
+  }) => {
     const useTileData = (id: string) => usePreciousMetalsTileData(id, refreshKey);
     return <GenericTile tile={tile} meta={meta} useTileData={useTileData} {...rest} />;
   },

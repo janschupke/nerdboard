@@ -91,6 +91,7 @@ export class StorageManager {
   private sidebarState: SidebarState | null = null;
   private logs: APILogEntry[] = [];
   private initialized = false;
+  private logListeners: Array<() => void> = [];
 
   init() {
     if (this.initialized) return;
@@ -152,6 +153,15 @@ export class StorageManager {
     }
   }
 
+  clearTileState() {
+    this.tileState = {};
+    try {
+      localStorage.removeItem(STORAGE_KEYS.TILE_STATE);
+    } catch (error) {
+      console.error('Failed to clear tile state:', error);
+    }
+  }
+
   getSidebarState(): SidebarState | null {
     this.init();
     return this.sidebarState;
@@ -162,6 +172,24 @@ export class StorageManager {
       localStorage.setItem(STORAGE_KEYS.SIDEBAR, JSON.stringify(state));
     } catch (error) {
       console.error('Failed to save sidebar state:', error);
+    }
+  }
+
+  subscribeToLogs(listener: () => void) {
+    this.logListeners.push(listener);
+  }
+
+  unsubscribeFromLogs(listener: () => void) {
+    this.logListeners = this.logListeners.filter((l) => l !== listener);
+  }
+
+  private notifyLogListeners() {
+    for (const listener of this.logListeners) {
+      try {
+        listener();
+      } catch {
+        // Ignore listener errors
+      }
     }
   }
 
@@ -188,6 +216,7 @@ export class StorageManager {
     } catch (error) {
       console.error('Failed to save logs:', error);
     }
+    this.notifyLogListeners();
   }
   clearLogs() {
     this.logs = [];
@@ -196,6 +225,7 @@ export class StorageManager {
     } catch (error) {
       console.error('Failed to clear logs:', error);
     }
+    this.notifyLogListeners();
   }
 }
 

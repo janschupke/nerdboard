@@ -4,7 +4,10 @@ import type { DashboardTile } from '../../dragboard/dashboard';
 import { useTimeApi } from './useTimeApi';
 import type { TimeData } from './types';
 
-function useTimeTileData(tileId: string, refreshKey?: number): ReturnType<GenericTileDataHook<TimeData>> {
+function useTimeTileData(
+  tileId: string,
+  refreshKey?: number,
+): ReturnType<GenericTileDataHook<TimeData>> {
   const { getTime } = useTimeApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +41,16 @@ function useTimeTileData(tileId: string, refreshKey?: number): ReturnType<Generi
 }
 
 export const TimeTile = React.memo(
-  ({ tile, meta, refreshKey, ...rest }: { tile: DashboardTile; meta: TileMeta; refreshKey?: number }) => {
+  ({
+    tile,
+    meta,
+    refreshKey,
+    ...rest
+  }: {
+    tile: DashboardTile;
+    meta: TileMeta;
+    refreshKey?: number;
+  }) => {
     const useTileData = (id: string) => useTimeTileData(id, refreshKey);
     return <GenericTile tile={tile} meta={meta} useTileData={useTileData} {...rest} />;
   },

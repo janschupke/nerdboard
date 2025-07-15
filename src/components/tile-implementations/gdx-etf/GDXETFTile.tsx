@@ -3,7 +3,10 @@ import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile
 import type { DashboardTile } from '../../dragboard/dashboard';
 import { useGdxEtfApi } from './useGdxEtfApi';
 
-function useGdxEtfTileData(tileId: string, refreshKey?: number): ReturnType<GenericTileDataHook<unknown>> {
+function useGdxEtfTileData(
+  tileId: string,
+  refreshKey?: number,
+): ReturnType<GenericTileDataHook<unknown>> {
   const { getGDXETF } = useGdxEtfApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +40,16 @@ function useGdxEtfTileData(tileId: string, refreshKey?: number): ReturnType<Gene
 }
 
 export const GDXETFTile = React.memo(
-  ({ tile, meta, refreshKey, ...rest }: { tile: DashboardTile; meta: TileMeta; refreshKey?: number }) => {
+  ({
+    tile,
+    meta,
+    refreshKey,
+    ...rest
+  }: {
+    tile: DashboardTile;
+    meta: TileMeta;
+    refreshKey?: number;
+  }) => {
     const useTileData = (id: string) => useGdxEtfTileData(id, refreshKey);
     return <GenericTile tile={tile} meta={meta} useTileData={useTileData} {...rest} />;
   },

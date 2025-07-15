@@ -25,7 +25,15 @@ export interface KeyboardNavigationOptions {
  * Handles L (log) and R (refresh) hotkeys directly.
  */
 export const useKeyboardNavigation = (options: KeyboardNavigationOptions = {}) => {
-  const { navigation, enabled = true, toggleLogView, refreshAllTiles, isRefreshing, selectedIndex: controlledIndex, setSelectedIndex: controlledSetIndex } = options;
+  const {
+    navigation,
+    enabled = true,
+    toggleLogView,
+    refreshAllTiles,
+    isRefreshing,
+    selectedIndex: controlledIndex,
+    setSelectedIndex: controlledSetIndex,
+  } = options;
   const [uncontrolledIndex, setUncontrolledIndex] = useState(0);
   const isControlled = controlledIndex !== undefined && controlledSetIndex !== undefined;
   const selectedIndex = isControlled ? controlledIndex : uncontrolledIndex;
@@ -72,17 +80,25 @@ export const useKeyboardNavigation = (options: KeyboardNavigationOptions = {}) =
           case 'ArrowUp':
             event.preventDefault();
             if (isControlled) {
-              setSelectedIndex(selectedIndex === 0 ? navigation.items.length - 1 : selectedIndex - 1);
+              setSelectedIndex(
+                selectedIndex === 0 ? navigation.items.length - 1 : selectedIndex - 1,
+              );
             } else {
-              setUncontrolledIndex((prev) => (prev === 0 ? navigation.items!.length - 1 : prev - 1));
+              setUncontrolledIndex((prev) =>
+                prev === 0 ? navigation.items!.length - 1 : prev - 1,
+              );
             }
             break;
           case 'ArrowDown':
             event.preventDefault();
             if (isControlled) {
-              setSelectedIndex(selectedIndex === navigation.items.length - 1 ? 0 : selectedIndex + 1);
+              setSelectedIndex(
+                selectedIndex === navigation.items.length - 1 ? 0 : selectedIndex + 1,
+              );
             } else {
-              setUncontrolledIndex((prev) => (prev === navigation.items!.length - 1 ? 0 : prev + 1));
+              setUncontrolledIndex((prev) =>
+                prev === navigation.items!.length - 1 ? 0 : prev + 1,
+              );
             }
             break;
           case 'Enter':
@@ -107,7 +123,16 @@ export const useKeyboardNavigation = (options: KeyboardNavigationOptions = {}) =
         }
       }
     },
-    [enabled, navigation, selectedIndex, toggleLogView, refreshAllTiles, isRefreshing],
+    [
+      enabled,
+      navigation,
+      selectedIndex,
+      toggleLogView,
+      refreshAllTiles,
+      isRefreshing,
+      isControlled,
+      setSelectedIndex,
+    ],
   );
 
   useEffect(() => {
