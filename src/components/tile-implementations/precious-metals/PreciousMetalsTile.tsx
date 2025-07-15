@@ -42,17 +42,10 @@ function usePreciousMetalsTileData(
 export const PreciousMetalsTile = React.memo(
   ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
     return (
-      <GenericTile
-        tile={tile}
-        meta={meta}
-        id={tile.id}
-        position={tile.position}
-        size={tile.size}
-        useTileData={usePreciousMetalsTileData}
-        {...rest}
-      />
+      <GenericTile tile={tile} meta={meta} useTileData={usePreciousMetalsTileData} {...rest} />
     );
   },
+  (prev, next) => prev.tile.id === next.tile.id,
 );
 
 PreciousMetalsTile.displayName = 'PreciousMetalsTile';

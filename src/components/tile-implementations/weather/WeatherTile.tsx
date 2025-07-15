@@ -39,18 +39,9 @@ function useWeatherTileData(tileId: string): ReturnType<GenericTileDataHook<Weat
 
 export const WeatherTile = React.memo(
   ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
-    return (
-      <GenericTile
-        tile={tile}
-        meta={meta}
-        id={tile.id}
-        position={tile.position}
-        size={tile.size}
-        useTileData={useWeatherTileData}
-        {...rest}
-      />
-    );
+    return <GenericTile tile={tile} meta={meta} useTileData={useWeatherTileData} {...rest} />;
   },
+  (prev, next) => prev.tile.id === next.tile.id,
 );
 
 WeatherTile.displayName = 'WeatherTile';

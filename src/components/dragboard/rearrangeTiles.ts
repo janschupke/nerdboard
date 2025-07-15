@@ -44,10 +44,15 @@ export function rearrangeTiles(tiles: DashboardTile[]): DashboardTile[] {
           }
         }
       }
+      // Preserve original object reference, only update position
       rearrangedTiles.push({ ...tile, position: newPosition });
     }
   }
-  return rearrangedTiles;
+  // Map rearranged positions back onto original objects by id
+  return rearrangedTiles.map((rearranged) => {
+    const orig = tiles.find((t) => t.id === rearranged.id);
+    return orig ? { ...orig, position: rearranged.position } : rearranged;
+  });
 }
 
 export function findNextFreePosition(

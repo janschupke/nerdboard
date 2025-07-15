@@ -88,9 +88,9 @@ function OverlayContent() {
 // Fixed storage wrapper for tile management
 function useTileStorage() {
   const storage = useStorageManager();
-  const [tiles, setTiles] = React.useState<DashboardTile[]>([]);
+  const [initialTiles, setInitialTiles] = React.useState<DashboardTile[]>([]);
 
-  // Load tiles from storage on mount
+  // Load tiles from storage on mount (only once)
   React.useEffect(() => {
     const stored = storage.getTileConfig('dashboard-tiles');
     if (stored && Array.isArray(stored)) {
@@ -105,59 +105,33 @@ function useTileStorage() {
           createdAt: tileWithConfig.createdAt,
         }),
       );
-      setTiles(dashboardTiles);
+      setInitialTiles(dashboardTiles);
     }
   }, [storage]);
 
-  // Save tiles to storage whenever they change
+  return { initialTiles, storage };
+}
+
+function TilePersistenceListener({ storage }: { storage: ReturnType<typeof useStorageManager> }) {
+  const { tiles } = useDragboard();
   React.useEffect(() => {
-    // Convert DashboardTile to DashboardTileWithConfig for storage
-    const tilesWithConfig: DashboardTileWithConfig[] = tiles.map((tile) => ({
-      ...tile,
-      config: tile.config as unknown as TileConfig,
-    }));
-    storage.setTileConfig('dashboard-tiles', tilesWithConfig);
+    if (tiles && tiles.length > 0) {
+      const tilesWithConfig: DashboardTileWithConfig[] = tiles.map((tile) => ({
+        ...tile,
+        config: tile.config as unknown as TileConfig,
+      }));
+      storage.setTileConfig('dashboard-tiles', tilesWithConfig);
+    }
   }, [tiles, storage]);
-
-  const addTile = React.useCallback((tile: DashboardTile) => {
-    setTiles((prev) => [...prev, tile]);
-  }, []);
-
-  const removeTile = React.useCallback((id: string) => {
-    setTiles((prev) => prev.filter((tile) => tile.id !== id));
-  }, []);
-
-  const updateTile = React.useCallback((id: string, updates: Partial<DashboardTile>) => {
-    setTiles((prev) => prev.map((tile) => (tile.id === id ? { ...tile, ...updates } : tile)));
-  }, []);
-
-  const moveTile = React.useCallback((tileId: string, newPosition: { x: number; y: number }) => {
-    setTiles((prev) =>
-      prev.map((tile) => (tile.id === tileId ? { ...tile, position: newPosition } : tile)),
-    );
-  }, []);
-
-  const reorderTiles = React.useCallback((newTiles: DashboardTile[]) => {
-    setTiles(newTiles);
-  }, []);
-
-  return { tiles, addTile, removeTile, updateTile, moveTile, reorderTiles };
+  return null;
 }
 
 export function Overlay() {
-  const tileStorage = useTileStorage();
-
+  const { initialTiles, storage } = useTileStorage();
   return (
     <ErrorBoundary variant="app">
-      <DragboardProvider
-        config={DASHBOARD_GRID_CONFIG}
-        tiles={tileStorage.tiles}
-        addTile={tileStorage.addTile}
-        removeTile={tileStorage.removeTile}
-        updateTile={tileStorage.updateTile}
-        moveTile={tileStorage.moveTile}
-        reorderTiles={tileStorage.reorderTiles}
-      >
+      <DragboardProvider config={DASHBOARD_GRID_CONFIG} initialTiles={initialTiles}>
+        <TilePersistenceListener storage={storage} />
         <OverlayContent />
       </DragboardProvider>
     </ErrorBoundary>

@@ -10,12 +10,7 @@ import { findNextFreePosition, rearrangeTiles } from './rearrangeTiles';
 
 interface DragboardProviderProps {
   config: DragboardConfig;
-  tiles: DashboardTile[];
-  addTile: (tile: DashboardTile) => void;
-  removeTile: (id: string) => void;
-  updateTile: (id: string, updates: Partial<DashboardTile>) => void;
-  moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
-  reorderTiles: (tiles: DashboardTile[]) => void;
+  initialTiles?: DashboardTile[];
   children: React.ReactNode;
 }
 
@@ -33,7 +28,11 @@ function snapToTileGrid(
   };
 }
 
-function getHighestOccupiedRow(tiles: DashboardTile[], tileSizes: DragboardConfig['tileSizes'], minRows: number) {
+function getHighestOccupiedRow(
+  tiles: DashboardTile[],
+  tileSizes: DragboardConfig['tileSizes'],
+  minRows: number,
+) {
   let maxRow = minRows - 1;
   for (const tile of tiles) {
     const { rowSpan } = tileSizes[tile.size] || tileSizes['medium'];
@@ -45,32 +44,29 @@ function getHighestOccupiedRow(tiles: DashboardTile[], tileSizes: DragboardConfi
 
 export const DragboardProvider: React.FC<DragboardProviderProps> = ({
   config,
-  tiles,
-  addTile,
-  removeTile,
-  updateTile,
-  moveTile,
-  reorderTiles,
+  initialTiles = [],
   children,
 }) => {
   // Set config defaults
   const {
     consolidation = true,
     movementEnabled = true,
-    removable = true,
-    dynamicExtensions = true,
-    allowDragOutOfBounds = false,
     columns,
     rows: defaultRows,
     tileSizes,
     // breakpoints, // removed unused
   } = config;
 
+  // Internal tile state
+  const [tiles, setTiles] = useState<DashboardTile[]>(initialTiles);
+
   // Track current row count (for dynamic extension/reduction)
   const [rows, setRows] = useState(defaultRows);
   const defaultRowsRef = useRef(defaultRows);
   const tilesRef = useRef(tiles);
-  React.useEffect(() => { tilesRef.current = tiles; }, [tiles]);
+  React.useEffect(() => {
+    tilesRef.current = tiles;
+  }, [tiles]);
 
   // Drag state
   const [dragState, setDragState] = useState<DragboardDragState>({
@@ -83,37 +79,43 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
   });
 
   // Helper: Check if a tile fits in the current grid
-  const tileFits = (tile: DashboardTile) => {
-    const { colSpan, rowSpan } = tileSizes[tile.size] || tileSizes['medium'];
-    for (let y = 0; y <= rows - rowSpan; y++) {
-      for (let x = 0; x <= columns - colSpan; x++) {
-        const overlap = tiles.some((t) => {
-          const tSize = tileSizes[t.size] || tileSizes['medium'];
-          return (
-            x < t.position.x + tSize.colSpan &&
-            x + colSpan > t.position.x &&
-            y < t.position.y + tSize.rowSpan &&
-            y + rowSpan > t.position.y
-          );
-        });
-        if (!overlap) return true;
+  const tileFits = useCallback(
+    (tile: DashboardTile) => {
+      const { colSpan, rowSpan } = tileSizes[tile.size] || tileSizes['medium'];
+      for (let y = 0; y <= rows - rowSpan; y++) {
+        for (let x = 0; x <= columns - colSpan; x++) {
+          const overlap = tiles.some((t) => {
+            const tSize = tileSizes[t.size] || tileSizes['medium'];
+            return (
+              x < t.position.x + tSize.colSpan &&
+              x + colSpan > t.position.x &&
+              y < t.position.y + tSize.rowSpan &&
+              y + rowSpan > t.position.y
+            );
+          });
+          if (!overlap) return true;
+        }
       }
-    }
-    return false;
-  };
+      return false;
+    },
+    [tileSizes, rows, columns, tiles],
+  );
 
   // Helper: Extend rows to fit a tile if needed
-  const extendRowsIfNeeded = (tile: DashboardTile) => {
-    const { rowSpan } = tileSizes[tile.size] || tileSizes['medium'];
-    const neededRows = tile.position.y + rowSpan;
-    if (neededRows > rows) setRows(neededRows);
-  };
+  const extendRowsIfNeeded = useCallback(
+    (tile: DashboardTile) => {
+      const { rowSpan } = tileSizes[tile.size] || tileSizes['medium'];
+      const neededRows = tile.position.y + rowSpan;
+      if (neededRows > rows) setRows(neededRows);
+    },
+    [tileSizes, rows],
+  );
 
   // Helper: Reduce rows if possible (after remove/move)
-  const reduceRowsIfPossible = () => {
+  const reduceRowsIfPossible = useCallback(() => {
     const highest = getHighestOccupiedRow(tiles, tileSizes, defaultRowsRef.current);
     if (rows > highest) setRows(highest);
-  };
+  }, [tiles, tileSizes, rows]);
 
   // Tile drag actions (drag state only)
   const startTileDrag = useCallback((tileId: string, origin: { x: number; y: number }) => {
@@ -131,6 +133,63 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
     setDragState((prev) => ({ ...prev, dragOffset: offset }));
   }, []);
 
+  // Internal tile actions
+  const addTile = useCallback(
+    (tile: DashboardTile) => {
+      setTiles((prev) => {
+        const next = [...prev, tile];
+        if (consolidation) {
+          return rearrangeTiles(next);
+        }
+        return next;
+      });
+      extendRowsIfNeeded(tile);
+      reduceRowsIfPossible();
+    },
+    [consolidation, extendRowsIfNeeded, reduceRowsIfPossible],
+  );
+
+  const removeTile = useCallback(
+    (id: string) => {
+      setTiles((prev) => {
+        const next = prev.filter((t) => t.id !== id);
+        if (consolidation && next.length > 0) {
+          return rearrangeTiles(next);
+        }
+        return next;
+      });
+      reduceRowsIfPossible();
+    },
+    [consolidation, reduceRowsIfPossible],
+  );
+
+  const updateTile = useCallback((id: string, updates: Partial<DashboardTile>) => {
+    setTiles((prev) => prev.map((tile) => (tile.id === id ? { ...tile, ...updates } : tile)));
+  }, []);
+
+  const moveTile = useCallback(
+    (tileId: string, newPosition: { x: number; y: number }) => {
+      setTiles((prev) => {
+        const next = prev.map((tile) =>
+          tile.id === tileId ? { ...tile, position: newPosition } : tile,
+        );
+        if (consolidation) {
+          return rearrangeTiles(next);
+        }
+        return next;
+      });
+      reduceRowsIfPossible();
+    },
+    [consolidation, reduceRowsIfPossible],
+  );
+
+  const reorderTiles = useCallback(
+    (newTiles: DashboardTile[]) => {
+      setTiles(consolidation ? rearrangeTiles(newTiles) : newTiles);
+    },
+    [consolidation],
+  );
+
   // End tile drag (move or out-of-bounds)
   const endTileDrag = useCallback(
     (dropTarget: { x: number; y: number } | null, tileId?: string) => {
@@ -143,7 +202,7 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
         dropTarget &&
         (dropTarget.x < 0 || dropTarget.y < 0 || dropTarget.x >= columns || dropTarget.y >= rows)
       ) {
-        if (allowDragOutOfBounds) {
+        if (config.allowDragOutOfBounds) {
           removeTile(tileId);
         } // else, do nothing (tile stays in place)
         setDragState((prev) => ({
@@ -161,12 +220,6 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
         const tileSize: 'small' | 'medium' | 'large' = tile.size;
         snappedTarget = snapToTileGrid(dropTarget.x, dropTarget.y, { ...config, rows }, tileSize);
         moveTile(tileId, snappedTarget);
-        // Consolidation logic
-        if (consolidation) {
-          // Only pass tiles with non-null position
-          const safeTiles = tiles.map(t => t.id === tileId ? { ...t, position: snappedTarget! } : t).filter(t => t.position != null) as DashboardTile[];
-          reorderTiles(rearrangeTiles(safeTiles));
-        }
         // Dynamic row extension (after move)
         extendRowsIfNeeded({ ...tile, position: snappedTarget });
         // Dynamic row reduction (after move)
@@ -182,7 +235,7 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
         sidebarTileType: undefined,
       }));
     },
-    [columns, rows, allowDragOutOfBounds, moveTile, removeTile, config, consolidation, reorderTiles, tiles, extendRowsIfNeeded, reduceRowsIfPossible],
+    [columns, rows, moveTile, removeTile, config, extendRowsIfNeeded, reduceRowsIfPossible, tiles],
   );
 
   // Sidebar drag actions
@@ -221,7 +274,10 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
       }
       // Find next free position if not provided
       if (!dropTarget) {
-        snappedTarget = findNextFreePosition(tiles, { ...config, rows }, 'medium') || { x: 0, y: 0 };
+        snappedTarget = findNextFreePosition(tiles, { ...config, rows }, 'medium') || {
+          x: 0,
+          y: 0,
+        };
       }
       // Prepare new tile
       const newTile: DashboardTile = {
@@ -233,7 +289,7 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
       };
       // Check if tile fits
       if (!tileFits(newTile)) {
-        if (!dynamicExtensions) {
+        if (!config.dynamicExtensions) {
           throw new Error('Board is full and dynamicExtensions is disabled.');
         } else {
           // Extend rows to fit
@@ -241,12 +297,6 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
         }
       }
       addTile(newTile);
-      // Consolidation logic
-      if (consolidation) {
-        // Only pass tiles with non-null position
-        const safeTiles = [...tiles, newTile].filter(t => t.position != null) as DashboardTile[];
-        reorderTiles(rearrangeTiles(safeTiles));
-      }
       // Dynamic row extension (after add)
       extendRowsIfNeeded(newTile);
       // Dynamic row reduction (after add)
@@ -261,7 +311,7 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
         sidebarTileType: undefined,
       }));
     },
-    [columns, rows, config, tiles, addTile, dynamicExtensions, consolidation, reorderTiles, tileFits, extendRowsIfNeeded, reduceRowsIfPossible],
+    [columns, rows, config, tiles, addTile, tileFits, extendRowsIfNeeded, reduceRowsIfPossible],
   );
 
   // Set drop target for drag-over events
@@ -269,28 +319,27 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
     setDragState((prev) => ({ ...prev, dropTarget: target }));
   }, []);
 
-  // After remove, reduce rows if possible
-  const wrappedRemoveTile = useCallback((id: string) => {
-    removeTile(id);
-    reduceRowsIfPossible();
-  }, [removeTile, reduceRowsIfPossible]);
-
-  // After move, reduce rows if possible
-  const wrappedMoveTile = useCallback((tileId: string, newPosition: { x: number; y: number }) => {
-    moveTile(tileId, newPosition);
-    reduceRowsIfPossible();
-  }, [moveTile, reduceRowsIfPossible]);
-
   // Memoize drag context value separately for performance
-  const dragContextValue = useMemo(() => ({
-    dragState,
-    startTileDrag,
-    updateTileDrag,
-    endTileDrag,
-    startSidebarDrag,
-    endSidebarDrag,
-    setDropTarget,
-  }), [dragState, startTileDrag, updateTileDrag, endTileDrag, startSidebarDrag, endSidebarDrag, setDropTarget]);
+  const dragContextValue = useMemo(
+    () => ({
+      dragState,
+      startTileDrag,
+      updateTileDrag,
+      endTileDrag,
+      startSidebarDrag,
+      endSidebarDrag,
+      setDropTarget,
+    }),
+    [
+      dragState,
+      startTileDrag,
+      updateTileDrag,
+      endTileDrag,
+      startSidebarDrag,
+      endSidebarDrag,
+      setDropTarget,
+    ],
+  );
 
   // Memoize main context value (public API)
   const value = useMemo<
@@ -302,14 +351,12 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
       moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
       reorderTiles: (tiles: DashboardTile[]) => void;
       movementEnabled: boolean;
-      removable: boolean;
       rows: number;
     }
   >(
     () => ({
       config: { ...config, rows },
       dragState,
-      // Deprecated: use useDragboardDrag for drag actions
       startTileDrag,
       updateTileDrag,
       endTileDrag,
@@ -317,54 +364,32 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
       endSidebarDrag,
       setDropTarget,
       tiles,
-      addTile: (tile: DashboardTile) => {
-        // Use latest tiles for error check
-        const currentTiles = tilesRef.current;
-        const { colSpan, rowSpan } = tileSizes[tile.size] || tileSizes['medium'];
-        let fits = false;
-        for (let y = 0; y <= rows - rowSpan; y++) {
-          for (let x = 0; x <= columns - colSpan; x++) {
-            const overlap = currentTiles.some((t) => {
-              const tSize = tileSizes[t.size] || tileSizes['medium'];
-              return (
-                x < t.position.x + tSize.colSpan &&
-                x + colSpan > t.position.x &&
-                y < t.position.y + tSize.rowSpan &&
-                y + rowSpan > t.position.y
-              );
-            });
-            if (!overlap) { fits = true; break; }
-          }
-          if (fits) break;
-        }
-        if (!fits) {
-          if (!dynamicExtensions) {
-            throw new Error('Board is full and dynamicExtensions is disabled.');
-          } else {
-            extendRowsIfNeeded(tile);
-          }
-        }
-        addTile(tile);
-        // Consolidation logic
-        if (consolidation) {
-          // Only pass tiles with non-null position
-          const safeTiles = [...currentTiles, tile].filter(t => t.position != null) as DashboardTile[];
-          reorderTiles(rearrangeTiles(safeTiles));
-        }
-        // Dynamic row extension (after add)
-        extendRowsIfNeeded(tile);
-        // Dynamic row reduction (after add)
-        reduceRowsIfPossible();
-      },
-      removeTile: wrappedRemoveTile,
+      addTile,
+      removeTile,
       updateTile,
-      moveTile: wrappedMoveTile,
+      moveTile,
       reorderTiles,
       movementEnabled,
-      removable,
       rows,
     }),
-    [config, rows, dragState, startTileDrag, updateTileDrag, endTileDrag, startSidebarDrag, endSidebarDrag, setDropTarget, tiles, addTile, wrappedRemoveTile, updateTile, wrappedMoveTile, reorderTiles, movementEnabled, removable],
+    [
+      config,
+      rows,
+      dragState,
+      startTileDrag,
+      updateTileDrag,
+      endTileDrag,
+      startSidebarDrag,
+      endSidebarDrag,
+      setDropTarget,
+      tiles,
+      addTile,
+      removeTile,
+      updateTile,
+      moveTile,
+      reorderTiles,
+      movementEnabled,
+    ],
   );
 
   return (

@@ -14,8 +14,6 @@ export interface DragboardConfig {
   consolidation?: boolean;
   /** If true, tiles can be moved by drag. Default: true */
   movementEnabled?: boolean;
-  /** If true, tiles can be removed (X button shown). Default: true */
-  removable?: boolean;
   /** If true, board will dynamically add rows if a tile doesn't fit. Default: true */
   dynamicExtensions?: boolean;
   /** If true, dragging a tile out of bounds will remove it. If false, tile returns to original position. Default: false */
@@ -49,8 +47,6 @@ export interface DragboardContextValue {
   reorderTiles: (tiles: DashboardTile[]) => void;
   /** If false, disables drag-and-drop for tiles */
   movementEnabled?: boolean;
-  /** If false, disables remove (X) button for tiles */
-  removable?: boolean;
   /** Current row count (for dynamic extension/reduction) */
   rows: number;
 }

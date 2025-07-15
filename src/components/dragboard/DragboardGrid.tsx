@@ -27,7 +27,8 @@ function getValidDropPositions(
 
 export const DragboardGrid = memo<DragboardGridProps>(({ children }) => {
   const { config, rows } = useDragboard();
-  const { dragState, endTileDrag, endSidebarDrag, setDropTarget, startSidebarDrag } = useDragboardDrag();
+  const { dragState, endTileDrag, endSidebarDrag, setDropTarget, startSidebarDrag } =
+    useDragboardDrag();
 
   const gridStyle: React.CSSProperties = useMemo(
     () => ({
@@ -87,6 +88,7 @@ export const DragboardGrid = memo<DragboardGridProps>(({ children }) => {
 
   // Memoize drop targets overlay
   const dropTargetsOverlay = useMemo(() => {
+    if (!config.movementEnabled) return null;
     if (!dragState.draggingTileId && !dragState.isSidebarDrag) {
       return null;
     }
@@ -125,11 +127,11 @@ export const DragboardGrid = memo<DragboardGridProps>(({ children }) => {
       </div>
     );
   }, [
+    config,
+    draggingTileSize,
     dragState.draggingTileId,
     dragState.isSidebarDrag,
     dragState.dropTarget,
-    config,
-    draggingTileSize,
     handleDragOver,
     handleDragLeave,
     handleDrop,
