@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { useDragboard } from './DragboardContext';
+import { useDragboard, useDragboardDrag } from './DragboardContext';
 
 export interface DraggableTileProps {
   id: string;
@@ -25,39 +25,46 @@ export interface DragboardTileProps {
 }
 
 const DragboardTileComponent: React.FC<DragboardTileProps> = ({ id, position, size, children }) => {
-  const { config, dragState, startTileDrag, endTileDrag, removeTile } = useDragboard();
+  const { config, removeTile, movementEnabled = true, removable = true } = useDragboard();
+  const { dragState, startTileDrag, endTileDrag } = useDragboardDrag();
   const isDragging = dragState.draggingTileId === id;
 
   // Native drag-and-drop handlers - memoized to prevent recreation
   const handleDragStart = useCallback(
     (e: React.DragEvent) => {
+      if (!movementEnabled) return;
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('application/nerdboard-tile-id', id);
       startTileDrag(id, position);
     },
-    [id, position, startTileDrag],
+    [id, position, startTileDrag, movementEnabled],
   );
 
   const handleDragEnd = useCallback(() => {
+    if (!movementEnabled) return;
     endTileDrag(dragState.dropTarget, id);
-  }, [dragState.dropTarget, endTileDrag, id]);
+  }, [dragState.dropTarget, endTileDrag, id, movementEnabled]);
 
   // Pass drag handle props to the child tile - memoized to prevent recreation
   const dragHandleProps = useMemo<React.HTMLAttributes<HTMLDivElement>>(
-    () => ({
-      draggable: true,
-      onDragStart: handleDragStart,
-      onDragEnd: handleDragEnd,
-    }),
-    [handleDragStart, handleDragEnd],
+    () =>
+      movementEnabled
+        ? {
+            draggable: true,
+            onDragStart: handleDragStart,
+            onDragEnd: handleDragEnd,
+          }
+        : {},
+    [handleDragStart, handleDragEnd, movementEnabled],
   );
 
   // Memoize the remove function to prevent recreation
   const handleRemove = useCallback(
     (tileId: string) => {
+      if (!removable) return;
       removeTile(tileId);
     },
-    [removeTile],
+    [removeTile, removable],
   );
 
   return (
@@ -73,7 +80,7 @@ const DragboardTileComponent: React.FC<DragboardTileProps> = ({ id, position, si
       role="gridcell"
       aria-label={`Tile ${id}`}
     >
-      {/* Render the child tile with drag handle props */}
+      {/* Render the child tile with drag handle props if movement is enabled */}
       {React.isValidElement(children)
         ? React.cloneElement(children, {
             dragHandleProps,
@@ -84,6 +91,19 @@ const DragboardTileComponent: React.FC<DragboardTileProps> = ({ id, position, si
       {/* Ghost/preview tile when dragging (optional) */}
       {isDragging && (
         <div className="absolute inset-0 bg-theme-primary opacity-30 pointer-events-none z-50 rounded-lg" />
+      )}
+
+      {/* Remove button, only if removable is true */}
+      {removable && handleRemove && (
+        <button
+          onClick={() => handleRemove(id)}
+          className="absolute top-1 right-1 p-1 text-theme-text-tertiary hover:text-theme-text-primary hover:bg-theme-text-tertiary rounded transition-colors cursor-pointer z-10"
+          aria-label={`Remove tile`}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+        >
+          <span aria-hidden="true">×</span>
+        </button>
       )}
     </div>
   );

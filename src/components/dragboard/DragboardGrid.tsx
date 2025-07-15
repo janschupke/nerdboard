@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, memo } from 'react';
-import { useDragboard } from './DragboardContext';
+import { useDragboard, useDragboardDrag } from './DragboardContext';
 
 interface DragboardGridProps {
   children: React.ReactNode;
@@ -26,20 +26,20 @@ function getValidDropPositions(
 }
 
 export const DragboardGrid = memo<DragboardGridProps>(({ children }) => {
-  const { config, dragState, endTileDrag, endSidebarDrag, setDropTarget, startSidebarDrag } =
-    useDragboard();
+  const { config, rows } = useDragboard();
+  const { dragState, endTileDrag, endSidebarDrag, setDropTarget, startSidebarDrag } = useDragboardDrag();
 
   const gridStyle: React.CSSProperties = useMemo(
     () => ({
       display: 'grid',
       gridTemplateColumns: `repeat(${config.columns}, minmax(0, 1fr))`,
-      gridTemplateRows: `repeat(${config.rows}, minmax(8vw, 1fr))`,
+      gridTemplateRows: `repeat(${rows}, minmax(8vw, 1fr))`,
       gap: '1rem',
       width: '100%',
       height: '100%',
       position: 'relative',
     }),
-    [config.columns, config.rows],
+    [config.columns, rows],
   );
 
   // Memoize the dragging tile size detection

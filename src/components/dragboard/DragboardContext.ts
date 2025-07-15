@@ -2,10 +2,24 @@ import { createContext, useContext } from 'react';
 import type { DashboardTile } from './dashboard';
 
 export interface DragboardConfig {
+  /** Number of columns in the grid */
   columns: number;
+  /** Number of rows in the grid */
   rows: number;
+  /** Tile size definitions */
   tileSizes: Record<'small' | 'medium' | 'large', { colSpan: number; rowSpan: number }>;
+  /** Responsive breakpoints */
   breakpoints: Record<string, number>;
+  /** If true, tiles are always consolidated (no gaps, always fill from top-left). Default: true */
+  consolidation?: boolean;
+  /** If true, tiles can be moved by drag. Default: true */
+  movementEnabled?: boolean;
+  /** If true, tiles can be removed (X button shown). Default: true */
+  removable?: boolean;
+  /** If true, board will dynamically add rows if a tile doesn't fit. Default: true */
+  dynamicExtensions?: boolean;
+  /** If true, dragging a tile out of bounds will remove it. If false, tile returns to original position. Default: false */
+  allowDragOutOfBounds?: boolean;
 }
 
 export interface DragboardDragState {
@@ -33,6 +47,12 @@ export interface DragboardContextValue {
   updateTile: (id: string, updates: Partial<DashboardTile>) => void;
   moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
   reorderTiles: (tiles: DashboardTile[]) => void;
+  /** If false, disables drag-and-drop for tiles */
+  movementEnabled?: boolean;
+  /** If false, disables remove (X) button for tiles */
+  removable?: boolean;
+  /** Current row count (for dynamic extension/reduction) */
+  rows: number;
 }
 
 /**
@@ -74,5 +94,24 @@ export const DragboardContext = createContext<DragboardContextValue | undefined>
 export const useDragboard = () => {
   const ctx = useContext(DragboardContext);
   if (!ctx) throw new Error('useDragboard must be used within DragboardProvider');
+  return ctx;
+};
+
+// Drag-only context for performance: only drag state and drag actions
+export interface DragboardDragContextValue {
+  dragState: DragboardDragState;
+  startTileDrag: (tileId: string, origin: { x: number; y: number }) => void;
+  updateTileDrag: (offset: { x: number; y: number }) => void;
+  endTileDrag: (dropTarget: { x: number; y: number } | null, tileId?: string) => void;
+  startSidebarDrag: (tileType: string) => void;
+  endSidebarDrag: (dropTarget: { x: number; y: number } | null, tileType?: string) => void;
+  setDropTarget: (target: { x: number; y: number } | null) => void;
+}
+
+export const DragboardDragContext = createContext<DragboardDragContextValue | undefined>(undefined);
+
+export const useDragboardDrag = () => {
+  const ctx = useContext(DragboardDragContext);
+  if (!ctx) throw new Error('useDragboardDrag must be used within DragboardProvider');
   return ctx;
 };

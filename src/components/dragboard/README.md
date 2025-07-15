@@ -20,6 +20,11 @@ const dragboardConfig = {
     large: { colSpan: 3, rowSpan: 3 },
   },
   breakpoints: { sm: 640, md: 768, lg: 1024 },
+  consolidation: true, // always fill from top-left, no gaps
+  movementEnabled: true, // allow drag-and-drop
+  removable: true, // show X button to remove tiles
+  dynamicExtensions: true, // allow board to grow rows if needed
+  allowDragOutOfBounds: false, // dragging out of bounds removes tile if true, else reverts
 };
 
 <DragboardProvider
@@ -83,8 +88,8 @@ const dragboardConfig = {
 - **TileType**: Union of allowed tile type strings.
 - **TileSize**: Union of allowed tile size strings.
 - **DraggableTileProps**: Props for draggable tile components.
-- **DragboardConfig**: Grid and sizing configuration.
-- **DragboardContextValue**: Context value shape for useDragboard.
+- **DragboardConfig**: Grid and sizing configuration (see below for all options).
+- **DragboardContextValue**: Context value shape for useDragboard (see below for all options).
 
 ---
 
@@ -138,6 +143,16 @@ interface DragboardConfig {
   rows: number;
   tileSizes: Record<'small' | 'medium' | 'large', { colSpan: number; rowSpan: number }>;
   breakpoints: Record<string, number>;
+  /** If true, tiles are always consolidated (no gaps, always fill from top-left). Default: true */
+  consolidation?: boolean;
+  /** If true, tiles can be moved by drag. Default: true */
+  movementEnabled?: boolean;
+  /** If true, tiles can be removed (X button shown). Default: true */
+  removable?: boolean;
+  /** If true, board will dynamically add rows if a tile doesn't fit. Default: true */
+  dynamicExtensions?: boolean;
+  /** If true, dragging a tile out of bounds will remove it. If false, tile returns to original position. Default: false */
+  allowDragOutOfBounds?: boolean;
 }
 ```
 
@@ -159,8 +174,41 @@ interface DragboardContextValue {
   updateTile: (id: string, updates: Partial<DashboardTile>) => void;
   moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
   reorderTiles: (tiles: DashboardTile[]) => void;
+  /** If false, disables drag-and-drop for tiles */
+  movementEnabled?: boolean;
+  /** If false, disables remove (X) button for tiles */
+  removable?: boolean;
+  /** Current row count (for dynamic extension/reduction) */
+  rows: number;
 }
 ```
+
+---
+
+## Feature Behaviors & Config Options
+
+### Consolidation
+
+- If `consolidation` is true (default), tiles are always packed from the top-left, with no gaps. Any add, move, or remove will trigger automatic consolidation.
+- If false, tiles can be placed freely and will not be automatically rearranged.
+
+### Dynamic Row Extension & Reduction
+
+- If `dynamicExtensions` is true (default), the board will automatically add rows if a tile is added or moved and would not fit in the current grid.
+- If false, adding or moving a tile that would not fit throws an error.
+- Rows are only extended after a tile is actually added or moved (never during drag preview).
+- After a tile is removed or moved, if there are empty rows at the bottom (above the default row count), the board will shrink to the highest occupied row, but never below the default.
+- If consolidation is off and there are tiles on non-contiguous rows, rows are only reduced if there are no tiles in the highest row(s).
+
+### Drag Out of Bounds
+
+- If `allowDragOutOfBounds` is false (default), dragging a tile out of bounds will return it to its original position.
+- If true, dragging a tile out of bounds will remove it from the board.
+
+### Movement & Removability
+
+- If `movementEnabled` is false, drag-and-drop is disabled for all tiles.
+- If `removable` is false, the X (remove) button is hidden and tiles cannot be removed via UI.
 
 ---
 
@@ -217,6 +265,16 @@ function TileCatalogItem({ tileType }) {
 ```
 
 When a user drags a tile type from the external component and drops it onto the Dragboard, the Dragboard context will handle the drop and add the new tile at the drop position.
+
+---
+
+## Edge Cases & Error Handling
+
+- **Full Board:** If `dynamicExtensions` is false and the board is full, adding or moving a tile that would not fit will throw an error.
+- **Row Reduction:** After removing or moving a tile, if there are no tiles in the last row(s) above the default, the board will shrink to the highest occupied row.
+- **Drag Preview:** The board will never extend rows just to preview a drag; rows are only extended after a tile is actually added or moved.
+- **Drag Out of Bounds:** If `allowDragOutOfBounds` is false, dragging a tile out of bounds will return it to its original position. If true, the tile will be removed.
+- **Non-Contiguous Rows:** If consolidation is off and there are tiles on non-contiguous rows, rows are only reduced if there are no tiles in the highest row(s).
 
 ---
 
