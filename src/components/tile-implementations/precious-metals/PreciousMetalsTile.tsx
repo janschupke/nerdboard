@@ -6,6 +6,7 @@ import type { PreciousMetalsData } from './types';
 
 function usePreciousMetalsTileData(
   tileId: string,
+  refreshKey?: number,
 ): ReturnType<GenericTileDataHook<PreciousMetalsData>> {
   const { getPreciousMetals } = usePreciousMetalsApi();
   const [loading, setLoading] = useState(true);
@@ -35,17 +36,16 @@ function usePreciousMetalsTileData(
     return () => {
       mounted = false;
     };
-  }, [tileId, getPreciousMetals]);
+  }, [tileId, getPreciousMetals, refreshKey]);
   return { loading, error, hasData, data };
 }
 
 export const PreciousMetalsTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
-    return (
-      <GenericTile tile={tile} meta={meta} useTileData={usePreciousMetalsTileData} {...rest} />
-    );
+  ({ tile, meta, refreshKey, ...rest }: { tile: DashboardTile; meta: TileMeta; refreshKey?: number }) => {
+    const useTileData = (id: string) => usePreciousMetalsTileData(id, refreshKey);
+    return <GenericTile tile={tile} meta={meta} useTileData={useTileData} {...rest} />;
   },
-  (prev, next) => prev.tile.id === next.tile.id,
+  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
 );
 
 PreciousMetalsTile.displayName = 'PreciousMetalsTile';

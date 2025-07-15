@@ -16,7 +16,7 @@ import {
 import type { DashboardTile } from '../dragboard';
 
 function OverlayContent() {
-  const { tiles } = useDragboard();
+  const { tiles, refreshAllTiles, isRefreshing, refreshKey } = useDragboard();
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
 
@@ -28,8 +28,8 @@ function OverlayContent() {
   // Register hotkeys
   useKeyboardNavigation({
     toggleLogView,
-    refreshAllTiles: () => {},
-    isRefreshing: false,
+    refreshAllTiles,
+    isRefreshing,
   });
 
   const LogView = React.lazy(() =>
@@ -41,8 +41,8 @@ function OverlayContent() {
       <Header
         isLogViewOpen={isLogViewOpen}
         toggleLogView={toggleLogView}
-        refreshAllTiles={() => {}}
-        isRefreshing={false}
+        refreshAllTiles={refreshAllTiles}
+        isRefreshing={isRefreshing}
         toggleTheme={toggleTheme}
         theme={theme}
         toggleCollapse={toggleCollapse}
@@ -72,7 +72,8 @@ function OverlayContent() {
                 position={tile.position || { x: 0, y: 0 }}
                 size={typeof tile.size === 'string' ? tile.size : 'medium'}
               >
-                <Tile tile={tile} />
+                {/* Pass refreshKey as a prop to force tile reload on refresh */}
+                <Tile tile={tile} refreshKey={refreshKey} />
               </DragboardTile>
             ))}
           </DragboardGrid>

@@ -4,7 +4,7 @@ import type { DashboardTile } from '../../dragboard/dashboard';
 import { useWeatherApi } from './useWeatherApi';
 import type { WeatherTileData } from './types';
 
-function useWeatherTileData(tileId: string): ReturnType<GenericTileDataHook<WeatherTileData>> {
+function useWeatherTileData(tileId: string, refreshKey?: number): ReturnType<GenericTileDataHook<WeatherTileData>> {
   const { getWeather } = useWeatherApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,15 +33,15 @@ function useWeatherTileData(tileId: string): ReturnType<GenericTileDataHook<Weat
     return () => {
       mounted = false;
     };
-  }, [tileId, getWeather]);
+  }, [tileId, getWeather, refreshKey]);
   return { loading, error, hasData, data };
 }
 
 export const WeatherTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
-    return <GenericTile tile={tile} meta={meta} useTileData={useWeatherTileData} {...rest} />;
+  ({ tile, meta, refreshKey, ...rest }: { tile: DashboardTile; meta: TileMeta; refreshKey?: number }) => {
+    return <GenericTile tile={tile} meta={meta} useTileData={(id) => useWeatherTileData(id, refreshKey)} {...rest} />;
   },
-  (prev, next) => prev.tile.id === next.tile.id,
+  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
 );
 
 WeatherTile.displayName = 'WeatherTile';

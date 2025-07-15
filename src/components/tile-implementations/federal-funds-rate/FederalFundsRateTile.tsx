@@ -3,7 +3,7 @@ import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile
 import type { DashboardTile } from '../../dragboard/dashboard';
 import { useFederalFundsApi } from './useFederalFundsApi';
 
-function useFederalFundsTileData(tileId: string): ReturnType<GenericTileDataHook<unknown>> {
+function useFederalFundsTileData(tileId: string, refreshKey?: number): ReturnType<GenericTileDataHook<unknown>> {
   const { getFederalFundsRate } = useFederalFundsApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,15 +32,16 @@ function useFederalFundsTileData(tileId: string): ReturnType<GenericTileDataHook
     return () => {
       mounted = false;
     };
-  }, [tileId, getFederalFundsRate]);
+  }, [tileId, getFederalFundsRate, refreshKey]);
   return { loading, error, hasData, data };
 }
 
 export const FederalFundsRateTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
-    return <GenericTile tile={tile} meta={meta} useTileData={useFederalFundsTileData} {...rest} />;
+  ({ tile, meta, refreshKey, ...rest }: { tile: DashboardTile; meta: TileMeta; refreshKey?: number }) => {
+    const useTileData = (id: string) => useFederalFundsTileData(id, refreshKey);
+    return <GenericTile tile={tile} meta={meta} useTileData={useTileData} {...rest} />;
   },
-  (prev, next) => prev.tile.id === next.tile.id,
+  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
 );
 
 FederalFundsRateTile.displayName = 'FederalFundsRateTile';

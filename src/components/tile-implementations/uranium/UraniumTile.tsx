@@ -4,7 +4,7 @@ import type { DashboardTile } from '../../dragboard/dashboard';
 import { useUraniumApi } from './useUraniumApi';
 import type { UraniumPriceData } from './types';
 
-function useUraniumTileData(tileId: string): ReturnType<GenericTileDataHook<UraniumPriceData>> {
+function useUraniumTileData(tileId: string, refreshKey?: number): ReturnType<GenericTileDataHook<UraniumPriceData>> {
   const { getUraniumPrice } = useUraniumApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,15 +33,16 @@ function useUraniumTileData(tileId: string): ReturnType<GenericTileDataHook<Uran
     return () => {
       mounted = false;
     };
-  }, [tileId, getUraniumPrice]);
+  }, [tileId, getUraniumPrice, refreshKey]);
   return { loading, error, hasData, data };
 }
 
 export const UraniumTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
-    return <GenericTile tile={tile} meta={meta} useTileData={useUraniumTileData} {...rest} />;
+  ({ tile, meta, refreshKey, ...rest }: { tile: DashboardTile; meta: TileMeta; refreshKey?: number }) => {
+    const useTileData = (id: string) => useUraniumTileData(id, refreshKey);
+    return <GenericTile tile={tile} meta={meta} useTileData={useTileData} {...rest} />;
   },
-  (prev, next) => prev.tile.id === next.tile.id,
+  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
 );
 
 UraniumTile.displayName = 'UraniumTile';

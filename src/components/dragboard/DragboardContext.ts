@@ -49,6 +49,12 @@ export interface DragboardContextValue {
   movementEnabled?: boolean;
   /** Current row count (for dynamic extension/reduction) */
   rows: number;
+  /** Triggers reload of all tiles */
+  refreshAllTiles: () => Promise<void>;
+  /** True if a refresh is in progress */
+  isRefreshing: boolean;
+  /** Key to force tile reloads */
+  refreshKey: number;
 }
 
 /**

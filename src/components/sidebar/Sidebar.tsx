@@ -90,7 +90,7 @@ export function Sidebar({
     [isTileActive, addTile, removeTile, tiles],
   );
 
-  const { selectedIndex: navIndex, setSelectedIndex: navSetIndex } = useKeyboardNavigation({
+  useKeyboardNavigation({
     navigation: {
       items: flatTiles.map((tile) => tile.type),
       onToggle: (tileType) => handleTileToggle(tileType as TileType),
@@ -98,14 +98,10 @@ export function Sidebar({
       isCollapsed,
     },
     enabled: true,
+    selectedIndex,
+    setSelectedIndex,
   });
-  // Keep selectedIndex in sync with parent
-  useEffect(() => {
-    if (navIndex !== selectedIndex) setSelectedIndex(navIndex);
-  }, [navIndex, selectedIndex, setSelectedIndex]);
-  useEffect(() => {
-    if (selectedIndex !== navIndex) navSetIndex(selectedIndex);
-  }, [selectedIndex, navIndex, navSetIndex]);
+  // Remove syncing useEffects
 
   useEffect(() => {
     const selectedItem = flatTiles[selectedIndex];

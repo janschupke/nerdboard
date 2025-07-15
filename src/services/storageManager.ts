@@ -163,6 +163,9 @@ export class StorageManager {
 
   getLogs(): APILogEntry[] {
     this.init();
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    // Filter logs to only those from the last hour
+    this.logs = this.logs.filter((log) => log.timestamp >= oneHourAgo);
     return this.logs;
   }
   addLog(entry: Omit<APILogEntry, 'id' | 'timestamp'>) {
@@ -171,7 +174,10 @@ export class StorageManager {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
     };
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    // Add new log and filter out old logs
     this.logs.unshift(newLog);
+    this.logs = this.logs.filter((log) => log.timestamp >= oneHourAgo);
     if (this.logs.length > 1000) this.logs.splice(1000);
     try {
       localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(this.logs));

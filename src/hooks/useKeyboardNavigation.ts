@@ -14,6 +14,8 @@ export interface KeyboardNavigationOptions {
   toggleLogView?: () => void;
   refreshAllTiles?: () => void;
   isRefreshing?: boolean;
+  selectedIndex?: number;
+  setSelectedIndex?: (index: number) => void;
 }
 
 /**
@@ -23,8 +25,11 @@ export interface KeyboardNavigationOptions {
  * Handles L (log) and R (refresh) hotkeys directly.
  */
 export const useKeyboardNavigation = (options: KeyboardNavigationOptions = {}) => {
-  const { navigation, enabled = true, toggleLogView, refreshAllTiles, isRefreshing } = options;
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const { navigation, enabled = true, toggleLogView, refreshAllTiles, isRefreshing, selectedIndex: controlledIndex, setSelectedIndex: controlledSetIndex } = options;
+  const [uncontrolledIndex, setUncontrolledIndex] = useState(0);
+  const isControlled = controlledIndex !== undefined && controlledSetIndex !== undefined;
+  const selectedIndex = isControlled ? controlledIndex : uncontrolledIndex;
+  const setSelectedIndex = isControlled ? controlledSetIndex : setUncontrolledIndex;
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -66,11 +71,19 @@ export const useKeyboardNavigation = (options: KeyboardNavigationOptions = {}) =
         switch (event.key) {
           case 'ArrowUp':
             event.preventDefault();
-            setSelectedIndex((prev) => (prev === 0 ? navigation.items!.length - 1 : prev - 1));
+            if (isControlled) {
+              setSelectedIndex(selectedIndex === 0 ? navigation.items.length - 1 : selectedIndex - 1);
+            } else {
+              setUncontrolledIndex((prev) => (prev === 0 ? navigation.items!.length - 1 : prev - 1));
+            }
             break;
           case 'ArrowDown':
             event.preventDefault();
-            setSelectedIndex((prev) => (prev === navigation.items!.length - 1 ? 0 : prev + 1));
+            if (isControlled) {
+              setSelectedIndex(selectedIndex === navigation.items.length - 1 ? 0 : selectedIndex + 1);
+            } else {
+              setUncontrolledIndex((prev) => (prev === navigation.items!.length - 1 ? 0 : prev + 1));
+            }
             break;
           case 'Enter':
           case ' ': // Spacebar

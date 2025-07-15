@@ -76,4 +76,35 @@ export const setupGlobalErrorHandling = (): void => {
     // For other warnings, log normally
     originalConsoleWarn(...args);
   };
+
+  // Add global error and unhandledrejection handlers
+  if (typeof window !== 'undefined') {
+    window.onerror = function (message, source, lineno, colno, error) {
+      storageManager.addLog({
+        level: 'error',
+        apiCall: 'window.onerror',
+        reason: String(message),
+        details: {
+          source: String(source),
+          lineno: lineno ?? '',
+          colno: colno ?? '',
+          errorName: error && error.name ? error.name : '',
+          errorMessage: error && error.message ? error.message : '',
+        },
+      });
+      return false;
+    };
+    window.onunhandledrejection = function (event) {
+      storageManager.addLog({
+        level: 'error',
+        apiCall: 'window.onunhandledrejection',
+        reason: String(event.reason),
+        details: {
+          errorName: event.reason && event.reason.name ? event.reason.name : '',
+          errorMessage: event.reason && event.reason.message ? event.reason.message : '',
+        },
+      });
+      return false;
+    };
+  }
 };

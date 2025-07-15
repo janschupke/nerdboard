@@ -41,7 +41,59 @@ export class DataFetcher {
       }
 
       // Fetch fresh data with timeout
-      const data = await this.fetchWithTimeout(fetchFunction, timeout);
+      let data: T;
+      try {
+        data = await this.fetchWithTimeout(fetchFunction, timeout);
+      } catch (fetchError) {
+        // Log fetch error (network, timeout, etc.)
+        const errorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
+        const logDetails: APILogDetails = {
+          storageKey,
+          retryCount,
+          forceRefresh: forceRefresh ? 1 : 0,
+          errorName: fetchError instanceof Error ? fetchError.name : 'Unknown',
+          errorMessage,
+        };
+        storageManager.addLog({
+          level: 'error',
+          apiCall,
+          reason: errorMessage,
+          details: logDetails,
+        });
+        return {
+          data: null,
+          isCached: false,
+          error: errorMessage,
+          lastUpdated: new Date(),
+          retryCount: retryCount + 1,
+        };
+      }
+
+      // If data is an error response (e.g., 400/500), log it
+      if (data && typeof data === 'object' && 'error' in data) {
+        const errorVal = (data as Record<string, unknown>).error;
+        const errorMessage = typeof errorVal === 'string' ? errorVal : 'API error';
+        const logDetails: APILogDetails = {
+          storageKey,
+          retryCount,
+          forceRefresh: forceRefresh ? 1 : 0,
+          errorName: 'APIError',
+          errorMessage,
+        };
+        storageManager.addLog({
+          level: 'error',
+          apiCall,
+          reason: errorMessage,
+          details: logDetails,
+        });
+        return {
+          data: null,
+          isCached: false,
+          error: errorMessage,
+          lastUpdated: new Date(),
+          retryCount: retryCount + 1,
+        };
+      }
 
       // Cache the fresh data
       storageManager.setTileInstanceConfig(storageKey, {
@@ -67,14 +119,12 @@ export class DataFetcher {
         errorName: error instanceof Error ? error.name : 'Unknown',
         errorMessage,
       };
-
       storageManager.addLog({
         level: 'error',
         apiCall,
         reason: errorMessage,
         details: logDetails,
       });
-
       return {
         data: null,
         isCached: false,

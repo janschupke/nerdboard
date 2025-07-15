@@ -78,6 +78,18 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
     sidebarTileType: undefined,
   });
 
+  // Add state to trigger refresh for all tiles
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Function to trigger refresh for all tiles
+  const refreshAllTiles = useCallback(async () => {
+    setIsRefreshing(true);
+    setRefreshKey((prev) => prev + 1);
+    // Optionally, wait for all tiles to finish reloading if needed
+    setTimeout(() => setIsRefreshing(false), 1000); // Simulate refresh duration
+  }, []);
+
   // Helper: Check if a tile fits in the current grid
   const tileFits = useCallback(
     (tile: DashboardTile) => {
@@ -352,6 +364,9 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
       reorderTiles: (tiles: DashboardTile[]) => void;
       movementEnabled: boolean;
       rows: number;
+      refreshAllTiles: () => Promise<void>;
+      isRefreshing: boolean;
+      refreshKey: number;
     }
   >(
     () => ({
@@ -371,6 +386,9 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
       reorderTiles,
       movementEnabled,
       rows,
+      refreshAllTiles,
+      isRefreshing,
+      refreshKey,
     }),
     [
       config,
@@ -389,6 +407,9 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
       moveTile,
       reorderTiles,
       movementEnabled,
+      refreshAllTiles,
+      isRefreshing,
+      refreshKey,
     ],
   );
 
