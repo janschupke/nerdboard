@@ -17,7 +17,7 @@ function useWeatherTileData(tileId: string): ReturnType<GenericTileDataHook<Weat
     setError(null);
     setHasData(false);
     setData(undefined);
-    getWeather(tileId, { city: 'helsinki' })
+    getWeather(tileId, { lat: 60.1699, lon: 24.9384 })
       .then((result) => {
         if (!mounted) return;
         setData(result);

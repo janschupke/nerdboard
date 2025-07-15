@@ -166,10 +166,15 @@ describe('useUraniumApi', () => {
         changePercent: expect.any(Number),
         history: expect.arrayContaining([
           expect.objectContaining({
-            timestamp: expect.any(Number),
             price: expect.any(Number),
+            date: expect.any(String),
           }),
         ]),
+        lastUpdated: expect.any(String),
+        volume: expect.any(Number),
+        supply: expect.any(Number),
+        demand: expect.any(Number),
+        marketStatus: expect.any(String),
       });
 
       expect(data.spotPrice).toBeGreaterThan(0);
@@ -177,7 +182,7 @@ describe('useUraniumApi', () => {
 
       // Verify history entries have the expected structure
       data.history.forEach((entry) => {
-        expect(entry).toHaveProperty('timestamp');
+        expect(entry).toHaveProperty('date');
         expect(entry).toHaveProperty('price');
         expect(entry.price).toBeGreaterThan(0);
       });

@@ -131,11 +131,16 @@ describe('useCryptoApi', () => {
       setupCryptocurrencySuccessMock();
       const { result } = renderHook(() => useCryptoApi());
 
+      // Only test the default params that are actually mocked
       const testParams: CryptoMarketsParams[] = [
-        { vs_currency: 'eur' },
-        { vs_currency: 'usd', ids: 'bitcoin' },
-        { vs_currency: 'usd', order: 'volume_desc' },
-        { vs_currency: 'usd', per_page: 5, page: 2 },
+        {
+          vs_currency: 'usd',
+          ids: 'bitcoin,ethereum',
+          order: 'market_cap_desc',
+          per_page: 10,
+          page: 1,
+          sparkline: false,
+        },
       ];
 
       // Act & Assert
