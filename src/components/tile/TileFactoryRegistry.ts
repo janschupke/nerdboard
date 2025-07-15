@@ -9,9 +9,7 @@ import { gdxEtfTileMeta } from '../tile-implementations/gdx-etf/meta';
 import { uraniumTileMeta } from '../tile-implementations/uranium/meta';
 import { timeTileMeta } from '../tile-implementations/time/meta';
 import { weatherTileMeta } from '../tile-implementations/weather/meta';
-
-// Inline meta for EuriborRateTile
-const euriborRateTileMeta = { title: 'Euribor Rate', icon: 'chart' };
+import { euriborRateTileMeta } from '../tile-implementations/euribor-rate/meta';
 
 export interface TileCatalogEntry {
   type: TileType;

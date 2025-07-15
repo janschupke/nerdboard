@@ -1,3 +1,4 @@
+import type { TileCategory } from '../../../types/tileCategories';
 export const weatherTileMeta = (city: string) => {
   let title = 'Weather';
   switch (city.toLowerCase()) {
@@ -13,5 +14,5 @@ export const weatherTileMeta = (city: string) => {
     default:
       title = 'Weather';
   }
-  return { title, icon: 'weather' };
+  return { title, icon: 'weather', category: 'Weather' as TileCategory };
 };

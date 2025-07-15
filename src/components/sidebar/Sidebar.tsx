@@ -6,6 +6,8 @@ import { TILE_CATALOG } from '../tile/TileFactoryRegistry';
 import { useDragboard } from '../dragboard';
 import { findNextFreePosition } from '../dragboard/rearrangeTiles';
 import { DASHBOARD_GRID_CONFIG } from '../overlay/gridConfig';
+import { TILE_CATEGORIES } from '../../types/tileCategories';
+import type { TileCategory } from '../../types/tileCategories';
 
 interface SidebarProps {
   onToggle: () => void;
@@ -18,18 +20,36 @@ export function Sidebar({ onToggle }: SidebarProps) {
   const availableTiles = useMemo(
     () =>
       TILE_CATALOG.map((entry) => {
-        // Prefer static meta, fallback to getMeta
-        const meta = entry.meta || (entry.getMeta ? entry.getMeta() : { title: '', icon: '' });
+        const meta = entry.meta || (entry.getMeta ? entry.getMeta() : { title: '', icon: '', category: undefined });
         return {
           type: entry.type,
           name: meta.title,
           icon: meta.icon,
+          category: meta.category,
         };
-      }),
+      }).filter((tile) => !!tile.category),
     [],
   );
 
-  const itemIds = useMemo(() => availableTiles.map((tile) => tile.type), [availableTiles]);
+  // Group tiles by category
+  const tilesByCategory = useMemo(() => {
+    const groups: Record<TileCategory, typeof availableTiles> = {
+      Weather: [],
+      Time: [],
+      Macroeconomics: [],
+      Finance: [],
+    };
+    availableTiles.forEach((tile) => {
+      if (tile.category && groups[tile.category]) {
+        groups[tile.category].push(tile);
+      }
+    });
+    return groups;
+  }, [availableTiles]);
+
+  // Flattened list for hotkey navigation
+  const flatTiles = useMemo(() => TILE_CATEGORIES.flatMap((cat) => tilesByCategory[cat]), [tilesByCategory]);
+  const itemIds = useMemo(() => flatTiles.map((tile) => tile.type), [flatTiles]);
 
   const isTileActive = useCallback(
     (tileType: TileType) => tiles.some((tile) => tile.type === tileType),
@@ -62,12 +82,11 @@ export function Sidebar({ onToggle }: SidebarProps) {
     itemIds,
     handleTileToggle,
     onToggle,
-    false, // isCollapsed - this should be handled by the dragboard framework
+    false,
   );
 
-  // Announce selection changes to screen readers
   useEffect(() => {
-    const selectedItem = availableTiles[selectedIndex];
+    const selectedItem = flatTiles[selectedIndex];
     if (selectedItem) {
       const announcement = `Selected ${selectedItem.name} tile`;
       const liveRegion = document.getElementById('keyboard-announcements');
@@ -75,7 +94,7 @@ export function Sidebar({ onToggle }: SidebarProps) {
         liveRegion.textContent = announcement;
       }
     }
-  }, [selectedIndex, availableTiles]);
+  }, [selectedIndex, flatTiles]);
 
   return (
     <>
@@ -85,39 +104,42 @@ export function Sidebar({ onToggle }: SidebarProps) {
         className="h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out flex-shrink-0 w-64"
       >
         <div className="flex flex-col h-full transition-all duration-300 w-64">
-          {/* Fixed Header */}
           <div className="flex-shrink-0 p-4 border-b border-theme-primary">
             <h2 className="text-lg font-semibold text-theme-primary" id="tiles-heading">
-              Available Tiles ({availableTiles.length})
+              Available Tiles ({flatTiles.length})
             </h2>
           </div>
-
-          {/* Scrollable Content */}
           <div className="relative flex-1 p-4 overflow-y-auto scrollbar-hide">
-            <div
-              className="space-y-3"
-              role="listbox"
-              aria-labelledby="tiles-heading"
-              aria-label="Available dashboard tiles"
-            >
-              {availableTiles.map((tile, idx) => (
-                <SidebarItem
-                  key={tile.type}
-                  tileType={tile.type}
-                  name={tile.name}
-                  icon={tile.icon}
-                  isActive={isTileActive(tile.type)}
-                  isSelected={selectedIndex === idx}
-                  onClick={() => handleTileToggle(tile.type)}
-                />
+            <div role="listbox" aria-labelledby="tiles-heading" aria-label="Available dashboard tiles">
+              {TILE_CATEGORIES.map((category) => (
+                <section key={category} className="mb-4">
+                  <h3 className="text-base font-bold text-theme-primary mb-1" role="heading" aria-level={3}>
+                    {category}
+                  </h3>
+                  <hr className="border-theme-primary mb-2" />
+                  <div className="space-y-3">
+                    {tilesByCategory[category].map((tile) => {
+                      const idx = flatTiles.findIndex((t) => t.type === tile.type);
+                      return (
+                        <SidebarItem
+                          key={tile.type}
+                          tileType={tile.type}
+                          name={tile.name}
+                          icon={tile.icon}
+                          isActive={isTileActive(tile.type)}
+                          isSelected={selectedIndex === idx}
+                          onClick={() => handleTileToggle(tile.type)}
+                        />
+                      );
+                    })}
+                  </div>
+                </section>
               ))}
             </div>
-            {/* Fade-out effect at the bottom */}
             <div className="pointer-events-none absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-surface-primary to-transparent" />
           </div>
         </div>
       </aside>
-      {/* Live region for screen reader announcements */}
       <div id="keyboard-announcements" className="sr-only" aria-live="polite" aria-atomic="true" />
     </>
   );

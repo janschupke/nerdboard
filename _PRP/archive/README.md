@@ -1,0 +1,1 @@
+- Tile Categories and Sidebar Grouping: Tiles in the sidebar are now grouped by category (Weather, Time, Macroeconomics, Finance). Each group has a title and separator, with no extra containers or icons. Sidebar item size, padding, and hotkey functionality are unchanged. This improves navigation and discoverability for users.

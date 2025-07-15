@@ -6,6 +6,7 @@ import { Icon } from '../ui/Icon';
 export interface TileMeta {
   title: string;
   icon: string;
+  category?: import('../../types/tileCategories').TileCategory;
 }
 
 export interface GenericTileStatus {
