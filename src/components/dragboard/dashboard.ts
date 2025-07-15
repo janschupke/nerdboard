@@ -1,5 +1,6 @@
 import type { BaseComponentProps } from '../../types/index';
 import type { TileType, TileSize } from '../../types/tile';
+export type { TileType } from '../../types/tile';
 
 export interface DashboardTile {
   id: string;
