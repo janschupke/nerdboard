@@ -31,12 +31,18 @@ export const LogButton: React.FC<LogButtonProps> = ({ isOpen, onToggle }) => {
       {(errorCount > 0 || warningCount > 0) && (
         <div className="flex gap-1">
           {errorCount > 0 && (
-            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+            <span
+              data-testid="log-error-bubble"
+              className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full"
+            >
               {errorCount}
             </span>
           )}
           {warningCount > 0 && (
-            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-yellow-500 rounded-full">
+            <span
+              data-testid="log-warning-bubble"
+              className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-yellow-500 rounded-full"
+            >
               {warningCount}
             </span>
           )}

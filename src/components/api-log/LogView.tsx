@@ -181,7 +181,12 @@ const LogRow: React.FC<LogRowProps> = ({
         <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
           {formatTimestamp(log.timestamp)}
         </td>
-        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-mono">{log.apiCall}</td>
+        <td
+          className="px-4 py-3 text-sm text-gray-900 dark:text-white font-mono"
+          data-testid={`log-row-${log.id}`}
+        >
+          {log.apiCall}
+        </td>
         <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{log.reason}</td>
         <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
           {log.details ? (

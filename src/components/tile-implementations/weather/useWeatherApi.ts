@@ -26,7 +26,7 @@ export function useWeatherApi() {
           weather: result.data as WeatherApiResponse,
           lastUpdated: new Date().toISOString(),
         };
-        storageManager.setTileInstanceConfig<WeatherTileData>(tileId, {
+        storageManager.setTileState<WeatherTileData>(tileId, {
           data: tileData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: !result.error,
@@ -34,7 +34,7 @@ export function useWeatherApi() {
         if (result.error) throw new Error(result.error);
         return tileData;
       } catch (error) {
-        storageManager.setTileInstanceConfig<WeatherTileData>(tileId, {
+        storageManager.setTileState<WeatherTileData>(tileId, {
           data: null,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,

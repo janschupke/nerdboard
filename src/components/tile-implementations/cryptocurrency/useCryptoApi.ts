@@ -26,7 +26,7 @@ export function useCryptoApi() {
           coins: result.data ?? [],
           lastUpdated: new Date().toISOString(),
         };
-        storageManager.setTileInstanceConfig<CryptocurrencyTileData>(tileId, {
+        storageManager.setTileState<CryptocurrencyTileData>(tileId, {
           data: tileData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: !result.error,
@@ -34,7 +34,7 @@ export function useCryptoApi() {
         if (result.error) throw new Error(result.error);
         return tileData;
       } catch (error) {
-        storageManager.setTileInstanceConfig<CryptocurrencyTileData>(tileId, {
+        storageManager.setTileState<CryptocurrencyTileData>(tileId, {
           data: null,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,

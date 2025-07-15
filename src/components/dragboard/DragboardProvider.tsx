@@ -5,12 +5,12 @@ import type {
   DragboardDragState,
   DragboardContextValue,
 } from './DragboardContext';
-import type { DashboardTile, TileType } from './dashboard';
+import type { DragboardTileData, TileType } from './dragboardTypes';
 import { findNextFreePosition, rearrangeTiles } from './rearrangeTiles';
 
 interface DragboardProviderProps {
   config: DragboardConfig;
-  initialTiles?: DashboardTile[];
+  initialTiles?: DragboardTileData[];
   children: React.ReactNode;
 }
 
@@ -29,7 +29,7 @@ function snapToTileGrid(
 }
 
 function getHighestOccupiedRow(
-  tiles: DashboardTile[],
+  tiles: DragboardTileData[],
   tileSizes: DragboardConfig['tileSizes'],
   minRows: number,
 ) {
@@ -58,7 +58,12 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
   } = config;
 
   // Internal tile state
-  const [tiles, setTiles] = useState<DashboardTile[]>(initialTiles);
+  const [tiles, setTiles] = useState<DragboardTileData[]>(initialTiles);
+
+  // Sync tiles state with initialTiles prop (for reload/restore)
+  React.useEffect(() => {
+    setTiles(initialTiles);
+  }, [initialTiles]);
 
   // Track current row count (for dynamic extension/reduction)
   const [rows, setRows] = useState(defaultRows);
@@ -80,7 +85,7 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
 
   // Helper: Check if a tile fits in the current grid
   const tileFits = useCallback(
-    (tile: DashboardTile) => {
+    (tile: DragboardTileData) => {
       const { colSpan, rowSpan } = tileSizes[tile.size] || tileSizes['medium'];
       for (let y = 0; y <= rows - rowSpan; y++) {
         for (let x = 0; x <= columns - colSpan; x++) {
@@ -103,7 +108,7 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
 
   // Helper: Extend rows to fit a tile if needed
   const extendRowsIfNeeded = useCallback(
-    (tile: DashboardTile) => {
+    (tile: DragboardTileData) => {
       const { rowSpan } = tileSizes[tile.size] || tileSizes['medium'];
       const neededRows = tile.position.y + rowSpan;
       if (neededRows > rows) setRows(neededRows);
@@ -135,7 +140,7 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
 
   // Internal tile actions
   const addTile = useCallback(
-    (tile: DashboardTile) => {
+    (tile: DragboardTileData) => {
       setTiles((prev) => {
         const next = [...prev, tile];
         if (consolidation) {
@@ -163,7 +168,7 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
     [consolidation, reduceRowsIfPossible],
   );
 
-  const updateTile = useCallback((id: string, updates: Partial<DashboardTile>) => {
+  const updateTile = useCallback((id: string, updates: Partial<DragboardTileData>) => {
     setTiles((prev) => prev.map((tile) => (tile.id === id ? { ...tile, ...updates } : tile)));
   }, []);
 
@@ -184,7 +189,7 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
   );
 
   const reorderTiles = useCallback(
-    (newTiles: DashboardTile[]) => {
+    (newTiles: DragboardTileData[]) => {
       setTiles(consolidation ? rearrangeTiles(newTiles) : newTiles);
     },
     [consolidation],
@@ -280,7 +285,7 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
         };
       }
       // Prepare new tile
-      const newTile: DashboardTile = {
+      const newTile: DragboardTileData = {
         id: `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: tileType as TileType,
         position: snappedTarget!,
@@ -344,12 +349,12 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
   // Memoize main context value (public API)
   const value = useMemo<
     DragboardContextValue & {
-      tiles: DashboardTile[];
-      addTile: (tile: DashboardTile) => void;
+      tiles: DragboardTileData[];
+      addTile: (tile: DragboardTileData) => void;
       removeTile: (id: string) => void;
-      updateTile: (id: string, updates: Partial<DashboardTile>) => void;
+      updateTile: (id: string, updates: Partial<DragboardTileData>) => void;
       moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
-      reorderTiles: (tiles: DashboardTile[]) => void;
+      reorderTiles: (tiles: DragboardTileData[]) => void;
       movementEnabled: boolean;
       rows: number;
     }

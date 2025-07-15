@@ -1,9 +1,9 @@
-import type { DashboardTile } from './dashboard';
+import type { DragboardTileData } from './dragboardTypes';
 import { getTileSpan } from '../overlay/gridConfig';
 import type { DragboardConfig } from './DragboardContext';
 import { DASHBOARD_GRID_CONFIG } from '../overlay/gridConfig';
 
-export function rearrangeTiles(tiles: DashboardTile[]): DashboardTile[] {
+export function rearrangeTiles(tiles: DragboardTileData[]): DragboardTileData[] {
   if (tiles.length === 0) return tiles;
   const sortedTiles = [...tiles].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
   const GRID_ROWS = DASHBOARD_GRID_CONFIG.rows;
@@ -11,7 +11,7 @@ export function rearrangeTiles(tiles: DashboardTile[]): DashboardTile[] {
   const grid = Array(GRID_ROWS)
     .fill(null)
     .map(() => Array(GRID_COLUMNS).fill(false));
-  const rearrangedTiles: DashboardTile[] = [];
+  const rearrangedTiles: DragboardTileData[] = [];
   for (const tile of sortedTiles) {
     const size = typeof tile.size === 'string' ? tile.size : 'medium';
     const { colSpan, rowSpan } = getTileSpan(size);
@@ -56,7 +56,7 @@ export function rearrangeTiles(tiles: DashboardTile[]): DashboardTile[] {
 }
 
 export function findNextFreePosition(
-  tiles: DashboardTile[],
+  tiles: DragboardTileData[],
   gridConfig: DragboardConfig,
   size: 'small' | 'medium' | 'large',
 ): { x: number; y: number } | null {

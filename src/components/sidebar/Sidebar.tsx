@@ -3,7 +3,7 @@ import { SidebarItem } from './SidebarItem';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useEffect, useMemo, useCallback } from 'react';
 import { TILE_CATALOG } from '../tile/TileFactoryRegistry';
-import { useDragboard } from '../dragboard';
+import type { DragboardTileData } from '../dragboard';
 import { findNextFreePosition } from '../dragboard';
 import { DASHBOARD_GRID_CONFIG } from '../overlay/gridConfig';
 import { TILE_CATEGORIES } from '../../types/tileCategories';
@@ -14,6 +14,9 @@ interface SidebarProps {
   onSidebarToggle: () => void;
   selectedIndex: number;
   setSelectedIndex: (index: number) => void;
+  tiles: DragboardTileData[];
+  addTile: (tile: DragboardTileData) => void;
+  removeTile: (id: string) => void;
 }
 
 export function Sidebar({
@@ -21,9 +24,10 @@ export function Sidebar({
   onSidebarToggle,
   selectedIndex,
   setSelectedIndex,
+  tiles,
+  addTile,
+  removeTile,
 }: SidebarProps) {
-  const { tiles, addTile, removeTile } = useDragboard();
-
   // Use TILE_CATALOG for available tiles
   const availableTiles = useMemo(
     () =>
@@ -78,7 +82,7 @@ export function Sidebar({
           x: 0,
           y: 0,
         };
-        await addTile({
+        addTile({
           id: `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           type: tileType,
           position,
@@ -90,7 +94,7 @@ export function Sidebar({
     [isTileActive, addTile, removeTile, tiles],
   );
 
-  const { selectedIndex: navIndex, setSelectedIndex: navSetIndex } = useKeyboardNavigation({
+  useKeyboardNavigation({
     navigation: {
       items: flatTiles.map((tile) => tile.type),
       onToggle: (tileType) => handleTileToggle(tileType as TileType),
@@ -98,19 +102,15 @@ export function Sidebar({
       isCollapsed,
     },
     enabled: true,
+    selectedIndex,
+    setSelectedIndex,
   });
-  // Keep selectedIndex in sync with parent
-  useEffect(() => {
-    if (navIndex !== selectedIndex) setSelectedIndex(navIndex);
-  }, [navIndex, selectedIndex, setSelectedIndex]);
-  useEffect(() => {
-    if (selectedIndex !== navIndex) navSetIndex(selectedIndex);
-  }, [selectedIndex, navIndex, navSetIndex]);
 
   useEffect(() => {
     const selectedItem = flatTiles[selectedIndex];
     if (selectedItem) {
       const announcement = `Selected ${selectedItem.name} tile`;
+      // TODO: what is this?
       const liveRegion = document.getElementById('keyboard-announcements');
       if (liveRegion) {
         liveRegion.textContent = announcement;

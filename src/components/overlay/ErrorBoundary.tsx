@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from '../ui/Button';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -92,14 +91,6 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
         <div className="flex items-center justify-center h-screen w-full">
           <div className="text-center">
             <div className="text-8xl mb-4">🍆</div>
-            <div className="flex gap-2 justify-center">
-              <Button variant="primary" size="sm" onClick={this.resetError}>
-                Try Again
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => window.location.reload()}>
-                Reload Page
-              </Button>
-            </div>
           </div>
         </div>
       );

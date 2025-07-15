@@ -20,7 +20,7 @@ export function useTimeApi() {
         tileId,
         { apiCall: 'WorldTimeAPI' },
       );
-      storageManager.setTileInstanceConfig<TimeData>(tileId, {
+      storageManager.setTileState<TimeData>(tileId, {
         data: result.data as TimeData,
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: !result.error,
@@ -28,7 +28,7 @@ export function useTimeApi() {
       if (result.error) throw new Error(result.error);
       return result.data as TimeData;
     } catch (error) {
-      storageManager.setTileInstanceConfig<TimeData>(tileId, {
+      storageManager.setTileState<TimeData>(tileId, {
         data: null,
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: false,

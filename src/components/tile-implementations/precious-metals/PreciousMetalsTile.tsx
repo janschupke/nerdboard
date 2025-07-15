@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
-import type { DashboardTile } from '../../dragboard/dashboard';
+import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { usePreciousMetalsApi } from './usePreciousMetalsApi';
 import type { PreciousMetalsData } from './types';
 
 function usePreciousMetalsTileData(
   tileId: string,
+  refreshKey?: number,
 ): ReturnType<GenericTileDataHook<PreciousMetalsData>> {
   const { getPreciousMetals } = usePreciousMetalsApi();
   const [loading, setLoading] = useState(true);
@@ -35,17 +36,25 @@ function usePreciousMetalsTileData(
     return () => {
       mounted = false;
     };
-  }, [tileId, getPreciousMetals]);
+  }, [tileId, getPreciousMetals, refreshKey]);
   return { loading, error, hasData, data };
 }
 
 export const PreciousMetalsTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
-    return (
-      <GenericTile tile={tile} meta={meta} useTileData={usePreciousMetalsTileData} {...rest} />
-    );
+  ({
+    tile,
+    meta,
+    refreshKey,
+    ...rest
+  }: {
+    tile: DragboardTileData;
+    meta: TileMeta;
+    refreshKey?: number;
+  }) => {
+    const tileData = usePreciousMetalsTileData(tile.id, refreshKey);
+    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
-  (prev, next) => prev.tile.id === next.tile.id,
+  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
 );
 
 PreciousMetalsTile.displayName = 'PreciousMetalsTile';

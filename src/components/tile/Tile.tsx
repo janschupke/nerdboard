@@ -1,15 +1,16 @@
 import React, { Suspense, memo } from 'react';
-import type { DashboardTile } from '../dragboard';
+import type { DragboardTileData } from '../dragboard';
 import { getLazyTileComponent, getTileMeta } from './TileFactoryRegistry';
 import { TileErrorBoundary } from './TileErrorBoundary';
 
-interface TileProps {
-  tile: DashboardTile;
+export interface TileProps {
+  tile: DragboardTileData;
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
   onRemove?: (id: string) => void;
+  refreshKey?: number;
 }
 
-const TileComponent = ({ tile, dragHandleProps, onRemove }: TileProps) => {
+const TileComponent = ({ tile, dragHandleProps, onRemove, refreshKey }: TileProps) => {
   const LazyTileComponent = getLazyTileComponent(tile.type);
   const meta = getTileMeta(tile.type);
 
@@ -35,6 +36,7 @@ const TileComponent = ({ tile, dragHandleProps, onRemove }: TileProps) => {
           meta={meta}
           dragHandleProps={dragHandleProps}
           onRemove={onRemove}
+          refreshKey={refreshKey}
         />
       </Suspense>
     </TileErrorBoundary>

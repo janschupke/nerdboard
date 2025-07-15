@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { DashboardTile } from './dashboard';
+import type { DragboardTileData } from './dragboardTypes';
 
 export interface DragboardConfig {
   /** Number of columns in the grid */
@@ -39,12 +39,12 @@ export interface DragboardContextValue {
   endSidebarDrag: (dropTarget: { x: number; y: number } | null, tileType?: string) => void;
   setDropTarget: (target: { x: number; y: number } | null) => void;
   // Board state/actions
-  tiles: DashboardTile[];
-  addTile: (tile: DashboardTile) => void;
+  tiles: DragboardTileData[];
+  addTile: (tile: DragboardTileData) => void;
   removeTile: (id: string) => void;
-  updateTile: (id: string, updates: Partial<DashboardTile>) => void;
+  updateTile: (id: string, updates: Partial<DragboardTileData>) => void;
   moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
-  reorderTiles: (tiles: DashboardTile[]) => void;
+  reorderTiles: (tiles: DragboardTileData[]) => void;
   /** If false, disables drag-and-drop for tiles */
   movementEnabled?: boolean;
   /** Current row count (for dynamic extension/reduction) */

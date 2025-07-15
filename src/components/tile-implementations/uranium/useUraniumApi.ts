@@ -21,7 +21,7 @@ export function useUraniumApi() {
           tileId,
           { apiCall: 'TradingEconomics Uranium API' },
         );
-        storageManager.setTileInstanceConfig<UraniumApiResponse>(tileId, {
+        storageManager.setTileState<UraniumApiResponse>(tileId, {
           data: result.data as UraniumApiResponse,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: !result.error,
@@ -29,7 +29,7 @@ export function useUraniumApi() {
         if (result.error) throw new Error(result.error);
         return result.data as UraniumApiResponse;
       } catch (error) {
-        storageManager.setTileInstanceConfig<UraniumApiResponse>(tileId, {
+        storageManager.setTileState<UraniumApiResponse>(tileId, {
           data: null,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
-import type { DashboardTile } from '../../dragboard/dashboard';
+import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useCryptoApi } from './useCryptoApi';
 import type { CryptocurrencyTileData } from './types';
 
 function useCryptoTileData(
   tileId: string,
+  refreshKey?: number,
 ): ReturnType<GenericTileDataHook<CryptocurrencyTileData>> {
   const { getCryptocurrencyMarkets } = useCryptoApi();
   const [loading, setLoading] = useState(true);
@@ -35,15 +36,25 @@ function useCryptoTileData(
     return () => {
       mounted = false;
     };
-  }, [tileId, getCryptocurrencyMarkets]);
+  }, [tileId, getCryptocurrencyMarkets, refreshKey]);
   return { loading, error, hasData, data };
 }
 
 export const CryptocurrencyTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
-    return <GenericTile tile={tile} meta={meta} useTileData={useCryptoTileData} {...rest} />;
+  ({
+    tile,
+    meta,
+    refreshKey,
+    ...rest
+  }: {
+    tile: DragboardTileData;
+    meta: TileMeta;
+    refreshKey?: number;
+  }) => {
+    const tileData = useCryptoTileData(tile.id, refreshKey);
+    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
-  (prev, next) => prev.tile.id === next.tile.id,
+  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
 );
 
 CryptocurrencyTile.displayName = 'CryptocurrencyTile';

@@ -1,37 +1,44 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense } from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { ErrorBoundary } from './ErrorBoundary';
 import { useTheme } from '../../hooks/useTheme';
 import { useLogManager } from '../api-log/useLogManager';
-import { DragboardProvider, DragboardGrid, DragboardTile, useDragboard } from '../dragboard';
+import { DragboardProvider, DragboardGrid, DragboardTile } from '../dragboard';
 import { DASHBOARD_GRID_CONFIG } from './gridConfig';
 import { Tile } from '../tile/Tile';
 import { Header } from '../header/Header';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import {
-  useStorageManager,
-  type DashboardTileWithConfig,
-  type TileConfig,
-} from '../../services/storageManager';
-import type { DashboardTile } from '../dragboard';
+import { useStorageManager } from '../../services/storageManager';
+import type { DragboardTileData } from '../dragboard';
 
-function OverlayContent() {
-  const { tiles } = useDragboard();
+function OverlayContent({
+  tiles,
+  addTile,
+  removeTile,
+  isSidebarCollapsed,
+  setSidebarCollapsed,
+  sidebarSelectedIndex,
+  setSidebarSelectedIndex,
+}: {
+  tiles: DragboardTileData[];
+  addTile: (tile: DragboardTileData) => void;
+  removeTile: (id: string) => void;
+  isSidebarCollapsed: boolean;
+  setSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+  sidebarSelectedIndex: number;
+  setSidebarSelectedIndex: React.Dispatch<React.SetStateAction<number>>;
+}) {
   const { theme, toggleTheme } = useTheme();
   const { isLogViewOpen, toggleLogView, closeLogView } = useLogManager();
-
-  // Sidebar collapsed state and selected index
-  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [sidebarSelectedIndex, setSidebarSelectedIndex] = useState(0);
-  const toggleCollapse = () => setSidebarCollapsed((prev) => !prev);
 
   // Register hotkeys
   useKeyboardNavigation({
     toggleLogView,
-    refreshAllTiles: () => {},
-    isRefreshing: false,
+    selectedIndex: sidebarSelectedIndex,
+    setSelectedIndex: setSidebarSelectedIndex,
   });
 
+  // TODO: what is this?
   const LogView = React.lazy(() =>
     import('../api-log/LogView').then((m) => ({ default: m.LogView })),
   );
@@ -41,11 +48,9 @@ function OverlayContent() {
       <Header
         isLogViewOpen={isLogViewOpen}
         toggleLogView={toggleLogView}
-        refreshAllTiles={() => {}}
-        isRefreshing={false}
         toggleTheme={toggleTheme}
         theme={theme}
-        toggleCollapse={toggleCollapse}
+        toggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
         tilesCount={tiles.length}
       />
       <div className="flex h-full pt-16 relative">
@@ -55,6 +60,9 @@ function OverlayContent() {
           onSidebarToggle={() => setSidebarCollapsed((prev) => !prev)}
           selectedIndex={sidebarSelectedIndex}
           setSelectedIndex={setSidebarSelectedIndex}
+          tiles={tiles}
+          addTile={addTile}
+          removeTile={removeTile}
         />
         <main
           className="overflow-auto relative scrollbar-hide transition-all duration-300 ease-in-out"
@@ -85,54 +93,86 @@ function OverlayContent() {
   );
 }
 
-// Fixed storage wrapper for tile management
 function useTileStorage() {
   const storage = useStorageManager();
-  const [initialTiles, setInitialTiles] = React.useState<DashboardTile[]>([]);
+  const [initialTiles, setInitialTiles] = React.useState<DragboardTileData[]>([]);
 
   // Load tiles from storage on mount (only once)
   React.useEffect(() => {
-    const stored = storage.getTileConfig('dashboard-tiles');
-    if (stored && Array.isArray(stored)) {
-      // Convert DashboardTileWithConfig back to DashboardTile for the dragboard
-      const dashboardTiles: DashboardTile[] = stored.map(
-        (tileWithConfig: DashboardTileWithConfig) => ({
-          id: tileWithConfig.id,
-          type: tileWithConfig.type,
-          position: tileWithConfig.position,
-          size: tileWithConfig.size,
-          config: tileWithConfig.config as unknown as Record<string, unknown>,
-          createdAt: tileWithConfig.createdAt,
-        }),
+    const dashboard = storage.getDashboardState();
+    if (dashboard && Array.isArray(dashboard.tiles)) {
+      setInitialTiles(
+        dashboard.tiles.map((tile) => ({
+          ...tile,
+          type: tile.type as DragboardTileData['type'],
+          size: tile.size as DragboardTileData['size'],
+          createdAt: typeof tile.createdAt === 'number' ? tile.createdAt : Date.now(),
+          config: tile.config || {},
+        })),
       );
-      setInitialTiles(dashboardTiles);
     }
   }, [storage]);
 
   return { initialTiles, storage };
 }
 
-function TilePersistenceListener({ storage }: { storage: ReturnType<typeof useStorageManager> }) {
-  const { tiles } = useDragboard();
+function TilePersistenceListener({
+  storage,
+  tiles,
+}: {
+  storage: ReturnType<typeof useStorageManager>;
+  tiles: DragboardTileData[];
+}) {
+  const prevTilesRef = React.useRef<DragboardTileData[] | null>(null);
+
   React.useEffect(() => {
-    if (tiles && tiles.length > 0) {
-      const tilesWithConfig: DashboardTileWithConfig[] = tiles.map((tile) => ({
-        ...tile,
-        config: tile.config as unknown as TileConfig,
-      }));
-      storage.setTileConfig('dashboard-tiles', tilesWithConfig);
+    const prevTiles = prevTilesRef.current;
+    const shouldPersist =
+      tiles.length > 0 || (prevTiles && prevTiles.length > 0 && tiles.length === 0);
+    if (shouldPersist) {
+      storage.setDashboardState({
+        tiles: tiles.map((tile) => ({
+          id: tile.id,
+          type: tile.type as string,
+          position: tile.position,
+          size: tile.size as string,
+          createdAt: typeof tile.createdAt === 'number' ? tile.createdAt : Date.now(),
+          config: tile.config || {},
+        })),
+      });
     }
+    prevTilesRef.current = tiles;
   }, [tiles, storage]);
   return null;
 }
 
 export function Overlay() {
   const { initialTiles, storage } = useTileStorage();
+  const [tiles, setTiles] = React.useState<DragboardTileData[]>(initialTiles);
+  // Sync tiles state with initialTiles when it changes (e.g., after storage loads)
+  React.useEffect(() => {
+    setTiles(initialTiles);
+  }, [initialTiles]);
+  const [isSidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const [sidebarSelectedIndex, setSidebarSelectedIndex] = React.useState(0);
+
+  // Tile actions
+  const addTile = (tile: DragboardTileData) => setTiles((prev) => [...prev, tile]);
+  const removeTile = (id: string) => setTiles((prev) => prev.filter((t) => t.id !== id));
+
   return (
     <ErrorBoundary variant="app">
-      <DragboardProvider config={DASHBOARD_GRID_CONFIG} initialTiles={initialTiles}>
-        <TilePersistenceListener storage={storage} />
-        <OverlayContent />
+      <DragboardProvider config={DASHBOARD_GRID_CONFIG} initialTiles={tiles}>
+        <TilePersistenceListener storage={storage} tiles={tiles} />
+        <OverlayContent
+          tiles={tiles}
+          addTile={addTile}
+          removeTile={removeTile}
+          isSidebarCollapsed={isSidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+          sidebarSelectedIndex={sidebarSelectedIndex}
+          setSidebarSelectedIndex={setSidebarSelectedIndex}
+        />
       </DragboardProvider>
     </ErrorBoundary>
   );

@@ -116,7 +116,7 @@ describe('DataFetcher', () => {
       const apiCall = 'Test API';
 
       // Mock storage to return cached data
-      storageManager.setTileInstanceConfig(storageKey, {
+      storageManager.setTileState(storageKey, {
         data: { lastUpdated: '2024-01-01T00:00:00Z' },
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: true,

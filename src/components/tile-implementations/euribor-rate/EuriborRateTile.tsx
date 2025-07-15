@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
-import type { DashboardTile } from '../../dragboard/dashboard';
+import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useEuriborApi } from './useEuriborApi';
 
 function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<unknown>> {
@@ -37,8 +37,9 @@ function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<unkn
 }
 
 export const EuriborRateTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
-    return <GenericTile tile={tile} meta={meta} useTileData={useEuriborTileData} {...rest} />;
+  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+    const tileData = useEuriborTileData(tile.id);
+    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
   (prev, next) => prev.tile.id === next.tile.id,
 );

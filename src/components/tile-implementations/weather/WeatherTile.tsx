@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
-import type { DashboardTile } from '../../dragboard/dashboard';
+import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useWeatherApi } from './useWeatherApi';
 import type { WeatherTileData } from './types';
 
-function useWeatherTileData(tileId: string): ReturnType<GenericTileDataHook<WeatherTileData>> {
+function useWeatherTileData(
+  tileId: string,
+  refreshKey?: number,
+): ReturnType<GenericTileDataHook<WeatherTileData>> {
   const { getWeather } = useWeatherApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,15 +36,26 @@ function useWeatherTileData(tileId: string): ReturnType<GenericTileDataHook<Weat
     return () => {
       mounted = false;
     };
-  }, [tileId, getWeather]);
+  }, [tileId, getWeather, refreshKey]);
   return { loading, error, hasData, data };
 }
 
 export const WeatherTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
-    return <GenericTile tile={tile} meta={meta} useTileData={useWeatherTileData} {...rest} />;
+  ({
+    tile,
+    meta,
+    refreshKey,
+    ...rest
+  }: {
+    tile: DragboardTileData;
+    meta: TileMeta;
+    refreshKey?: number;
+  }) => {
+    // Call the hook at the top level
+    const tileData = useWeatherTileData(tile.id, refreshKey);
+    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
-  (prev, next) => prev.tile.id === next.tile.id,
+  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
 );
 
 WeatherTile.displayName = 'WeatherTile';

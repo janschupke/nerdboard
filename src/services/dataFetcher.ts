@@ -28,7 +28,7 @@ export class DataFetcher {
     try {
       // Check cache first unless forcing refresh
       if (!forceRefresh) {
-        const cached = storageManager.getTileInstanceConfig(storageKey);
+        const cached = storageManager.getTileState<T>(storageKey);
         if (cached && cached.data) {
           return {
             data: cached.data as T,
@@ -41,11 +41,63 @@ export class DataFetcher {
       }
 
       // Fetch fresh data with timeout
-      const data = await this.fetchWithTimeout(fetchFunction, timeout);
+      let data: T;
+      try {
+        data = await this.fetchWithTimeout(fetchFunction, timeout);
+      } catch (fetchError) {
+        // Log fetch error (network, timeout, etc.)
+        const errorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
+        const logDetails: APILogDetails = {
+          storageKey,
+          retryCount,
+          forceRefresh: forceRefresh ? 1 : 0,
+          errorName: fetchError instanceof Error ? fetchError.name : 'Unknown',
+          errorMessage,
+        };
+        storageManager.addLog({
+          level: 'error',
+          apiCall,
+          reason: errorMessage,
+          details: logDetails,
+        });
+        return {
+          data: null,
+          isCached: false,
+          error: errorMessage,
+          lastUpdated: new Date(),
+          retryCount: retryCount + 1,
+        };
+      }
+
+      // If data is an error response (e.g., 400/500), log it
+      if (data && typeof data === 'object' && 'error' in data) {
+        const errorVal = (data as Record<string, unknown>).error;
+        const errorMessage = typeof errorVal === 'string' ? errorVal : 'API error';
+        const logDetails: APILogDetails = {
+          storageKey,
+          retryCount,
+          forceRefresh: forceRefresh ? 1 : 0,
+          errorName: 'APIError',
+          errorMessage,
+        };
+        storageManager.addLog({
+          level: 'error',
+          apiCall,
+          reason: errorMessage,
+          details: logDetails,
+        });
+        return {
+          data: null,
+          isCached: false,
+          error: errorMessage,
+          lastUpdated: new Date(),
+          retryCount: retryCount + 1,
+        };
+      }
 
       // Cache the fresh data
-      storageManager.setTileInstanceConfig(storageKey, {
-        data: data as unknown as Record<string, unknown>,
+      storageManager.setTileState<T>(storageKey, {
+        data: data as unknown as T,
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: true,
       });
@@ -67,14 +119,12 @@ export class DataFetcher {
         errorName: error instanceof Error ? error.name : 'Unknown',
         errorMessage,
       };
-
       storageManager.addLog({
         level: 'error',
         apiCall,
         reason: errorMessage,
         details: logDetails,
       });
-
       return {
         data: null,
         isCached: false,
@@ -112,7 +162,7 @@ export class DataFetcher {
     options: FetchOptions = {},
   ): Promise<FetchResult<T>> {
     // First, try to get cached data immediately
-    const cached = storageManager.getTileInstanceConfig(storageKey);
+    const cached = storageManager.getTileState<T>(storageKey);
 
     if (cached && cached.data) {
       // Schedule background refresh
@@ -197,7 +247,7 @@ export class DataFetcher {
         const mappedData = mapper.safeMap(result.data);
 
         // Cache the mapped data
-        storageManager.setTileInstanceConfig(storageKey, {
+        storageManager.setTileState<TTileData>(storageKey, {
           data: mappedData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: true,
@@ -214,7 +264,7 @@ export class DataFetcher {
         // Return default data if no API data
         const defaultData = mapper.createDefault();
 
-        storageManager.setTileInstanceConfig(storageKey, {
+        storageManager.setTileState<TTileData>(storageKey, {
           data: defaultData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,
@@ -232,7 +282,7 @@ export class DataFetcher {
       // Return default data on error
       const defaultData = mapper.createDefault();
 
-      storageManager.setTileInstanceConfig(storageKey, {
+      storageManager.setTileState<TTileData>(storageKey, {
         data: defaultData,
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: false,

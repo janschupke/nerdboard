@@ -1,6 +1,6 @@
 import React from 'react';
 import { TileType } from '../../types/tile';
-import type { DashboardTile } from '../dragboard/dashboard';
+import type { DragboardTileData } from '../dragboard/dragboardTypes';
 import type { TileMeta } from './GenericTile';
 import { cryptocurrencyTileMeta } from '../tile-implementations/cryptocurrency/meta';
 import { preciousMetalsTileMeta } from '../tile-implementations/precious-metals/meta';
@@ -14,7 +14,7 @@ import { euriborRateTileMeta } from '../tile-implementations/euribor-rate/meta';
 export interface TileCatalogEntry {
   type: TileType;
   getLazyComponent: () => React.LazyExoticComponent<
-    React.ComponentType<{ tile: DashboardTile; meta: TileMeta; [key: string]: unknown }>
+    React.ComponentType<{ tile: DragboardTileData; meta: TileMeta; [key: string]: unknown }>
   >;
   meta?: TileMeta; // For static meta
   getMeta?: () => TileMeta; // For dynamic meta (e.g. city)
