@@ -1,6 +1,5 @@
 import React, { useCallback, forwardRef, memo, useMemo } from 'react';
-import type { DashboardTile } from '../dragboard/dashboard';
-import type { DraggableTileProps } from '../dragboard/DragboardTile';
+import type { DashboardTile, DraggableTileProps } from '../dragboard';
 import { Icon } from '../ui/Icon';
 
 export interface TileMeta {

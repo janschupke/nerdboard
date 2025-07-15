@@ -1,1 +1,3 @@
 - Tile Categories and Sidebar Grouping: Tiles in the sidebar are now grouped by category (Weather, Time, Macroeconomics, Finance). Each group has a title and separator, with no extra containers or icons. Sidebar item size, padding, and hotkey functionality are unchanged. This improves navigation and discoverability for users.
+
+- Dragboard Separation and Modular Dashboard: The Dragboard is now a standalone, modular dashboard framework. All interactions with Dragboard are routed through its public interface, ensuring a stable, predictable user experience and enabling easy integration or extraction as a reusable library. Sidebar and other features are fully decoupled from Dragboard internals, and documentation is updated to reflect the new interface and usage.

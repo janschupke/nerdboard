@@ -13,7 +13,7 @@ import {
   type DashboardTileWithConfig,
   type TileConfig,
 } from '../../services/storageManager';
-import type { DashboardTile } from '../dragboard/dashboard';
+import type { DashboardTile } from '../dragboard';
 
 function OverlayContent() {
   const { tiles } = useDragboard();
