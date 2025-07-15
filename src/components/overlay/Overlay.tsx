@@ -56,7 +56,14 @@ function OverlayContent() {
           selectedIndex={sidebarSelectedIndex}
           setSelectedIndex={setSidebarSelectedIndex}
         />
-        <main className="flex-1 overflow-auto relative scrollbar-hide">
+        <main
+          className="overflow-auto relative scrollbar-hide transition-all duration-300 ease-in-out"
+          style={{
+            width: isSidebarCollapsed ? '100%' : 'calc(100% - 256px)',
+            marginLeft: 0,
+            transition: 'width 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
           <DragboardGrid>
             {tiles.map((tile) => (
               <DragboardTile

@@ -1,2 +1,3 @@
 import type { TileCategory } from '../../../types/tileCategories';
-export const cryptocurrencyTileMeta = { title: 'Cryptocurrency', icon: 'crypto', category: 'Finance' as TileCategory };
+import type { TileMeta } from '../../tile/GenericTile';
+export const cryptocurrencyTileMeta: TileMeta = { title: 'Cryptocurrency', icon: 'crypto', category: 'Finance' as TileCategory };

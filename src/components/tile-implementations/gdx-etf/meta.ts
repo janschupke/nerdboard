@@ -1,3 +1,4 @@
 import type { TileCategory } from '../../../types/tileCategories';
-export const gdxEtfTileMeta = { title: 'GDX ETF', icon: 'chart', category: 'Finance' as TileCategory };
+import type { TileMeta } from '../../tile/GenericTile';
+export const gdxEtfTileMeta: TileMeta = { title: 'GDX ETF', icon: 'chart', category: 'Finance' as TileCategory };
 export const meta = gdxEtfTileMeta;

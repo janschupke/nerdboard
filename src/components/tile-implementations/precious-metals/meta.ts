@@ -1,2 +1,3 @@
 import type { TileCategory } from '../../../types/tileCategories';
-export const preciousMetalsTileMeta = { title: 'Precious Metals', icon: 'metals', category: 'Finance' as TileCategory };
+import type { TileMeta } from '../../tile/GenericTile';
+export const preciousMetalsTileMeta: TileMeta = { title: 'Precious Metals', icon: 'metals', category: 'Finance' as TileCategory };

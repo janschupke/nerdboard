@@ -1,5 +1,6 @@
 import type { TileCategory } from '../../../types/tileCategories';
-export const weatherTileMeta = (city: string) => {
+import type { TileMeta } from '../../tile/GenericTile';
+export const weatherTileMeta = (city: string): TileMeta => {
   let title = 'Weather';
   switch (city.toLowerCase()) {
     case 'helsinki':

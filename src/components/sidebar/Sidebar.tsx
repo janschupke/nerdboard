@@ -92,10 +92,10 @@ export function Sidebar({ isCollapsed, onSidebarToggle, selectedIndex, setSelect
   // Keep selectedIndex in sync with parent
   useEffect(() => {
     if (navIndex !== selectedIndex) setSelectedIndex(navIndex);
-  }, [navIndex]);
+  }, [navIndex, selectedIndex, setSelectedIndex]);
   useEffect(() => {
     if (selectedIndex !== navIndex) navSetIndex(selectedIndex);
-  }, [selectedIndex]);
+  }, [selectedIndex, navIndex, navSetIndex]);
 
   useEffect(() => {
     const selectedItem = flatTiles[selectedIndex];
