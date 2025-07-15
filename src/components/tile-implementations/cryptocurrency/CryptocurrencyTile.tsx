@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
 import type { DashboardTile } from '../../dragboard/dashboard';
 import { useCryptoApi } from './useCryptoApi';
-import type { CryptocurrencyData } from './types';
+import type { CryptocurrencyTileData } from './types';
 
-function useCryptoTileData(tileId: string): ReturnType<GenericTileDataHook<CryptocurrencyData[]>> {
+function useCryptoTileData(
+  tileId: string,
+): ReturnType<GenericTileDataHook<CryptocurrencyTileData>> {
   const { getCryptocurrencyMarkets } = useCryptoApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
-  const [data, setData] = useState<CryptocurrencyData[] | undefined>(undefined);
+  const [data, setData] = useState<CryptocurrencyTileData | undefined>(undefined);
 
   useEffect(() => {
     let mounted = true;
@@ -21,7 +23,7 @@ function useCryptoTileData(tileId: string): ReturnType<GenericTileDataHook<Crypt
       .then((result) => {
         if (!mounted) return;
         setData(result);
-        setHasData(Array.isArray(result) && result.length > 0);
+        setHasData(Array.isArray(result.coins) && result.coins.length > 0);
         setLoading(false);
       })
       .catch((err) => {
@@ -40,9 +42,12 @@ function useCryptoTileData(tileId: string): ReturnType<GenericTileDataHook<Crypt
 export const CryptocurrencyTile = React.memo(
   ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
     return (
-      <GenericTile<CryptocurrencyData[]>
+      <GenericTile
         tile={tile}
         meta={meta}
+        id={tile.id}
+        position={tile.position}
+        size={tile.size}
         useTileData={useCryptoTileData}
         {...rest}
       />

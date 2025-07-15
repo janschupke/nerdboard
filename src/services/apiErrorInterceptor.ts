@@ -16,7 +16,7 @@ export const interceptAPIError = (error: APIError): void => {
     level: 'error',
     apiCall: error.apiCall,
     reason: error.reason,
-    details: error.details,
+    details: error.details as import('./storageManager').APILogDetails,
   });
 
   // Restore console.error
@@ -33,7 +33,7 @@ export const interceptAPIWarning = (warning: APIError): void => {
     level: 'warning',
     apiCall: warning.apiCall,
     reason: warning.reason,
-    details: warning.details,
+    details: warning.details as import('./storageManager').APILogDetails,
   });
 
   // Restore console.warn

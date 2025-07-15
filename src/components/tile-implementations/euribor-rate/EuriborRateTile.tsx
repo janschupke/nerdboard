@@ -36,10 +36,18 @@ function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<unkn
   return { loading, error, hasData, data };
 }
 
-export const EuriborRateTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
-  ({ tile, meta, ...rest }) => {
+export const EuriborRateTile = React.memo(
+  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
     return (
-      <GenericTile<unknown> tile={tile} meta={meta} useTileData={useEuriborTileData} {...rest} />
+      <GenericTile
+        tile={tile}
+        meta={meta}
+        id={tile.id}
+        position={tile.position}
+        size={tile.size}
+        useTileData={useEuriborTileData}
+        {...rest}
+      />
     );
   },
 );

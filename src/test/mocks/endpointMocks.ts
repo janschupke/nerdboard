@@ -146,8 +146,8 @@ export class MockResponseData {
     return {
       spotPrice: 85.5,
       history: [
-        { timestamp: 1705312800, price: 85.5 },
-        { timestamp: 1705226400, price: 84.2 },
+        { date: '2024-01-15', price: 85.5 },
+        { date: '2024-01-14', price: 84.2 },
       ],
       change: 1.3,
       changePercent: 1.54,
@@ -222,11 +222,8 @@ function extractPath(url: string): string {
 export class EndpointMockService {
   private static instance: EndpointMockService;
   private mockConfigs: Map<string, MockApiConfig> = new Map();
-  private globalFetch: typeof fetch;
 
-  private constructor() {
-    this.globalFetch = globalThis.fetch;
-  }
+  private constructor() {}
 
   static getInstance(): EndpointMockService {
     if (!EndpointMockService.instance) {

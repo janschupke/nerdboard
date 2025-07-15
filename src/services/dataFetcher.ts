@@ -1,4 +1,4 @@
-import { storageManager, type APILogDetails } from './storageManager';
+import { storageManager, type APILogDetails, type TileDataType } from './storageManager';
 import { DataMapperRegistry, type BaseApiResponse } from './dataMapper';
 
 export interface FetchOptions {
@@ -28,7 +28,7 @@ export class DataFetcher {
     try {
       // Check cache first unless forcing refresh
       if (!forceRefresh) {
-        const cached = storageManager.getTileConfig(storageKey);
+        const cached = storageManager.getTileInstanceConfig(storageKey);
         if (cached && cached.data) {
           return {
             data: cached.data as T,
@@ -44,7 +44,7 @@ export class DataFetcher {
       const data = await this.fetchWithTimeout(fetchFunction, timeout);
 
       // Cache the fresh data
-      storageManager.setTileConfig(storageKey, {
+      storageManager.setTileInstanceConfig(storageKey, {
         data: data as unknown as Record<string, unknown>,
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: true,
@@ -112,7 +112,7 @@ export class DataFetcher {
     options: FetchOptions = {},
   ): Promise<FetchResult<T>> {
     // First, try to get cached data immediately
-    const cached = storageManager.getTileConfig(storageKey);
+    const cached = storageManager.getTileInstanceConfig(storageKey);
 
     if (cached && cached.data) {
       // Schedule background refresh
@@ -176,7 +176,7 @@ export class DataFetcher {
   static async fetchAndMap<
     TTileType extends string,
     TApiResponse extends BaseApiResponse,
-    TTileData,
+    TTileData extends TileDataType,
   >(
     fetchFunction: () => Promise<TApiResponse>,
     storageKey: string,
@@ -197,7 +197,7 @@ export class DataFetcher {
         const mappedData = mapper.safeMap(result.data);
 
         // Cache the mapped data
-        storageManager.setTileConfig(storageKey, {
+        storageManager.setTileInstanceConfig(storageKey, {
           data: mappedData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: true,
@@ -214,7 +214,7 @@ export class DataFetcher {
         // Return default data if no API data
         const defaultData = mapper.createDefault();
 
-        storageManager.setTileConfig(storageKey, {
+        storageManager.setTileInstanceConfig(storageKey, {
           data: defaultData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,
@@ -232,7 +232,7 @@ export class DataFetcher {
       // Return default data on error
       const defaultData = mapper.createDefault();
 
-      storageManager.setTileConfig(storageKey, {
+      storageManager.setTileInstanceConfig(storageKey, {
         data: defaultData,
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: false,

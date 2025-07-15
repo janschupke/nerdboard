@@ -34,13 +34,13 @@ describe('useCryptoApi', () => {
       const data = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
 
       // Assert
-      expect(data).toEqual(MockResponseData.getCryptocurrencyData());
-      expect(data).toHaveLength(2);
-      expect(data[0]).toHaveProperty('id', 'bitcoin');
-      expect(data[0]).toHaveProperty('symbol', 'btc');
-      expect(data[0]).toHaveProperty('current_price', 45000);
-      expect(data[1]).toHaveProperty('id', 'ethereum');
-      expect(data[1]).toHaveProperty('symbol', 'eth');
+      expect(data.coins).toEqual(MockResponseData.getCryptocurrencyData());
+      expect(data.coins).toHaveLength(2);
+      expect(data.coins[0]).toHaveProperty('id', 'bitcoin');
+      expect(data.coins[0]).toHaveProperty('symbol', 'btc');
+      expect(data.coins[0]).toHaveProperty('current_price', 45000);
+      expect(data.coins[1]).toHaveProperty('id', 'ethereum');
+      expect(data.coins[1]).toHaveProperty('symbol', 'eth');
     });
 
     it('should handle empty response data', async () => {
@@ -53,7 +53,7 @@ describe('useCryptoApi', () => {
       const data = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
 
       // Assert
-      expect(data).toEqual([]);
+      expect(data.coins).toEqual([]);
     });
 
     it('should handle delayed response', async () => {
@@ -69,7 +69,7 @@ describe('useCryptoApi', () => {
       // Act & Assert
       await waitFor(async () => {
         const data = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
-        expect(data).toEqual(MockResponseData.getCryptocurrencyData());
+        expect(data.coins).toEqual(MockResponseData.getCryptocurrencyData());
       });
     });
   });
@@ -141,7 +141,7 @@ describe('useCryptoApi', () => {
       // Act & Assert
       for (const params of testParams) {
         const data = await result.current.getCryptocurrencyMarkets(mockTileId, params);
-        expect(data).toEqual(MockResponseData.getCryptocurrencyData());
+        expect(data.coins).toEqual(MockResponseData.getCryptocurrencyData());
       }
     });
 
@@ -155,7 +155,7 @@ describe('useCryptoApi', () => {
       const data = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
 
       // Assert
-      expect(data).toEqual([]);
+      expect(data.coins).toEqual([]);
     });
   });
 
@@ -170,10 +170,10 @@ describe('useCryptoApi', () => {
       const data = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
 
       // Assert
-      expect(data).toBeInstanceOf(Array);
-      expect(data.length).toBeGreaterThan(0);
+      expect(data.coins).toBeInstanceOf(Array);
+      expect(data.coins.length).toBeGreaterThan(0);
 
-      const bitcoin = data.find((coin) => coin.id === 'bitcoin');
+      const bitcoin = data.coins.find((coin) => coin.id === 'bitcoin');
       expect(bitcoin).toBeDefined();
       expect(bitcoin).toMatchObject({
         id: 'bitcoin',

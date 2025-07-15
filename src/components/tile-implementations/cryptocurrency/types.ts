@@ -38,5 +38,9 @@ export interface CryptocurrencyTileProps {
   config: CryptocurrencyTileConfig;
 }
 
+export interface CryptocurrencyTileData extends TileDataType {
+  coins: CryptocurrencyData[];
+}
+
 export type ChartPeriod = '7d' | '30d' | '1y';
 export type CoinId = string;

@@ -79,7 +79,7 @@ type TileConfigType<K extends TileConfigKey> = TileConfigMap[K];
 // --- Storage Manager Implementation ---
 export class StorageManager {
   private appConfig: AppConfig = DEFAULT_APPCONFIG;
-  private tileConfig: Partial<TileConfigMap> & Record<string, any> = {};
+  private tileConfig: Partial<TileConfigMap> & Record<string, unknown> = {};
   private sidebarState: SidebarState | null = null;
   private logs: APILogEntry[] = [];
   private initialized = false;

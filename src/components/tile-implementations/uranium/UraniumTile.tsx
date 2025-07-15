@@ -37,12 +37,15 @@ function useUraniumTileData(tileId: string): ReturnType<GenericTileDataHook<Uran
   return { loading, error, hasData, data };
 }
 
-export const UraniumTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
-  ({ tile, meta, ...rest }) => {
+export const UraniumTile = React.memo(
+  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
     return (
-      <GenericTile<UraniumPriceData>
+      <GenericTile
         tile={tile}
         meta={meta}
+        id={tile.id}
+        position={tile.position}
+        size={tile.size}
         useTileData={useUraniumTileData}
         {...rest}
       />

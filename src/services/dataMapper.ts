@@ -1,5 +1,5 @@
 // Re-export BaseTileData for convenience
-export type { BaseTileData } from './storageManager';
+export type { TileDataType as BaseTileData } from './storageManager';
 
 // Base interface for all API responses
 export interface BaseApiResponse {

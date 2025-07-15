@@ -1,6 +1,7 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
 import type { WeatherData, WeatherApiResponse } from './types';
 
+// Relax the constraint for WeatherApiResponse
 export class WeatherDataMapper extends BaseDataMapper<WeatherApiResponse, WeatherData> {
   map(apiResponse: WeatherApiResponse): WeatherData {
     const current = apiResponse.current;

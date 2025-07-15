@@ -4,6 +4,7 @@ import { storageManager } from '../../../services/storageManager';
 import { useCallback } from 'react';
 import { COINGECKO_MARKETS_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { CryptoMarketsParams } from '../../../services/apiEndpoints';
+import type { CryptocurrencyTileData } from './types';
 
 /**
  * Fetches cryptocurrency market data from CoinGecko.
@@ -13,7 +14,7 @@ import type { CryptoMarketsParams } from '../../../services/apiEndpoints';
  */
 export function useCryptoApi() {
   const getCryptocurrencyMarkets = useCallback(
-    async (tileId: string, params: CryptoMarketsParams): Promise<CryptocurrencyData[]> => {
+    async (tileId: string, params: CryptoMarketsParams): Promise<CryptocurrencyTileData> => {
       const url = buildApiUrl(COINGECKO_MARKETS_ENDPOINT, params);
       try {
         const result = await DataFetcher.fetchWithRetry<CryptocurrencyData[]>(
@@ -21,15 +22,19 @@ export function useCryptoApi() {
           tileId,
           { apiCall: 'CoinGecko Markets API' },
         );
-        storageManager.setTileInstanceConfig<CryptocurrencyData[]>(tileId, {
-          data: result.data as CryptocurrencyData[],
+        const tileData: CryptocurrencyTileData = {
+          coins: result.data ?? [],
+          lastUpdated: new Date().toISOString(),
+        };
+        storageManager.setTileInstanceConfig<CryptocurrencyTileData>(tileId, {
+          data: tileData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: !result.error,
         });
         if (result.error) throw new Error(result.error);
-        return result.data ?? [];
+        return tileData;
       } catch (error) {
-        storageManager.setTileInstanceConfig<CryptocurrencyData[]>(tileId, {
+        storageManager.setTileInstanceConfig<CryptocurrencyTileData>(tileId, {
           data: null,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,

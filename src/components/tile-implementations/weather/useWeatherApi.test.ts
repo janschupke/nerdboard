@@ -31,13 +31,14 @@ describe('useWeatherApi', () => {
 
       // Assert
       expect(data).toBeDefined();
-      expect(data).toHaveProperty('current');
-      expect(data).toHaveProperty('daily');
-      expect(data.current).toHaveProperty('temp', 22.5);
-      expect(data.daily).toHaveLength(1);
-      expect(data.daily[0]).toHaveProperty('temp');
-      expect(data.daily[0].temp).toHaveProperty('min', 18.0);
-      expect(data.daily[0].temp).toHaveProperty('max', 25.0);
+      expect(data).toHaveProperty('weather');
+      expect(data.weather).toHaveProperty('current');
+      expect(data.weather).toHaveProperty('daily');
+      expect(data.weather.current).toHaveProperty('temp', 22.5);
+      expect(data.weather.daily).toHaveLength(1);
+      expect(data.weather.daily[0]).toHaveProperty('temp');
+      expect(data.weather.daily[0].temp).toHaveProperty('min', 18.0);
+      expect(data.weather.daily[0].temp).toHaveProperty('max', 25.0);
     });
 
     it('should handle empty weather data', async () => {
@@ -55,8 +56,8 @@ describe('useWeatherApi', () => {
 
       // Assert
       expect(data).toBeDefined();
-      expect(data.current).toBeNull();
-      expect(data.daily).toEqual([]);
+      expect(data.weather.current).toBeNull();
+      expect(data.weather.daily).toEqual([]);
     });
 
     it('should handle delayed response', async () => {
@@ -69,7 +70,7 @@ describe('useWeatherApi', () => {
       await waitFor(async () => {
         const data = await result.current.getWeather(mockTileId, mockParams);
         expect(data).toBeDefined();
-        expect(data.current).toHaveProperty('temp', 22.5);
+        expect(data.weather.current).toHaveProperty('temp', 22.5);
       });
     });
   });
@@ -142,7 +143,7 @@ describe('useWeatherApi', () => {
       for (const params of testParams) {
         const data = await result.current.getWeather(mockTileId, params);
         expect(data).toBeDefined();
-        expect(data.current).toHaveProperty('temp', 22.5);
+        expect(data.weather.current).toHaveProperty('temp', 22.5);
       }
     });
   });
@@ -159,25 +160,12 @@ describe('useWeatherApi', () => {
 
       // Assert
       expect(data).toMatchObject({
-        current: expect.objectContaining({
-          temp: expect.any(Number),
-          feels_like: expect.any(Number),
-          humidity: expect.any(Number),
-          wind_speed: expect.any(Number),
-          weather: expect.arrayContaining([
-            expect.objectContaining({
-              main: expect.any(String),
-              description: expect.any(String),
-              icon: expect.any(String),
-            }),
-          ]),
-        }),
-        daily: expect.arrayContaining([
-          expect.objectContaining({
-            temp: expect.objectContaining({
-              min: expect.any(Number),
-              max: expect.any(Number),
-            }),
+        weather: expect.objectContaining({
+          current: expect.objectContaining({
+            temp: expect.any(Number),
+            feels_like: expect.any(Number),
+            humidity: expect.any(Number),
+            wind_speed: expect.any(Number),
             weather: expect.arrayContaining([
               expect.objectContaining({
                 main: expect.any(String),
@@ -186,8 +174,23 @@ describe('useWeatherApi', () => {
               }),
             ]),
           }),
-        ]),
-        timezone: expect.any(String),
+          daily: expect.arrayContaining([
+            expect.objectContaining({
+              temp: expect.objectContaining({
+                min: expect.any(Number),
+                max: expect.any(Number),
+              }),
+              weather: expect.arrayContaining([
+                expect.objectContaining({
+                  main: expect.any(String),
+                  description: expect.any(String),
+                  icon: expect.any(String),
+                }),
+              ]),
+            }),
+          ]),
+          timezone: expect.any(String),
+        }),
       });
     });
 
@@ -239,10 +242,10 @@ describe('useWeatherApi', () => {
       const data = await result.current.getWeather(mockTileId, mockParams);
 
       // Assert
-      expect(data.current.temp).toBe(15.5);
-      expect(data.current.weather[0].main).toBe('Rain');
-      expect(data.daily[0].temp.min).toBe(8.0);
-      expect(data.daily[0].temp.max).toBe(18.0);
+      expect(data.weather.current.temp).toBe(15.5);
+      expect(data.weather.current.weather[0].main).toBe('Rain');
+      expect(data.weather.daily[0].temp.min).toBe(8.0);
+      expect(data.weather.daily[0].temp.max).toBe(18.0);
     });
   });
 });

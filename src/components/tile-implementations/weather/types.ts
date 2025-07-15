@@ -80,6 +80,7 @@ export interface WeatherTileConfig {
 }
 
 export interface WeatherApiResponse {
+  [key: string]: unknown;
   current: {
     temp: number;
     feels_like: number;
@@ -119,3 +120,7 @@ export type WeatherError = {
   code?: string;
   retryable: boolean;
 };
+
+export interface WeatherTileData extends TileDataType {
+  weather: WeatherApiResponse;
+}
