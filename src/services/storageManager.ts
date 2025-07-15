@@ -19,26 +19,25 @@ export interface SidebarState {
   lastUpdated: number;
 }
 
+// Improved typing for API log details - only string or number values
+export interface APILogDetails {
+  [key: string]: string | number;
+}
+
 export interface APILogEntry {
   id: string;
   timestamp: number;
   level: APILogLevel;
   apiCall: string;
   reason: string;
-  details?: Record<string, unknown>;
+  details?: APILogDetails;
 }
 
-// Add TileConfig type
-export interface TileConfig {
-  data: Record<string, unknown> | null;
+// Generic TileConfig with typed data for tile content only
+export interface TileConfig<TData> {
+  data: TData | null;
   lastDataRequest: number;
   lastDataRequestSuccessful: boolean;
-}
-
-// Add StorageMetrics type
-export interface StorageMetrics {
-  tileCount: number;
-  // Add more metrics as needed
 }
 
 // --- Constants ---
@@ -50,7 +49,6 @@ export const STORAGE_KEYS = {
   LOGS: 'nerdboard_api_logs',
 };
 
-export const DATA_VERSION = 1718040000000;
 export const DEFAULT_APPCONFIG: AppConfig = {
   isSidebarCollapsed: false,
   theme: AppTheme.light,
@@ -67,10 +65,6 @@ export class StorageManager {
   init() {
     if (this.initialized) return;
     try {
-      const version = Number(localStorage.getItem(STORAGE_KEYS.VERSION));
-      if (version !== DATA_VERSION) {
-        localStorage.setItem(STORAGE_KEYS.VERSION, DATA_VERSION.toString());
-      }
       const appConfigRaw = localStorage.getItem(STORAGE_KEYS.APPCONFIG);
       this.appConfig = appConfigRaw ? JSON.parse(appConfigRaw) : DEFAULT_APPCONFIG;
       const tileConfigRaw = localStorage.getItem(STORAGE_KEYS.TILECONFIG);
@@ -98,12 +92,13 @@ export class StorageManager {
     }
   }
 
-  getTileConfig(tileName: string): TileConfig | null {
+  getTileConfig<TData = unknown>(tileName: string): TileConfig<TData> | null {
     this.init();
-    return this.tileConfig[tileName] ?? null;
+    const config = this.tileConfig[tileName];
+    return config ? (config as TileConfig<TData>) : null;
   }
-  setTileConfig(tileName: string, config: TileConfig) {
-    this.tileConfig[tileName] = config;
+  setTileConfig<TData = unknown>(tileName: string, config: TileConfig<TData>) {
+    this.tileConfig[tileName] = config as TileConfig;
     try {
       localStorage.setItem(STORAGE_KEYS.TILECONFIG, JSON.stringify(this.tileConfig));
     } catch (error) {
@@ -149,19 +144,6 @@ export class StorageManager {
     } catch (error) {
       console.error('Failed to clear logs:', error);
     }
-  }
-
-  getDataVersion(): number {
-    this.init();
-    return DATA_VERSION;
-  }
-
-  getStorageMetrics(): StorageMetrics {
-    this.init();
-    return {
-      tileCount: Object.keys(this.tileConfig).length,
-      // Add more metrics as needed
-    };
   }
 
   clearTileConfigs() {

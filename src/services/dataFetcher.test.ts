@@ -22,21 +22,19 @@ describe('DataFetcher', () => {
       // Arrange
       const mockFetch = vi.mocked(fetch);
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
-      
+
       const storageKey = 'test-storage-key';
       const apiCall = 'Test API';
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(
-        () => fetch('/api/test'),
-        storageKey,
-        { apiCall }
-      );
+      const result = await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey, {
+        apiCall,
+      });
 
       // Assert
       expect(result.error).toBe('Network error');
       expect(result.data).toBeNull();
-      
+
       // Check that error was logged
       const logs = storageManager.getLogs();
       expect(logs).toHaveLength(1);
@@ -47,7 +45,9 @@ describe('DataFetcher', () => {
         details: {
           storageKey,
           retryCount: 0,
-          forceRefresh: false,
+          forceRefresh: 0,
+          errorName: 'Error',
+          errorMessage: 'Network error',
         },
       });
     });
@@ -55,26 +55,26 @@ describe('DataFetcher', () => {
     it('should log timeout errors to api-log system', async () => {
       // Arrange
       const mockFetch = vi.mocked(fetch);
-      mockFetch.mockImplementationOnce(() => 
-        new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Request timeout')), 100);
-        })
+      mockFetch.mockImplementationOnce(
+        () =>
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Request timeout')), 100);
+          }),
       );
-      
+
       const storageKey = 'test-storage-key';
       const apiCall = 'Test API';
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(
-        () => fetch('/api/test'),
-        storageKey,
-        { apiCall, timeout: 50 }
-      );
+      const result = await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey, {
+        apiCall,
+        timeout: 50,
+      });
 
       // Assert
       expect(result.error).toBe('Request timeout');
       expect(result.data).toBeNull();
-      
+
       // Check that error was logged
       const logs = storageManager.getLogs();
       expect(logs).toHaveLength(1);
@@ -89,14 +89,11 @@ describe('DataFetcher', () => {
       // Arrange
       const mockFetch = vi.mocked(fetch);
       mockFetch.mockRejectedValueOnce(new Error('Test error'));
-      
+
       const storageKey = 'test-storage-key';
 
       // Act
-      await DataFetcher.fetchWithRetry(
-        () => fetch('/api/test'),
-        storageKey
-      );
+      await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey);
 
       // Assert
       const logs = storageManager.getLogs();
@@ -114,7 +111,7 @@ describe('DataFetcher', () => {
         json: () => Promise.resolve({ data: 'cached' }),
       } as Response);
       mockFetch.mockRejectedValueOnce(new Error('Background refresh failed'));
-      
+
       const storageKey = 'test-storage-key';
       const apiCall = 'Test API';
 
@@ -129,13 +126,13 @@ describe('DataFetcher', () => {
       const result = await DataFetcher.fetchWithBackgroundRefresh(
         () => fetch('/api/test'),
         storageKey,
-        { apiCall }
+        { apiCall },
       );
 
       // Assert
       expect(result.data).toEqual({ cached: 'data' });
       expect(result.isCached).toBe(true);
-      
+
       // Fast-forward timers to trigger background refresh
       await vi.runAllTimersAsync();
       // Flush microtasks to ensure async log is written
@@ -148,7 +145,7 @@ describe('DataFetcher', () => {
         await new Promise((r) => setTimeout(r, 10));
         logs = storageManager.getLogs();
       }
-      
+
       // Check that warning was logged
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
@@ -200,4 +197,4 @@ describe('DataFetcher', () => {
       });
     });
   });
-}); 
+});

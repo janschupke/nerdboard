@@ -19,17 +19,17 @@ export function useFederalFundsApi() {
         const result = await DataFetcher.fetchWithRetry<FederalFundsRateData>(
           () => fetch(url).then((res) => res.json()),
           tileId,
-          { apiCall: 'FRED Federal Funds Rate API' }
+          { apiCall: 'FRED Federal Funds Rate API' },
         );
-        storageManager.setTileConfig(tileId, {
-          data: result.data as unknown as Record<string, unknown>,
+        storageManager.setTileConfig<FederalFundsRateData>(tileId, {
+          data: result.data as FederalFundsRateData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: !result.error,
         });
         if (result.error) throw new Error(result.error);
         return result.data as FederalFundsRateData;
       } catch (error) {
-        storageManager.setTileConfig(tileId, {
+        storageManager.setTileConfig<FederalFundsRateData>(tileId, {
           data: null,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,

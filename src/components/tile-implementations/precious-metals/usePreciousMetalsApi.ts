@@ -19,17 +19,17 @@ export function usePreciousMetalsApi() {
         const result = await DataFetcher.fetchWithRetry<PreciousMetalsData>(
           () => fetch(url).then((res) => res.json()),
           tileId,
-          { apiCall: 'Precious Metals API' }
+          { apiCall: 'Precious Metals API' },
         );
-        storageManager.setTileConfig(tileId, {
-          data: result.data as unknown as Record<string, unknown>,
+        storageManager.setTileConfig<PreciousMetalsData>(tileId, {
+          data: result.data as PreciousMetalsData,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: !result.error,
         });
         if (result.error) throw new Error(result.error);
         return result.data as PreciousMetalsData;
       } catch (error) {
-        storageManager.setTileConfig(tileId, {
+        storageManager.setTileConfig<PreciousMetalsData>(tileId, {
           data: null,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,

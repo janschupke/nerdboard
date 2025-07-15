@@ -39,15 +39,10 @@ function usePreciousMetalsTileData(
   return { loading, error, hasData, data };
 }
 
-export const PreciousMetalsTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
-  ({ tile, meta, ...rest }) => {
+export const PreciousMetalsTile = React.memo(
+  ({ tile, meta, ...rest }: { tile: DashboardTile; meta: TileMeta }) => {
     return (
-      <GenericTile<PreciousMetalsData>
-        tile={tile}
-        meta={meta}
-        useTileData={usePreciousMetalsTileData}
-        {...rest}
-      />
+      <GenericTile tile={tile} meta={meta} useTileData={usePreciousMetalsTileData} {...rest} />
     );
   },
 );

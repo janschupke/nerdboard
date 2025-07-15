@@ -18,17 +18,17 @@ export function useTimeApi() {
       const result = await DataFetcher.fetchWithRetry<TimeData>(
         () => fetch(url).then((res) => res.json()),
         tileId,
-        { apiCall: 'WorldTimeAPI' }
+        { apiCall: 'WorldTimeAPI' },
       );
-      storageManager.setTileConfig(tileId, {
-        data: result.data as unknown as Record<string, unknown>,
+      storageManager.setTileConfig<TimeData>(tileId, {
+        data: result.data as TimeData,
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: !result.error,
       });
       if (result.error) throw new Error(result.error);
       return result.data as TimeData;
     } catch (error) {
-      storageManager.setTileConfig(tileId, {
+      storageManager.setTileConfig<TimeData>(tileId, {
         data: null,
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: false,

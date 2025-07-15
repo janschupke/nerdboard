@@ -19,17 +19,17 @@ export function useWeatherApi() {
         const result = await DataFetcher.fetchWithRetry<WeatherApiResponse>(
           () => fetch(url).then((res) => res.json()),
           tileId,
-          { apiCall: 'OpenWeatherMap API' }
+          { apiCall: 'OpenWeatherMap API' },
         );
-        storageManager.setTileConfig(tileId, {
-          data: result.data as unknown as Record<string, unknown>,
+        storageManager.setTileConfig<WeatherApiResponse>(tileId, {
+          data: result.data as WeatherApiResponse,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: !result.error,
         });
         if (result.error) throw new Error(result.error);
         return result.data as WeatherApiResponse;
       } catch (error) {
-        storageManager.setTileConfig(tileId, {
+        storageManager.setTileConfig<WeatherApiResponse>(tileId, {
           data: null,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,

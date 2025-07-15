@@ -1,4 +1,5 @@
-import { storageManager } from './storageManager';
+import { storageManager, type APILogDetails } from './storageManager';
+import { DataMapperRegistry, type BaseApiResponse } from './dataMapper';
 
 export interface FetchOptions {
   forceRefresh?: boolean;
@@ -57,18 +58,21 @@ export class DataFetcher {
         retryCount: 0,
       };
     } catch (error) {
-      // Log error to api-log system
+      // Log error to api-log system with improved typing
       const errorMessage = error instanceof Error ? error.message : String(error);
+      const logDetails: APILogDetails = {
+        storageKey,
+        retryCount,
+        forceRefresh: forceRefresh ? 1 : 0,
+        errorName: error instanceof Error ? error.name : 'Unknown',
+        errorMessage,
+      };
+
       storageManager.addLog({
         level: 'error',
         apiCall,
         reason: errorMessage,
-        details: {
-          storageKey,
-          retryCount,
-          forceRefresh,
-          error: error instanceof Error ? { name: error.name, message: error.message, stack: error.stack } : error,
-        },
+        details: logDetails,
       });
 
       return {
@@ -119,16 +123,18 @@ export class DataFetcher {
             forceRefresh: true,
           });
         } catch (error) {
-          // Log background refresh failures as warnings
+          // Log background refresh failures as warnings with improved typing
           const errorMessage = error instanceof Error ? error.message : String(error);
+          const logDetails: APILogDetails = {
+            storageKey,
+            errorMessage,
+          };
+
           storageManager.addLog({
             level: 'warning',
             apiCall: options.apiCall || storageKey,
             reason: `Background refresh failed: ${errorMessage}`,
-            details: {
-              storageKey,
-              error: error instanceof Error ? { name: error.name, message: error.message } : error,
-            },
+            details: logDetails,
           });
         }
       }, 1000);
@@ -147,7 +153,7 @@ export class DataFetcher {
   }
 
   // Helper method to log warnings for non-critical issues
-  static logWarning(apiCall: string, reason: string, details?: Record<string, unknown>): void {
+  static logWarning(apiCall: string, reason: string, details?: APILogDetails): void {
     storageManager.addLog({
       level: 'warning',
       apiCall,
@@ -157,12 +163,88 @@ export class DataFetcher {
   }
 
   // Helper method to log errors for critical issues
-  static logError(apiCall: string, reason: string, details?: Record<string, unknown>): void {
+  static logError(apiCall: string, reason: string, details?: APILogDetails): void {
     storageManager.addLog({
       level: 'error',
       apiCall,
       reason,
       details,
     });
+  }
+
+  // New method for fetching and mapping data with type safety
+  static async fetchAndMap<
+    TTileType extends string,
+    TApiResponse extends BaseApiResponse,
+    TTileData,
+  >(
+    fetchFunction: () => Promise<TApiResponse>,
+    storageKey: string,
+    tileType: TTileType,
+    options: FetchOptions = {},
+  ): Promise<FetchResult<TTileData>> {
+    const mapper = DataMapperRegistry.get<TTileType, TApiResponse, TTileData>(tileType);
+
+    if (!mapper) {
+      throw new Error(`No data mapper found for tile type: ${tileType}`);
+    }
+
+    try {
+      const result = await this.fetchWithRetry(fetchFunction, storageKey, options);
+
+      if (result.data) {
+        // Map the API response to tile content data
+        const mappedData = mapper.safeMap(result.data);
+
+        // Cache the mapped data
+        storageManager.setTileConfig(storageKey, {
+          data: mappedData,
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: true,
+        });
+
+        return {
+          data: mappedData,
+          isCached: result.isCached,
+          error: null,
+          lastUpdated: result.lastUpdated,
+          retryCount: result.retryCount,
+        };
+      } else {
+        // Return default data if no API data
+        const defaultData = mapper.createDefault();
+
+        storageManager.setTileConfig(storageKey, {
+          data: defaultData,
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: false,
+        });
+
+        return {
+          data: defaultData,
+          isCached: false,
+          error: result.error,
+          lastUpdated: result.lastUpdated,
+          retryCount: result.retryCount,
+        };
+      }
+    } catch (error) {
+      // Return default data on error
+      const defaultData = mapper.createDefault();
+
+      storageManager.setTileConfig(storageKey, {
+        data: defaultData,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: false,
+      });
+
+      return {
+        data: defaultData,
+        isCached: false,
+        error: error instanceof Error ? error.message : String(error),
+        lastUpdated: new Date(),
+        retryCount: 0,
+      };
+    }
   }
 }

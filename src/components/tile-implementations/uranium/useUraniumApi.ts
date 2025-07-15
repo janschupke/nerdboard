@@ -19,17 +19,17 @@ export function useUraniumApi() {
         const result = await DataFetcher.fetchWithRetry<UraniumApiResponse>(
           () => fetch(url).then((res) => res.json()),
           tileId,
-          { apiCall: 'TradingEconomics Uranium API' }
+          { apiCall: 'TradingEconomics Uranium API' },
         );
-        storageManager.setTileConfig(tileId, {
-          data: result.data as unknown as Record<string, unknown>,
+        storageManager.setTileConfig<UraniumApiResponse>(tileId, {
+          data: result.data as UraniumApiResponse,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: !result.error,
         });
         if (result.error) throw new Error(result.error);
         return result.data as UraniumApiResponse;
       } catch (error) {
-        storageManager.setTileConfig(tileId, {
+        storageManager.setTileConfig<UraniumApiResponse>(tileId, {
           data: null,
           lastDataRequest: Date.now(),
           lastDataRequestSuccessful: false,
