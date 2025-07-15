@@ -1,7 +1,9 @@
+export type MockApiErrorType = 'network' | 'timeout' | 'api' | 'malformed';
+
 export interface MockApiConfig {
   delay?: number;
   shouldFail?: boolean;
-  errorType?: 'network' | 'timeout' | 'api' | 'malformed';
+  errorType?: MockApiErrorType;
   responseData?: unknown;
   status?: number;
 }
@@ -35,7 +37,7 @@ export class MockApiService {
     }
 
     // Return mock response
-    const mockData = config.responseData || this.getDefaultResponse(endpoint);
+    const mockData = config.responseData;
     const status = config.status || 200;
 
     return new Response(JSON.stringify(mockData), {
@@ -44,7 +46,7 @@ export class MockApiService {
     });
   }
 
-  private createMockError(errorType: string): Error {
+  private createMockError(errorType: MockApiErrorType): Error {
     switch (errorType) {
       case 'network':
         return new Error('Network error: Failed to fetch');
@@ -57,37 +59,6 @@ export class MockApiService {
       default:
         return new Error('Unknown error');
     }
-  }
-
-  private getDefaultResponse(endpoint: string): unknown {
-    if (endpoint.includes('cryptocurrency') || endpoint.includes('coins')) {
-      return this.getDefaultCryptocurrencyResponse();
-    }
-    if (endpoint.includes('precious-metals') || endpoint.includes('metals')) {
-      return this.getDefaultPreciousMetalsResponse();
-    }
-    return {};
-  }
-
-  private getDefaultCryptocurrencyResponse(): unknown {
-    return [
-      {
-        id: 'bitcoin',
-        symbol: 'btc',
-        name: 'Bitcoin',
-        current_price: 45000,
-        market_cap: 850000000000,
-        price_change_percentage_24h: 2.5,
-        last_updated: new Date().toISOString(),
-      },
-    ];
-  }
-
-  private getDefaultPreciousMetalsResponse(): unknown {
-    return {
-      gold: { price: 1950.5, change_24h: 12.3, change_percentage_24h: 0.63 },
-      silver: { price: 25.1, change_24h: 0.2, change_percentage_24h: 0.8 },
-    };
   }
 
   clearMocks(): void {

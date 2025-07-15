@@ -17,6 +17,13 @@
 - **Deployment**: Vercel
 - **Code Quality**: ESLint with TypeScript support
 
+### Technical Architecture Principles
+
+- **Dragboard**: The Dragboard component (src/components/dragboard/) is a generic, app-agnostic framework for draggable and resizable dashboard layouts. It contains no persistence or app-specific logic. All state is managed externally and passed in via props/context. Dragboard must never access or implement any persistence or data-fetching logic directly.
+- **Tile System**: Tiles are defined generically, with a registry/factory (TileFactoryRegistry) mapping tile types to their implementations. Each tile implementation (e.g., Cryptocurrency, Weather, ETF) is responsible for its own data fetching and display logic, and must use the centralized dataFetcher service for all API/data access. The base tile component handles layout, status, and error display.
+- **Centralized Local Storage**: All local storage access and persistence (dashboard layout, tile configs, sidebar state, logs) is managed exclusively by the storageManager service (src/services/storageManager.ts). No other code should interact with localStorage directly.
+- **Centralized Data Fetching**: All API/data fetching is managed by the dataFetcher service (src/services/dataFetcher.ts), which handles retries, caching, and error handling. All endpoint calls must go through this service; direct fetch or axios calls are not allowed elsewhere in the app.
+
 ## Project Description
 
 **Nerdboard** is an online dashboard application that displays various market and world information tiles. The application provides users with real-time or near-real-time data visualization in a clean, modern interface.
@@ -141,15 +148,19 @@ The `PLANNING_TEMPLATE.md` file provides a structured template for generating co
 - **Business Logic**: Extract reusable patterns, avoid hardcoding values
 - **Refactoring**: Continuously refactor to maintain clean, logical structure
 - **Structure Checks**: Verify file naming, location, and responsibilities after each PRP
+- **Dragboard Agnosticism**: Dragboard must remain generic and agnostic of app-specific data and persistence. It must not contain or invoke any persistence, API, or business logic.
+- **Tile Implementation Boundaries**: Generic tile definitions must not hardcode app-specific info. All specific info and data fetching must be provided by tile implementations, which must use the centralized dataFetcher and storageManager.
+- **Centralized Managers**: All local storage and API/data fetching must be routed through storageManager and dataFetcher, respectively. No direct localStorage or fetch/axios usage is allowed outside these managers.
 
 ### Dashboard-Specific Rules
 
-- **Data Fetching**: Use proper error handling and loading states
-- **State Management**: Use React hooks for component state
+- **Data Fetching**: Use proper error handling and loading states. All data fetching must go through the centralized dataFetcher service.
+- **State Management**: Use React hooks for component state. All persistence must go through storageManager.
 - **Responsive Design**: Ensure dashboard works on all screen sizes
 - **Performance**: Optimize for fast data updates and smooth interactions
 - **Accessibility**: Ensure keyboard navigation works for all dashboard interactions
 - **Real-time Updates**: Handle data refresh gracefully with loading states
+- **Dragboard and Tile Agnosticism**: Dragboard must remain agnostic of app implementation and persistence. Tile base components must not hardcode specific info or persistence logic; all such logic must be provided by tile implementations and routed through the centralized managers.
 
 ### Testing Requirements
 
