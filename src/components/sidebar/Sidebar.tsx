@@ -1,9 +1,9 @@
 import type { TileType } from '../dragboard/dashboard';
 import { SidebarItem } from './SidebarItem';
 import { useComponentNavigation } from '../../hooks/useKeyboardNavigation';
-import { useEffect, useMemo, useCallback, useContext } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { TILE_CATALOG } from '../tile/TileFactoryRegistry';
-import { DashboardContext } from '../overlay/PageContext';
+import { useDragboard } from '../dragboard';
 import { findNextFreePosition } from '../dragboard/rearrangeTiles';
 import { DASHBOARD_GRID_CONFIG } from '../overlay/gridConfig';
 
@@ -12,9 +12,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onToggle }: SidebarProps) {
-  const dashboardContext = useContext(DashboardContext);
-  if (!dashboardContext) throw new Error('Sidebar must be used within DashboardProvider');
-  const { tiles, addTile, removeTile, isCollapsed } = dashboardContext;
+  const { tiles, addTile, removeTile } = useDragboard();
 
   // Use TILE_CATALOG for available tiles
   const availableTiles = useMemo(
@@ -64,7 +62,7 @@ export function Sidebar({ onToggle }: SidebarProps) {
     itemIds,
     handleTileToggle,
     onToggle,
-    isCollapsed,
+    false, // isCollapsed - this should be handled by the dragboard framework
   );
 
   // Announce selection changes to screen readers
@@ -84,45 +82,39 @@ export function Sidebar({ onToggle }: SidebarProps) {
       <aside
         role="complementary"
         aria-label="Tile catalog sidebar"
-        className={`h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out flex-shrink-0 ${isCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}
+        className="h-full bg-surface-primary shadow-lg border-r border-theme-primary transition-all duration-300 ease-in-out flex-shrink-0 w-64"
       >
-        <div
-          className={`flex flex-col h-full transition-all duration-300 ${isCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}
-        >
+        <div className="flex flex-col h-full transition-all duration-300 w-64">
           {/* Fixed Header */}
-          {!isCollapsed && (
-            <div className="flex-shrink-0 p-4 border-b border-theme-primary">
-              <h2 className="text-lg font-semibold text-theme-primary" id="tiles-heading">
-                Available Tiles ({availableTiles.length})
-              </h2>
-            </div>
-          )}
+          <div className="flex-shrink-0 p-4 border-b border-theme-primary">
+            <h2 className="text-lg font-semibold text-theme-primary" id="tiles-heading">
+              Available Tiles ({availableTiles.length})
+            </h2>
+          </div>
 
           {/* Scrollable Content */}
-          {!isCollapsed && (
-            <div className="relative flex-1 p-4 overflow-y-auto scrollbar-hide">
-              <div
-                className="space-y-3"
-                role="listbox"
-                aria-labelledby="tiles-heading"
-                aria-label="Available dashboard tiles"
-              >
-                {availableTiles.map((tile, idx) => (
-                  <SidebarItem
-                    key={tile.type}
-                    tileType={tile.type}
-                    name={tile.name}
-                    icon={tile.icon}
-                    isActive={isTileActive(tile.type)}
-                    isSelected={selectedIndex === idx}
-                    onClick={() => handleTileToggle(tile.type)}
-                  />
-                ))}
-              </div>
-              {/* Fade-out effect at the bottom */}
-              <div className="pointer-events-none absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-surface-primary to-transparent" />
+          <div className="relative flex-1 p-4 overflow-y-auto scrollbar-hide">
+            <div
+              className="space-y-3"
+              role="listbox"
+              aria-labelledby="tiles-heading"
+              aria-label="Available dashboard tiles"
+            >
+              {availableTiles.map((tile, idx) => (
+                <SidebarItem
+                  key={tile.type}
+                  tileType={tile.type}
+                  name={tile.name}
+                  icon={tile.icon}
+                  isActive={isTileActive(tile.type)}
+                  isSelected={selectedIndex === idx}
+                  onClick={() => handleTileToggle(tile.type)}
+                />
+              ))}
             </div>
-          )}
+            {/* Fade-out effect at the bottom */}
+            <div className="pointer-events-none absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-surface-primary to-transparent" />
+          </div>
         </div>
       </aside>
       {/* Live region for screen reader announcements */}

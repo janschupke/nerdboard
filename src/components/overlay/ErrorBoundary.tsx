@@ -1,11 +1,11 @@
 import React from 'react';
 import { Button } from '../ui/Button';
-import { Icon } from '../ui/Icon';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
   fallback?: React.ComponentType<{ error: Error; resetError: () => void }>;
   onError?: (_error: Error, _errorInfo: React.ErrorInfo) => void;
+  variant?: 'app' | 'component';
 }
 
 interface ErrorBoundaryState {
@@ -14,7 +14,7 @@ interface ErrorBoundaryState {
   _errorInfo: React.ErrorInfo | null;
 }
 
-class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, _error: null, _errorInfo: null };
@@ -26,8 +26,9 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
 
   componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {
     this.setState({ hasError: true, _error, _errorInfo });
+    
     // Log error to monitoring service
-    console.error('Dashboard Error:', _error, _errorInfo);
+    console.error('Error Boundary caught an error:', _error, _errorInfo);
 
     // Call custom error handler if provided
     if (this.props.onError) {
@@ -38,8 +39,8 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
       }
     }
 
-    // Report error to external service in production
-    if (import.meta.env.PROD) {
+    // Report error to external service in production (only for app-level errors)
+    if (import.meta.env.PROD && this.props.variant === 'app') {
       this.reportError(_error, _errorInfo);
     }
   }
@@ -78,22 +79,27 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
         );
       }
 
-      return (
-        <div className="p-6 text-center bg-surface-secondary border border-error-200 rounded-lg">
-          <div className="mb-4">
-            <Icon name="warning" size="lg" className="text-error-500 mx-auto mb-3" />
-            <h2 className="text-lg font-semibold text-error-600 mb-2">Something went wrong</h2>
-            <p className="text-theme-secondary mb-4 text-sm">
-              There was an error loading this component.
-            </p>
+      // Component-level error boundary (simpler)
+      if (this.props.variant === 'component') {
+        return (
+          <div className="p-4 text-center text-red-600" data-testid="error-boundary-message">
+            There was an error loading this component.
           </div>
-          <div className="flex gap-2 justify-center">
-            <Button variant="primary" size="sm" onClick={this.resetError}>
-              Try Again
-            </Button>
-            <Button variant="secondary" size="sm" onClick={() => window.location.reload()}>
-              Reload Page
-            </Button>
+        );
+      }
+
+      return (
+        <div className="flex items-center justify-center h-screen w-full">
+          <div className="text-center">
+            <div className="text-8xl mb-4">🍆</div>
+            <div className="flex gap-2 justify-center">
+              <Button variant="primary" size="sm" onClick={this.resetError}>
+                Try Again
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => window.location.reload()}>
+                Reload Page
+              </Button>
+            </div>
           </div>
         </div>
       );
@@ -103,4 +109,4 @@ class DashboardErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBo
   }
 }
 
-export { DashboardErrorBoundary as ErrorBoundary };
+export { ErrorBoundary }; 
