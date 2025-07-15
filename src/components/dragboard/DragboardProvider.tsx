@@ -141,14 +141,16 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
     setDragState((prev) => ({ ...prev, dropTarget: target }));
   }, []);
 
-  const value = useMemo<DragboardContextValue & {
-    tiles: DashboardTile[];
-    addTile: (tile: DashboardTile) => void;
-    removeTile: (id: string) => void;
-    updateTile: (id: string, updates: Partial<DashboardTile>) => void;
-    moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
-    reorderTiles: (tiles: DashboardTile[]) => void;
-  }>(
+  const value = useMemo<
+    DragboardContextValue & {
+      tiles: DashboardTile[];
+      addTile: (tile: DashboardTile) => void;
+      removeTile: (id: string) => void;
+      updateTile: (id: string, updates: Partial<DashboardTile>) => void;
+      moveTile: (tileId: string, newPosition: { x: number; y: number }) => void;
+      reorderTiles: (tiles: DashboardTile[]) => void;
+    }
+  >(
     () => ({
       config,
       dragState,
@@ -165,7 +167,22 @@ export const DragboardProvider: React.FC<DragboardProviderProps> = ({
       moveTile,
       reorderTiles,
     }),
-    [config, dragState, startTileDrag, updateTileDrag, endTileDrag, startSidebarDrag, endSidebarDrag, setDropTarget, tiles, addTile, removeTile, updateTile, moveTile, reorderTiles],
+    [
+      config,
+      dragState,
+      startTileDrag,
+      updateTileDrag,
+      endTileDrag,
+      startSidebarDrag,
+      endSidebarDrag,
+      setDropTarget,
+      tiles,
+      addTile,
+      removeTile,
+      updateTile,
+      moveTile,
+      reorderTiles,
+    ],
   );
 
   return <DragboardContext.Provider value={value}>{children}</DragboardContext.Provider>;

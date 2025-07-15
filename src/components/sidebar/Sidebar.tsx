@@ -44,7 +44,10 @@ export function Sidebar({ onToggle }: SidebarProps) {
         const tile = tiles.find((t) => t.type === tileType);
         if (tile) removeTile(tile.id);
       } else {
-        const position = findNextFreePosition(tiles, DASHBOARD_GRID_CONFIG, 'medium') || { x: 0, y: 0 };
+        const position = findNextFreePosition(tiles, DASHBOARD_GRID_CONFIG, 'medium') || {
+          x: 0,
+          y: 0,
+        };
         await addTile({
           id: `tile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           type: tileType,

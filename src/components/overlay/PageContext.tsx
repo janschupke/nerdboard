@@ -120,7 +120,7 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
   }, []);
 
   const updateTile = useCallback((id: string, updates: Partial<DashboardTile>) => {
-    setTiles((prev) => prev.map((tile) => tile.id === id ? { ...tile, ...updates } : tile));
+    setTiles((prev) => prev.map((tile) => (tile.id === id ? { ...tile, ...updates } : tile)));
   }, []);
 
   const reorderTiles = useCallback((newTiles: DashboardTile[]) => {
@@ -128,7 +128,9 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
   }, []);
 
   const moveTile = useCallback((tileId: string, newPosition: { x: number; y: number }) => {
-    setTiles((prev) => prev.map((tile) => tile.id === tileId ? { ...tile, position: newPosition } : tile));
+    setTiles((prev) =>
+      prev.map((tile) => (tile.id === tileId ? { ...tile, position: newPosition } : tile)),
+    );
   }, []);
 
   // Save state to storage manager whenever it changes (UI state)
@@ -147,6 +149,7 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       dispatch({ type: 'TOGGLE_COLLAPSE' });
     }
     setIsInitialized(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run on mount
   }, []);
 
   // Save sidebar state when relevant changes
@@ -189,7 +192,18 @@ export const DashboardProvider = React.memo<{ children: React.ReactNode }>(({ ch
       moveTile,
       reorderTiles,
     }),
-    [state, toggleCollapse, refreshAllTiles, isInitialized, tiles, addTile, removeTile, updateTile, moveTile, reorderTiles],
+    [
+      state,
+      toggleCollapse,
+      refreshAllTiles,
+      isInitialized,
+      tiles,
+      addTile,
+      removeTile,
+      updateTile,
+      moveTile,
+      reorderTiles,
+    ],
   );
 
   return (

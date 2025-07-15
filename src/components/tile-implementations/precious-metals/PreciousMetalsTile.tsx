@@ -4,7 +4,9 @@ import type { DashboardTile } from '../../dragboard/dashboard';
 import { usePreciousMetalsApi } from './usePreciousMetalsApi';
 import type { PreciousMetalsData } from './types';
 
-function usePreciousMetalsTileData(tileId: string): ReturnType<GenericTileDataHook<PreciousMetalsData>> {
+function usePreciousMetalsTileData(
+  tileId: string,
+): ReturnType<GenericTileDataHook<PreciousMetalsData>> {
   const { getPreciousMetals } = usePreciousMetalsApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

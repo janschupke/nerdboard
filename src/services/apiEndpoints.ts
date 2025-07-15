@@ -10,10 +10,10 @@ export interface ApiEndpoint<TParams extends object> {
 // --- Cryptocurrency (CoinGecko) ---
 export interface CryptoMarketsParams {
   vs_currency: string; // required, e.g. 'usd'
-  ids?: string;        // optional, comma-separated coin ids
-  order?: string;      // optional, e.g. 'market_cap_desc'
-  per_page?: number;   // optional
-  page?: number;       // optional
+  ids?: string; // optional, comma-separated coin ids
+  order?: string; // optional, e.g. 'market_cap_desc'
+  per_page?: number; // optional
+  page?: number; // optional
   sparkline?: boolean; // optional
 }
 
@@ -89,7 +89,10 @@ export const TIME_API_ENDPOINT: ApiEndpoint<TimeParams> = {
 };
 
 // --- Endpoint Parser ---
-export function buildApiUrl<TParams extends object>(endpoint: ApiEndpoint<TParams>, params: TParams): string {
+export function buildApiUrl<TParams extends object>(
+  endpoint: ApiEndpoint<TParams>,
+  params: TParams,
+): string {
   if (endpoint.broken) {
     throw new Error('This endpoint is currently broken or not implemented.');
   }
@@ -100,4 +103,4 @@ export function buildApiUrl<TParams extends object>(endpoint: ApiEndpoint<TParam
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
     .join('&');
   return query ? `${url}?${query}` : url;
-} 
+}

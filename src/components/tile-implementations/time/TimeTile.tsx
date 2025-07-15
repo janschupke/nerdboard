@@ -40,12 +40,7 @@ function useTimeTileData(tileId: string): ReturnType<GenericTileDataHook<TimeDat
 export const TimeTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
   ({ tile, meta, ...rest }) => {
     return (
-      <GenericTile<TimeData>
-        tile={tile}
-        meta={meta}
-        useTileData={useTimeTileData}
-        {...rest}
-      />
+      <GenericTile<TimeData> tile={tile} meta={meta} useTileData={useTimeTileData} {...rest} />
     );
   },
 );

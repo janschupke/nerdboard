@@ -8,7 +8,7 @@ import type { WeatherData, WeatherApiResponse } from './types';
 function convertWeatherData(apiResponse: WeatherApiResponse): WeatherData {
   const current = apiResponse.current;
   const weather = current.weather[0];
-  
+
   return {
     city: 'Helsinki', // Default city, could be made configurable
     country: 'FI',

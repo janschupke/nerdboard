@@ -29,27 +29,36 @@ const DragboardTileComponent: React.FC<DragboardTileProps> = ({ id, position, si
   const isDragging = dragState.draggingTileId === id;
 
   // Native drag-and-drop handlers - memoized to prevent recreation
-  const handleDragStart = useCallback((e: React.DragEvent) => {
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('application/nerdboard-tile-id', id);
-    startTileDrag(id, position);
-  }, [id, position, startTileDrag]);
+  const handleDragStart = useCallback(
+    (e: React.DragEvent) => {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('application/nerdboard-tile-id', id);
+      startTileDrag(id, position);
+    },
+    [id, position, startTileDrag],
+  );
 
   const handleDragEnd = useCallback(() => {
     endTileDrag(dragState.dropTarget, id);
   }, [dragState.dropTarget, endTileDrag, id]);
 
   // Pass drag handle props to the child tile - memoized to prevent recreation
-  const dragHandleProps = useMemo<React.HTMLAttributes<HTMLDivElement>>(() => ({
-    draggable: true,
-    onDragStart: handleDragStart,
-    onDragEnd: handleDragEnd,
-  }), [handleDragStart, handleDragEnd]);
+  const dragHandleProps = useMemo<React.HTMLAttributes<HTMLDivElement>>(
+    () => ({
+      draggable: true,
+      onDragStart: handleDragStart,
+      onDragEnd: handleDragEnd,
+    }),
+    [handleDragStart, handleDragEnd],
+  );
 
   // Memoize the remove function to prevent recreation
-  const handleRemove = useCallback((tileId: string) => {
-    removeTile(tileId);
-  }, [removeTile]);
+  const handleRemove = useCallback(
+    (tileId: string) => {
+      removeTile(tileId);
+    },
+    [removeTile],
+  );
 
   return (
     <div
@@ -65,13 +74,13 @@ const DragboardTileComponent: React.FC<DragboardTileProps> = ({ id, position, si
       aria-label={`Tile ${id}`}
     >
       {/* Render the child tile with drag handle props */}
-      {React.isValidElement(children) 
+      {React.isValidElement(children)
         ? React.cloneElement(children, {
             dragHandleProps,
             onRemove: handleRemove,
           } as Partial<DraggableTileProps>)
         : children}
-      
+
       {/* Ghost/preview tile when dragging (optional) */}
       {isDragging && (
         <div className="absolute inset-0 bg-theme-primary opacity-30 pointer-events-none z-50 rounded-lg" />

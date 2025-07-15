@@ -13,4 +13,4 @@ export function useGdxEtfApi() {
     throw new Error('Yahoo Finance endpoint is currently not implemented.');
   }, []);
   return { getGDXETF };
-} 
+}

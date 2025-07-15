@@ -67,7 +67,9 @@ export const TILE_CATALOG: TileCatalogEntry[] = [
     type: TileType.WEATHER_HELSINKI,
     getLazyComponent: () =>
       React.lazy(() =>
-        import('../tile-implementations/weather/WeatherTile').then((m) => ({ default: m.WeatherTile })),
+        import('../tile-implementations/weather/WeatherTile').then((m) => ({
+          default: m.WeatherTile,
+        })),
       ),
     getMeta: () => weatherTileMeta('Helsinki'),
   },
@@ -75,7 +77,9 @@ export const TILE_CATALOG: TileCatalogEntry[] = [
     type: TileType.WEATHER_PRAGUE,
     getLazyComponent: () =>
       React.lazy(() =>
-        import('../tile-implementations/weather/WeatherTile').then((m) => ({ default: m.WeatherTile })),
+        import('../tile-implementations/weather/WeatherTile').then((m) => ({
+          default: m.WeatherTile,
+        })),
       ),
     getMeta: () => weatherTileMeta('Prague'),
   },
@@ -83,7 +87,9 @@ export const TILE_CATALOG: TileCatalogEntry[] = [
     type: TileType.WEATHER_TAIPEI,
     getLazyComponent: () =>
       React.lazy(() =>
-        import('../tile-implementations/weather/WeatherTile').then((m) => ({ default: m.WeatherTile })),
+        import('../tile-implementations/weather/WeatherTile').then((m) => ({
+          default: m.WeatherTile,
+        })),
       ),
     getMeta: () => weatherTileMeta('Taipei'),
   },
@@ -91,33 +97,43 @@ export const TILE_CATALOG: TileCatalogEntry[] = [
     type: TileType.GDX_ETF,
     getLazyComponent: () =>
       React.lazy(() =>
-        import('../tile-implementations/gdx-etf/GDXETFTile').then((m) => ({ default: m.GDXETFTile })),
+        import('../tile-implementations/gdx-etf/GDXETFTile').then((m) => ({
+          default: m.GDXETFTile,
+        })),
       ),
     meta: gdxEtfTileMeta,
   },
   {
     type: TileType.TIME_HELSINKI,
     getLazyComponent: () =>
-      React.lazy(() => import('../tile-implementations/time/TimeTile').then((m) => ({ default: m.TimeTile }))),
+      React.lazy(() =>
+        import('../tile-implementations/time/TimeTile').then((m) => ({ default: m.TimeTile })),
+      ),
     getMeta: () => timeTileMeta('Helsinki'),
   },
   {
     type: TileType.TIME_PRAGUE,
     getLazyComponent: () =>
-      React.lazy(() => import('../tile-implementations/time/TimeTile').then((m) => ({ default: m.TimeTile }))),
+      React.lazy(() =>
+        import('../tile-implementations/time/TimeTile').then((m) => ({ default: m.TimeTile })),
+      ),
     getMeta: () => timeTileMeta('Prague'),
   },
   {
     type: TileType.TIME_TAIPEI,
     getLazyComponent: () =>
-      React.lazy(() => import('../tile-implementations/time/TimeTile').then((m) => ({ default: m.TimeTile }))),
+      React.lazy(() =>
+        import('../tile-implementations/time/TimeTile').then((m) => ({ default: m.TimeTile })),
+      ),
     getMeta: () => timeTileMeta('Taipei'),
   },
   {
     type: TileType.URANIUM,
     getLazyComponent: () =>
       React.lazy(() =>
-        import('../tile-implementations/uranium/UraniumTile').then((m) => ({ default: m.UraniumTile })),
+        import('../tile-implementations/uranium/UraniumTile').then((m) => ({
+          default: m.UraniumTile,
+        })),
       ),
     meta: uraniumTileMeta,
   },

@@ -23,14 +23,16 @@ const TileComponent = ({ tile, dragHandleProps, onRemove }: TileProps) => {
 
   return (
     <TileErrorBoundary>
-      <Suspense fallback={
-        <div className="flex items-center justify-center h-full p-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-theme-accent-primary"></div>
-        </div>
-      }>
-        <LazyTileComponent 
-          tile={tile} 
-          meta={meta} 
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center h-full p-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-theme-accent-primary"></div>
+          </div>
+        }
+      >
+        <LazyTileComponent
+          tile={tile}
+          meta={meta}
           dragHandleProps={dragHandleProps}
           onRemove={onRemove}
         />
@@ -39,4 +41,4 @@ const TileComponent = ({ tile, dragHandleProps, onRemove }: TileProps) => {
   );
 };
 
-export const Tile = memo(TileComponent); 
+export const Tile = memo(TileComponent);

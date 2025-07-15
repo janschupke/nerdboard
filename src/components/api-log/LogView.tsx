@@ -209,8 +209,13 @@ const LogRow: React.FC<LogRowProps> = ({
       </tr>
       {log.details && showDetails && (
         <tr id={`log-details-${log.id}`}>
-          <td colSpan={6} className="px-4 pb-4 pt-0 text-xs text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800">
-            <pre className="whitespace-pre-wrap break-all">{JSON.stringify(log.details, null, 2)}</pre>
+          <td
+            colSpan={6}
+            className="px-4 pb-4 pt-0 text-xs text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800"
+          >
+            <pre className="whitespace-pre-wrap break-all">
+              {JSON.stringify(log.details, null, 2)}
+            </pre>
           </td>
         </tr>
       )}

@@ -52,7 +52,9 @@ function DashboardContent() {
     ));
   }, [tiles]);
 
-  const LogView = React.lazy(() => import('../api-log/LogView').then((m) => ({ default: m.LogView })));
+  const LogView = React.lazy(() =>
+    import('../api-log/LogView').then((m) => ({ default: m.LogView })),
+  );
 
   return (
     <div className="h-screen w-full flex flex-col bg-theme-primary overflow-hidden">
@@ -83,9 +85,7 @@ function DashboardContent() {
             moveTile={moveTile}
             reorderTiles={reorderTiles}
           >
-            <DragboardGrid>
-              {tilesElements}
-            </DragboardGrid>
+            <DragboardGrid>{tilesElements}</DragboardGrid>
             <Suspense fallback={null}>
               <LogView isOpen={isLogViewOpen} onClose={closeLogView} />
             </Suspense>

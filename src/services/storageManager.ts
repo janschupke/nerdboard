@@ -163,6 +163,15 @@ export class StorageManager {
       // Add more metrics as needed
     };
   }
+
+  clearTileConfigs() {
+    this.tileConfig = {};
+    try {
+      localStorage.removeItem(STORAGE_KEYS.TILECONFIG);
+    } catch (error) {
+      console.error('Failed to clear tile configs:', error);
+    }
+  }
 }
 
 export const storageManager = new StorageManager();

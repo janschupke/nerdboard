@@ -12,4 +12,4 @@ export function useEuriborApi() {
     throw new Error('Euribor endpoint is currently not implemented.');
   }, []);
   return { getEuriborRate };
-} 
+}

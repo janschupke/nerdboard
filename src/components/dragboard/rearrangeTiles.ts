@@ -53,7 +53,7 @@ export function rearrangeTiles(tiles: DashboardTile[]): DashboardTile[] {
 export function findNextFreePosition(
   tiles: DashboardTile[],
   gridConfig: DragboardConfig,
-  size: 'small' | 'medium' | 'large'
+  size: 'small' | 'medium' | 'large',
 ): { x: number; y: number } | null {
   const GRID_ROWS = gridConfig.rows;
   const GRID_COLUMNS = gridConfig.columns;
@@ -93,4 +93,4 @@ export function findNextFreePosition(
     }
   }
   return null;
-} 
+}

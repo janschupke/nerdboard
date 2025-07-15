@@ -39,12 +39,7 @@ function useGdxEtfTileData(tileId: string): ReturnType<GenericTileDataHook<unkno
 export const GDXETFTile = React.memo<{ tile: DashboardTile; meta: TileMeta }>(
   ({ tile, meta, ...rest }) => {
     return (
-      <GenericTile<unknown>
-        tile={tile}
-        meta={meta}
-        useTileData={useGdxEtfTileData}
-        {...rest}
-      />
+      <GenericTile<unknown> tile={tile} meta={meta} useTileData={useGdxEtfTileData} {...rest} />
     );
   },
 );

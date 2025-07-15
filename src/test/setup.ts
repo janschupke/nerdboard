@@ -1,16 +1,22 @@
+// Patch fetch to handle relative URLs in test environment
+// This patch only normalizes the URL and then calls the current global fetch (which may be a mock)
+globalThis.fetch = ((prevFetch) => (input: RequestInfo | URL, init?: RequestInit) => {
+  let url = input;
+  if (typeof input === 'string' && input.startsWith('/')) {
+    url = `http://localhost:3000${input}`;
+  } else if (input instanceof Request && input.url.startsWith('/')) {
+    url = new Request(`http://localhost:3000${input.url}`, input);
+  }
+  return prevFetch(url, init);
+})(globalThis.fetch);
+
+// Set base URL for jsdom environment
+if (typeof window !== 'undefined' && window.location) {
+  window.location.href = 'http://localhost:3000/';
+}
+
 import '@testing-library/jest-dom';
 import { vi, beforeEach, afterEach } from 'vitest';
-
-// Mock fetch globally for tests with immediate responses
-const mockFetch = vi.fn().mockImplementation(async () => {
-  // Return immediate response without delays
-  return new Response(JSON.stringify({ data: 'mock response' }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
-});
-
-(globalThis as typeof globalThis & { fetch: ReturnType<typeof vi.fn> }).fetch = mockFetch;
 
 // Mock IntersectionObserver
 (
@@ -33,7 +39,7 @@ const mockFetch = vi.fn().mockImplementation(async () => {
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation((query: string) => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -51,6 +57,8 @@ const localStorageMock = {
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
 };
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
@@ -62,6 +70,8 @@ const sessionStorageMock = {
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
 };
 Object.defineProperty(window, 'sessionStorage', {
   value: sessionStorageMock,
@@ -72,16 +82,11 @@ const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
 
 beforeEach(() => {
-  // Suppress console.error and console.warn during tests
   console.error = vi.fn();
   console.warn = vi.fn();
-
-  // Clear all mocks before each test
-  vi.clearAllMocks();
 });
 
 afterEach(() => {
-  // Restore console methods
   console.error = originalConsoleError;
   console.warn = originalConsoleWarn;
 });

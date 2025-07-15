@@ -16,8 +16,8 @@ export function useTimeApi() {
     const url = buildApiUrl(TIME_API_ENDPOINT, params);
     try {
       const result = await DataFetcher.fetchWithRetry<TimeData>(
-        () => fetch(url).then(res => res.json()),
-        tileId
+        () => fetch(url).then((res) => res.json()),
+        tileId,
       );
       storageManager.setTileConfig(tileId, {
         data: result.data as unknown as Record<string, unknown>,
@@ -36,4 +36,4 @@ export function useTimeApi() {
     }
   }, []);
   return { getTime };
-} 
+}

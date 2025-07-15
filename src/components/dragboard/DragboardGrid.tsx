@@ -29,15 +29,18 @@ export const DragboardGrid = memo<DragboardGridProps>(({ children }) => {
   const { config, dragState, endTileDrag, endSidebarDrag, setDropTarget, startSidebarDrag } =
     useDragboard();
 
-  const gridStyle: React.CSSProperties = useMemo(() => ({
-    display: 'grid',
-    gridTemplateColumns: `repeat(${config.columns}, minmax(0, 1fr))`,
-    gridTemplateRows: `repeat(${config.rows}, minmax(8vw, 1fr))`,
-    gap: '1rem',
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-  }), [config.columns, config.rows]);
+  const gridStyle: React.CSSProperties = useMemo(
+    () => ({
+      display: 'grid',
+      gridTemplateColumns: `repeat(${config.columns}, minmax(0, 1fr))`,
+      gridTemplateRows: `repeat(${config.rows}, minmax(8vw, 1fr))`,
+      gap: '1rem',
+      width: '100%',
+      height: '100%',
+      position: 'relative',
+    }),
+    [config.columns, config.rows],
+  );
 
   // Memoize the dragging tile size detection
   const draggingTileSize = useMemo<'small' | 'medium' | 'large'>(() => {
@@ -50,31 +53,37 @@ export const DragboardGrid = memo<DragboardGridProps>(({ children }) => {
   }, [dragState.draggingTileId, dragState.isSidebarDrag, dragState.sidebarTileType]);
 
   // Memoize drop target handlers
-  const handleDragOver = useCallback((e: React.DragEvent, x: number, y: number) => {
-    e.preventDefault();
-    const sidebarTileType = e.dataTransfer.getData('application/nerdboard-tile-type');
-    if (sidebarTileType && !dragState.isSidebarDrag && startSidebarDrag) {
-      startSidebarDrag(sidebarTileType);
-    }
-    setDropTarget({ x, y });
-  }, [dragState.isSidebarDrag, startSidebarDrag, setDropTarget]);
+  const handleDragOver = useCallback(
+    (e: React.DragEvent, x: number, y: number) => {
+      e.preventDefault();
+      const sidebarTileType = e.dataTransfer.getData('application/nerdboard-tile-type');
+      if (sidebarTileType && !dragState.isSidebarDrag && startSidebarDrag) {
+        startSidebarDrag(sidebarTileType);
+      }
+      setDropTarget({ x, y });
+    },
+    [dragState.isSidebarDrag, startSidebarDrag, setDropTarget],
+  );
 
   const handleDragLeave = useCallback(() => {
     setDropTarget(null);
   }, [setDropTarget]);
 
-  const handleDrop = useCallback((e: React.DragEvent, x: number, y: number) => {
-    e.preventDefault();
-    const sidebarTileType = e.dataTransfer.getData('application/nerdboard-tile-type');
-    const tileId = e.dataTransfer.getData('application/nerdboard-tile-id');
-    if (sidebarTileType && endSidebarDrag && startSidebarDrag) {
-      startSidebarDrag(sidebarTileType);
-      endSidebarDrag({ x, y }, sidebarTileType);
-    } else if (tileId && endTileDrag) {
-      endTileDrag({ x, y }, tileId);
-    }
-    setDropTarget(null);
-  }, [endSidebarDrag, startSidebarDrag, endTileDrag, setDropTarget]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent, x: number, y: number) => {
+      e.preventDefault();
+      const sidebarTileType = e.dataTransfer.getData('application/nerdboard-tile-type');
+      const tileId = e.dataTransfer.getData('application/nerdboard-tile-id');
+      if (sidebarTileType && endSidebarDrag && startSidebarDrag) {
+        startSidebarDrag(sidebarTileType);
+        endSidebarDrag({ x, y }, sidebarTileType);
+      } else if (tileId && endTileDrag) {
+        endTileDrag({ x, y }, tileId);
+      }
+      setDropTarget(null);
+    },
+    [endSidebarDrag, startSidebarDrag, endTileDrag, setDropTarget],
+  );
 
   // Memoize drop targets overlay
   const dropTargetsOverlay = useMemo(() => {

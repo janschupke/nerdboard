@@ -54,4 +54,4 @@ export const Header: React.FC<HeaderProps> = ({
       <span className="text-sm text-theme-secondary">{tilesCount} tiles</span>
     </div>
   </header>
-); 
+);

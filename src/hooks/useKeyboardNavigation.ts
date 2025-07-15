@@ -23,13 +23,7 @@ export interface KeyboardNavigationOptions {
  * Handles L (log) and R (refresh) hotkeys directly.
  */
 export const useKeyboardNavigation = (options: KeyboardNavigationOptions = {}) => {
-  const {
-    navigation,
-    enabled = true,
-    toggleLogView,
-    refreshAllTiles,
-    isRefreshing,
-  } = options;
+  const { navigation, enabled = true, toggleLogView, refreshAllTiles, isRefreshing } = options;
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const handleKeyDown = useCallback(
