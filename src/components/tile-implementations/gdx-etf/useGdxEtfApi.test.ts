@@ -85,6 +85,8 @@ describe('useGdxEtfApi', () => {
       errorType: 'network',
     });
     const { result } = renderHook(() => useGdxEtfApi());
-    await expect(result.current.getGDXETF(mockTileId, mockParams)).rejects.toThrow('Network error: Failed to fetch');
+    await expect(result.current.getGDXETF(mockTileId, mockParams)).rejects.toThrow(
+      'Network error: Failed to fetch',
+    );
   });
 });

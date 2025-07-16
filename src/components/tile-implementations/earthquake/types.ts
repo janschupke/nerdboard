@@ -60,4 +60,4 @@ export interface EarthquakeTileData {
   magnitude: number;
   time: number;
   coordinates: [number, number, number];
-} 
+}

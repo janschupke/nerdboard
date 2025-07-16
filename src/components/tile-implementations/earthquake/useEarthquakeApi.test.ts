@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useEarthquakeApi } from './useEarthquakeApi';
 import { registerEarthquakeDataMapper } from './dataMapper';
 import type { EarthquakeApiResponse, EarthquakeTileData } from './types';
+import { vi } from 'vitest';
 
 const mockApiResponse: EarthquakeApiResponse = {
   type: 'FeatureCollection',
@@ -64,7 +65,7 @@ describe('useEarthquakeApi', () => {
   });
 
   it('fetches and maps USGS earthquake data successfully', async () => {
-    (fetch as vi.Mock).mockResolvedValueOnce({
+    (globalThis.fetch as unknown as { mockResolvedValueOnce: Function }).mockResolvedValueOnce({
       ok: true,
       json: async () => mockApiResponse,
     });
@@ -85,7 +86,9 @@ describe('useEarthquakeApi', () => {
   });
 
   it('returns empty data and error if API returns not ok', async () => {
-    (fetch as vi.Mock).mockResolvedValueOnce({ ok: false });
+    (globalThis.fetch as unknown as { mockResolvedValueOnce: Function }).mockResolvedValueOnce({
+      ok: false,
+    });
     const { result } = renderHook(() => useEarthquakeApi());
     let data;
     await act(async () => {
@@ -95,7 +98,9 @@ describe('useEarthquakeApi', () => {
   });
 
   it('returns empty data and error if fetch fails', async () => {
-    (fetch as vi.Mock).mockRejectedValueOnce(new Error('Network error'));
+    (globalThis.fetch as unknown as { mockRejectedValueOnce: Function }).mockRejectedValueOnce(
+      new Error('Network error'),
+    );
     const { result } = renderHook(() => useEarthquakeApi());
     let data;
     await act(async () => {
@@ -103,4 +108,4 @@ describe('useEarthquakeApi', () => {
     });
     expect(data).toEqual([]);
   });
-}); 
+});

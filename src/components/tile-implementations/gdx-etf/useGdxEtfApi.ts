@@ -31,7 +31,7 @@ export function useGdxEtfApi() {
         },
         tileId,
         TileType.GDX_ETF,
-        { forceRefresh }
+        { forceRefresh },
       );
       if (result.error) throw new Error(result.error);
       return result.data as GdxEtfTileData;

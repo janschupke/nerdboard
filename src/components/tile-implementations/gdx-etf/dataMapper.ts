@@ -57,4 +57,4 @@ export const gdxEtfDataMapper: DataMapper<GdxEtfApiResponse, GdxEtfTileData> = {
  */
 export function registerGdxEtfDataMapper() {
   DataMapperRegistry.register(TileType.GDX_ETF, gdxEtfDataMapper);
-} 
+}

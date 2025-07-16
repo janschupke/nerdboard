@@ -14,19 +14,31 @@ class TyphoonDataMapper extends BaseDataMapper<TyphoonApiResponse, TyphoonTileDa
       loc.weatherElement.forEach((el) => {
         if (el.elementName === 'TyphoonCategory') {
           // Find the parameter with parameterName 'Category' and use its parameterValue
-          const param = el.time[0]?.parameter.find(p => p.parameterName === 'Category');
+          const param = el.time[0]?.parameter.find((p) => p.parameterName === 'Category');
           category = param?.parameterValue || '';
         }
         if (el.elementName === 'TyphoonPosition') {
-          lat = parseFloat(el.time[0]?.parameter.find(p => p.parameterName === 'Latitude')?.parameterValue || '0');
-          lon = parseFloat(el.time[0]?.parameter.find(p => p.parameterName === 'Longitude')?.parameterValue || '0');
+          lat = parseFloat(
+            el.time[0]?.parameter.find((p) => p.parameterName === 'Latitude')?.parameterValue ||
+              '0',
+          );
+          lon = parseFloat(
+            el.time[0]?.parameter.find((p) => p.parameterName === 'Longitude')?.parameterValue ||
+              '0',
+          );
         }
         if (el.elementName === 'TyphoonForecast') {
           forecast = el.time.map((t) => ({
             time: t.startTime,
-            lat: parseFloat(t.parameter.find(p => p.parameterName === 'Latitude')?.parameterValue || '0'),
-            lon: parseFloat(t.parameter.find(p => p.parameterName === 'Longitude')?.parameterValue || '0'),
-            windSpeed: parseFloat(t.parameter.find(p => p.parameterName === 'WindSpeed')?.parameterValue || '0'),
+            lat: parseFloat(
+              t.parameter.find((p) => p.parameterName === 'Latitude')?.parameterValue || '0',
+            ),
+            lon: parseFloat(
+              t.parameter.find((p) => p.parameterName === 'Longitude')?.parameterValue || '0',
+            ),
+            windSpeed: parseFloat(
+              t.parameter.find((p) => p.parameterName === 'WindSpeed')?.parameterValue || '0',
+            ),
           }));
         }
       });
@@ -38,11 +50,7 @@ class TyphoonDataMapper extends BaseDataMapper<TyphoonApiResponse, TyphoonTileDa
     };
   }
   validate(apiResponse: unknown): apiResponse is TyphoonApiResponse {
-    if (
-      typeof apiResponse !== 'object' ||
-      apiResponse === null ||
-      !('records' in apiResponse)
-    ) {
+    if (typeof apiResponse !== 'object' || apiResponse === null || !('records' in apiResponse)) {
       return false;
     }
     const records = (apiResponse as { records?: unknown }).records;
@@ -59,4 +67,4 @@ class TyphoonDataMapper extends BaseDataMapper<TyphoonApiResponse, TyphoonTileDa
 }
 
 DataMapperRegistry.register(CWB_TYPHOON_ENDPOINT.url, new TyphoonDataMapper());
-DataMapperRegistry.register('typhoon', new TyphoonDataMapper()); 
+DataMapperRegistry.register('typhoon', new TyphoonDataMapper());

@@ -53,4 +53,4 @@ export interface TyphoonTileData extends TileDataType {
     }>;
   }>;
   lastUpdated: string;
-} 
+}

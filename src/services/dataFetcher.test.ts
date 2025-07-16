@@ -530,16 +530,26 @@ describe('DataFetcher.fetchAndParse', () => {
 
   it('returns error if parser not found', async () => {
     const fetchFunction = async () => ({ value: 5 });
-    const result = await DataFetcher.fetchAndParse(fetchFunction, 'parser-not-found-key', 'unknown-tile');
+    const result = await DataFetcher.fetchAndParse(
+      fetchFunction,
+      'parser-not-found-key',
+      'unknown-tile',
+    );
     expect(result.data).toBeNull();
     expect(result.error).toMatch(/No parser registered/);
   });
 
   it('returns error if parse throws', async () => {
     class ThrowingParser extends BaseDataParser<RawData, TileData> {
-      parse(): TileData { throw new Error('Parse failed'); }
-      validate(rawData: unknown): rawData is RawData { return true; }
-      createDefault(): TileData { return { doubled: 0 }; }
+      parse(): TileData {
+        throw new Error('Parse failed');
+      }
+      validate(_rawData: unknown): _rawData is RawData {
+        return true;
+      }
+      createDefault(): TileData {
+        return { doubled: 0 };
+      }
     }
     DataParserRegistry.register('throw-tile', new ThrowingParser());
     const fetchFunction = async () => ({ value: 5 });
@@ -563,9 +573,15 @@ describe('DataParserRegistry', () => {
   type Raw = { foo: string };
   type Data = { bar: string };
   class TestParser extends BaseDataParser<Raw, Data> {
-    parse(raw: Raw): Data { return { bar: raw.foo }; }
-    validate(raw: unknown): raw is Raw { return typeof raw === 'object' && raw !== null && 'foo' in raw; }
-    createDefault(): Data { return { bar: '' }; }
+    parse(raw: Raw): Data {
+      return { bar: raw.foo };
+    }
+    validate(raw: unknown): raw is Raw {
+      return typeof raw === 'object' && raw !== null && 'foo' in raw;
+    }
+    createDefault(): Data {
+      return { bar: '' };
+    }
   }
   it('registers and retrieves a parser', () => {
     DataParserRegistry.register('test', new TestParser());

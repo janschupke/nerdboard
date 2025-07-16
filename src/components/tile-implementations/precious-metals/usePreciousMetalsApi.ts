@@ -28,10 +28,10 @@ export function usePreciousMetalsApi() {
         },
         tileId,
         TileType.PRECIOUS_METALS,
-        { forceRefresh }
+        { forceRefresh },
       );
       if (result.error || !result.data) throw new Error(result.error || 'No data');
-      return result.data;
+      return result.data as PreciousMetalsTileData;
     },
     [],
   );

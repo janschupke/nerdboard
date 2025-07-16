@@ -5,4 +5,4 @@ export const typhoonTileMeta: TileMeta = {
   title: 'Typhoon',
   icon: 'typhoon',
   category: 'Weather' as TileCategory,
-}; 
+};

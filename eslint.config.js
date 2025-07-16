@@ -31,4 +31,10 @@ export default [
       ],
     },
   },
+  {
+    files: ['**/*.test.ts', '**/*.test.tsx'],
+    rules: {
+      '@typescript-eslint/no-unsafe-function-type': 'off',
+    },
+  },
 ];

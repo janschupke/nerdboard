@@ -5,7 +5,9 @@ import { useEarthquakeApi } from './useEarthquakeApi';
 import type { EarthquakeTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useEarthquakeTileData(tileId: string): ReturnType<GenericTileDataHook<EarthquakeTileData[]>> {
+function useEarthquakeTileData(
+  tileId: string,
+): ReturnType<GenericTileDataHook<EarthquakeTileData[]>> {
   const { getEarthquakes } = useEarthquakeApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<EarthquakeTileData[] | undefined>(undefined);
@@ -37,4 +39,4 @@ export const EarthquakeTile = React.memo(
     return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
   (prev, next) => prev.tile.id === next.tile.id,
-); 
+);

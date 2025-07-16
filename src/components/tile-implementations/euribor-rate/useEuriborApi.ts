@@ -15,10 +15,10 @@ export function useEuriborApi() {
     async (tileId: string, forceRefresh = false): Promise<EuriborRateTileData> => {
       const url = buildApiUrl(EMMI_EURIBOR_ENDPOINT, {});
       const result = await DataFetcher.fetchAndMap(
-        () => fetch(url).then(res => res.json()),
+        () => fetch(url).then((res) => res.json()),
         tileId,
         TileType.EURIBOR_RATE,
-        { forceRefresh }
+        { forceRefresh },
       );
       if (result.error) throw new Error(result.error);
       return result.data as EuriborRateTileData;

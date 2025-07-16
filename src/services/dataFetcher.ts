@@ -331,11 +331,7 @@ export class DataFetcher {
    * @param tileType - Tile type identifier (string)
    * @param options - Fetch options (forceRefresh, retry, etc.)
    */
-  static async fetchAndParse<
-    TTileType extends string,
-    TRawData,
-    TTileData extends TileDataType,
-  >(
+  static async fetchAndParse<TTileType extends string, TRawData, TTileData extends TileDataType>(
     fetchFunction: () => Promise<TRawData>,
     storageKey: string,
     tileType: TTileType,
@@ -399,7 +395,13 @@ export class DataFetcher {
           level: APILogLevel.ERROR,
           apiCall,
           reason: errorMessage,
-          details: { storageKey, retryCount, forceRefresh: forceRefresh ? 1 : 0, errorName: 'ParserNotFound', errorMessage },
+          details: {
+            storageKey,
+            retryCount,
+            forceRefresh: forceRefresh ? 1 : 0,
+            errorName: 'ParserNotFound',
+            errorMessage,
+          },
         });
         DataFetcher.setTileState<TTileData>(storageKey, null, false);
         return {
@@ -420,7 +422,13 @@ export class DataFetcher {
           level: APILogLevel.ERROR,
           apiCall,
           reason: String(errorMessage),
-          details: { storageKey, retryCount, forceRefresh: forceRefresh ? 1 : 0, errorName: 'ParseError', errorMessage: String(errorMessage) },
+          details: {
+            storageKey,
+            retryCount,
+            forceRefresh: forceRefresh ? 1 : 0,
+            errorName: 'ParseError',
+            errorMessage: String(errorMessage),
+          },
         });
         DataFetcher.setTileState<TTileData>(storageKey, null, false);
         return {

@@ -5,4 +5,4 @@ export const earthquakeTileMeta: TileMeta = {
   title: 'Earthquakes',
   icon: 'earthquake',
   category: 'Weather' as TileCategory,
-}; 
+};

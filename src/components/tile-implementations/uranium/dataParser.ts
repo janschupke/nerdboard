@@ -41,4 +41,4 @@ export class UraniumHtmlDataParser extends BaseDataParser<string, UraniumTileDat
  */
 export function registerUraniumDataParser() {
   DataParserRegistry.register(TileType.URANIUM, new UraniumHtmlDataParser());
-} 
+}

@@ -28,7 +28,7 @@ export function useUraniumApi() {
         },
         tileId,
         TileType.URANIUM,
-        { forceRefresh }
+        { forceRefresh },
       );
       if (result.error || !result.data) throw new Error(result.error || 'No data');
       return result.data as UraniumTileData;

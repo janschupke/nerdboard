@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTyphoonApi } from './useTyphoonApi';
 import './dataMapper'; // Ensure the dataMapper is registered
 import type { TyphoonTileData } from './types';
+import { vi } from 'vitest';
 
 const mockApiResponse = {
   success: 'true',
@@ -18,27 +19,48 @@ const mockApiResponse = {
             elementName: 'TyphoonCategory',
             description: '',
             time: [
-              { startTime: '2024-06-10T00:00:00Z', endTime: '', parameter: [ { parameterName: 'Category', parameterValue: 'Severe', parameterUnit: '' } ] }
-            ]
+              {
+                startTime: '2024-06-10T00:00:00Z',
+                endTime: '',
+                parameter: [
+                  { parameterName: 'Category', parameterValue: 'Severe', parameterUnit: '' },
+                ],
+              },
+            ],
           },
           {
             elementName: 'TyphoonPosition',
             description: '',
             time: [
-              { startTime: '2024-06-10T00:00:00Z', endTime: '', parameter: [ { parameterName: 'Latitude', parameterValue: '23.5', parameterUnit: '' }, { parameterName: 'Longitude', parameterValue: '120.5', parameterUnit: '' } ] }
-            ]
+              {
+                startTime: '2024-06-10T00:00:00Z',
+                endTime: '',
+                parameter: [
+                  { parameterName: 'Latitude', parameterValue: '23.5', parameterUnit: '' },
+                  { parameterName: 'Longitude', parameterValue: '120.5', parameterUnit: '' },
+                ],
+              },
+            ],
           },
           {
             elementName: 'TyphoonForecast',
             description: '',
             time: [
-              { startTime: '2024-06-11T00:00:00Z', endTime: '', parameter: [ { parameterName: 'Latitude', parameterValue: '24.0', parameterUnit: '' }, { parameterName: 'Longitude', parameterValue: '121.0', parameterUnit: '' }, { parameterName: 'WindSpeed', parameterValue: '80', parameterUnit: 'km/h' } ] }
-            ]
-          }
-        ]
-      }
-    ]
-  }
+              {
+                startTime: '2024-06-11T00:00:00Z',
+                endTime: '',
+                parameter: [
+                  { parameterName: 'Latitude', parameterValue: '24.0', parameterUnit: '' },
+                  { parameterName: 'Longitude', parameterValue: '121.0', parameterUnit: '' },
+                  { parameterName: 'WindSpeed', parameterValue: '80', parameterUnit: 'km/h' },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 };
 
 global.fetch = vi.fn();
@@ -49,7 +71,7 @@ describe('useTyphoonApi', () => {
   });
 
   it('fetches and maps Typhoon data successfully', async () => {
-    (fetch as vi.Mock).mockResolvedValueOnce({
+    (globalThis.fetch as unknown as { mockResolvedValueOnce: Function }).mockResolvedValueOnce({
       ok: true,
       json: async () => mockApiResponse,
     });
@@ -71,7 +93,9 @@ describe('useTyphoonApi', () => {
   });
 
   it('returns empty data and error if API returns not ok', async () => {
-    (fetch as vi.Mock).mockResolvedValueOnce({ ok: false });
+    (globalThis.fetch as unknown as { mockResolvedValueOnce: Function }).mockResolvedValueOnce({
+      ok: false,
+    });
     const { result } = renderHook(() => useTyphoonApi());
     let data: TyphoonTileData = { typhoons: [], lastUpdated: '' };
     await act(async () => {
@@ -81,7 +105,9 @@ describe('useTyphoonApi', () => {
   });
 
   it('returns empty data and error if fetch fails', async () => {
-    (fetch as vi.Mock).mockRejectedValueOnce(new Error('Network error'));
+    (globalThis.fetch as unknown as { mockRejectedValueOnce: Function }).mockRejectedValueOnce(
+      new Error('Network error'),
+    );
     const { result } = renderHook(() => useTyphoonApi());
     let data: TyphoonTileData = { typhoons: [], lastUpdated: '' };
     await act(async () => {
@@ -89,4 +115,4 @@ describe('useTyphoonApi', () => {
     });
     expect(data).toEqual({ typhoons: [], lastUpdated: '' });
   });
-}); 
+});

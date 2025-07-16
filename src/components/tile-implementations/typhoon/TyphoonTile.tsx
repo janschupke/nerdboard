@@ -40,11 +40,20 @@ function useTyphoonTileData(
 }
 
 export const TyphoonTile = React.memo(
-  ({ tile, meta, apiKey, ...rest }: { tile: DragboardTileData; meta: TileMeta; apiKey: string }) => {
+  ({
+    tile,
+    meta,
+    apiKey,
+    ...rest
+  }: {
+    tile: DragboardTileData;
+    meta: TileMeta;
+    apiKey: string;
+  }) => {
     const tileData = useTyphoonTileData(tile.id, apiKey);
     return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
   (prev, next) => prev.tile.id === next.tile.id && prev.apiKey === next.apiKey,
 );
 
-TyphoonTile.displayName = 'TyphoonTile'; 
+TyphoonTile.displayName = 'TyphoonTile';

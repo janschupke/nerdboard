@@ -18,7 +18,9 @@ function usePreciousMetalsTileData(
     setLoading(true);
     setData(undefined);
     setError(null);
-    getPreciousMetals(tileId, {}, isForceRefresh)
+    // Provide required access_key for Metals API
+    const params = { access_key: 'demo' };
+    getPreciousMetals(tileId, params, isForceRefresh)
       .then((result) => {
         setData(result);
         setError(null);

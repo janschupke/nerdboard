@@ -19,10 +19,10 @@ export function useTyphoonApi() {
     const params = { Authorization: apiKey, format: 'JSON' as const };
     const url = buildApiUrl(CWB_TYPHOON_ENDPOINT, params);
     const result = await DataFetcher.fetchAndMap(
-      () => fetch(url).then(res => res.json()),
+      () => fetch(url).then((res) => res.json()),
       tileId,
       TileType.TYPHOON,
-      { forceRefresh }
+      { forceRefresh },
     );
     if (result.error) throw new Error(result.error);
     return result.data as TyphoonTileData;

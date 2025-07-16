@@ -5,7 +5,6 @@ import { registerEcbEuriborDataMapper } from './dataMapper';
 import { setupEuriborRateSuccessMock } from '../../../test/utils/endpointTestUtils';
 import { EndpointTestUtils, API_ENDPOINTS } from '../../../test/utils/endpointTestUtils';
 
-
 describe('useEuriborApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -15,7 +14,7 @@ describe('useEuriborApi', () => {
 
   it('fetches and maps ECB Euribor data successfully', async () => {
     const { result } = renderHook(() => useEuriborApi());
-    let data: Awaited<ReturnType<ReturnType<typeof useEuriborApi>["getEuriborRate"]>> | undefined;
+    let data: Awaited<ReturnType<ReturnType<typeof useEuriborApi>['getEuriborRate']>> | undefined;
     await act(async () => {
       data = await result.current.getEuriborRate('test-tile');
     });

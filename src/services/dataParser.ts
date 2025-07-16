@@ -37,7 +37,9 @@ export interface DataParser<TRawData, TTileData> {
  * @template TRawData - The type of raw (scraped) data.
  * @template TTileData - The type of parsed tile data.
  */
-export abstract class BaseDataParser<TRawData, TTileData> implements DataParser<TRawData, TTileData> {
+export abstract class BaseDataParser<TRawData, TTileData>
+  implements DataParser<TRawData, TTileData>
+{
   abstract parse(rawData: TRawData): TTileData;
   abstract validate(rawData: unknown): rawData is TRawData;
   abstract createDefault(): TTileData;
@@ -67,11 +69,10 @@ export class DataParserRegistry {
    * @param tileType - Unique identifier for the tile type
    * @param parser - Data parser instance
    */
-  static register<
-    TTileType extends string,
-    TRawData,
-    TTileData
-  >(tileType: TTileType, parser: DataParser<TRawData, TTileData>): void {
+  static register<TTileType extends string, TRawData, TTileData>(
+    tileType: TTileType,
+    parser: DataParser<TRawData, TTileData>,
+  ): void {
     this.parsers.set(tileType, parser as DataParser<unknown, unknown>);
   }
 
@@ -80,11 +81,9 @@ export class DataParserRegistry {
    * @param tileType - Unique identifier for the tile type
    * @returns Data parser instance or undefined if not found
    */
-  static get<
-    TTileType extends string,
-    TRawData,
-    TTileData
-  >(tileType: TTileType): DataParser<TRawData, TTileData> | undefined {
+  static get<TTileType extends string, TRawData, TTileData>(
+    tileType: TTileType,
+  ): DataParser<TRawData, TTileData> | undefined {
     return this.parsers.get(tileType) as DataParser<TRawData, TTileData> | undefined;
   }
 
@@ -104,4 +103,4 @@ export class DataParserRegistry {
   static getRegisteredTypes(): string[] {
     return Array.from(this.parsers.keys());
   }
-} 
+}

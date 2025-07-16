@@ -82,7 +82,7 @@ export const GenericTile = React.memo(
         }
         const handleDebugClick = (e: React.MouseEvent) => {
           e.stopPropagation();
-           
+
           console.dir(data);
         };
         if (status.error && !status.hasData) {

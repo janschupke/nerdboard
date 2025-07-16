@@ -17,7 +17,7 @@ export const ecbEuriborDataMapper: DataMapper<EuriborRateApiResponse, EuriborRat
       historicalData,
     };
   },
-  safeMap: function(apiResponse: EuriborRateApiResponse): EuriborRateTileData {
+  safeMap: function (apiResponse: EuriborRateApiResponse): EuriborRateTileData {
     try {
       return this.map(apiResponse);
     } catch {
@@ -45,4 +45,4 @@ export function registerEcbEuriborDataMapper() {
   DataMapperRegistry.register('ecb-euribor', ecbEuriborDataMapper);
   DataMapperRegistry.register('/api/emmi/euribor-rates', ecbEuriborDataMapper);
   DataMapperRegistry.register('euribor_rate', ecbEuriborDataMapper);
-} 
+}

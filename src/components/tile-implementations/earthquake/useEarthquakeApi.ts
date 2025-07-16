@@ -20,12 +20,13 @@ export function useEarthquakeApi() {
     ): Promise<EarthquakeTileData[]> => {
       const url = buildApiUrl(USGS_EARTHQUAKE_ENDPOINT, { ...params, format: 'geojson' });
       const result = await DataFetcher.fetchAndMap(
-        () => fetch(url).then(res => res.json()),
+        () => fetch(url).then((res) => res.json()),
         tileId,
         TileType.EARTHQUAKE,
-        { forceRefresh }
+        { forceRefresh },
       );
-      if (result.error || !result.data || !Array.isArray(result.data)) throw new Error(result.error || 'No data');
+      if (result.error || !result.data || !Array.isArray(result.data))
+        throw new Error(result.error || 'No data');
       return result.data as EarthquakeTileData[];
     },
     [],
