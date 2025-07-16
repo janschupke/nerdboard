@@ -5,7 +5,12 @@ import { useTimeApi } from './useTimeApi';
 import type { TimeTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useTimeTileData(tileId: string): { loading: boolean; error: string | null; hasData: boolean; data?: TimeTileData } {
+function useTimeTileData(tileId: string): {
+  loading: boolean;
+  error: string | null;
+  hasData: boolean;
+  data?: TimeTileData;
+} {
   const { getTime } = useTimeApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<TimeTileData | undefined>(undefined);

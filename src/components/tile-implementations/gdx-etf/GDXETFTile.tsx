@@ -4,7 +4,10 @@ import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useGdxEtfApi } from './useGdxEtfApi';
 import type { GdxEtfTileData } from './types';
 
-function useGdxEtfTileData(tileId: string, refreshKey?: number): { loading: boolean; error: string | null; hasData: boolean; data?: GdxEtfTileData } {
+function useGdxEtfTileData(
+  tileId: string,
+  refreshKey?: number,
+): { loading: boolean; error: string | null; hasData: boolean; data?: GdxEtfTileData } {
   const { getGDXETF } = useGdxEtfApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<GdxEtfTileData | undefined>(undefined);

@@ -38,7 +38,7 @@ describe('useTimeApi', () => {
           offset: expect.any(String),
           dayOfWeek: expect.any(String),
           isBusinessHours: expect.any(Boolean),
-        })
+        }),
       );
     });
 
@@ -196,7 +196,6 @@ describe('useTimeApi', () => {
         const data = await result.current.getTime(mockTileId, params);
         // Debug: log if currentTime is '--:--:--' (invalid)
         if (data.currentTime === '--:--:--') {
-          // eslint-disable-next-line no-console
           console.error('Invalid DateTime for params:', params, apiData);
         }
         expect(data).toBeDefined();

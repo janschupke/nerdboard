@@ -1,5 +1,6 @@
 import type { TileSize } from '../../../types/tile';
 import type { TileDataType } from '../../../services/storageManager';
+import type { BaseApiResponse } from '../../../services/dataMapper';
 
 export interface UraniumTileData extends TileDataType {
   spotPrice: number;
@@ -31,7 +32,7 @@ export interface UraniumTileProps {
 
 export type UraniumTimeRange = '1M' | '3M' | '6M' | '1Y' | '5Y' | 'Max';
 
-export interface UraniumApiData {
+export interface UraniumApiData extends BaseApiResponse {
   spotPrice: number;
   history: UraniumPriceHistory[];
   change: number;

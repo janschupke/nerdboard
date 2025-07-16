@@ -20,12 +20,11 @@ export function useFederalFundsApi() {
       forceRefresh = false,
     ): Promise<FederalFundsRateTileData> => {
       const url = buildApiUrl(FRED_SERIES_OBSERVATIONS_ENDPOINT, params);
-      const result = await DataFetcher.fetchAndMap<'federal-funds-rate', FederalFundsRateApiDataWithIndex, FederalFundsRateTileData>(
-        () => fetch(url).then((res) => res.json()),
-        tileId,
+      const result = await DataFetcher.fetchAndMap<
         'federal-funds-rate',
-        { forceRefresh },
-      );
+        FederalFundsRateApiDataWithIndex,
+        FederalFundsRateTileData
+      >(() => fetch(url).then((res) => res.json()), tileId, 'federal-funds-rate', { forceRefresh });
       if (result.error || !result.data) throw new Error(result.error || 'No data');
       return result.data;
     },

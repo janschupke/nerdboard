@@ -1,5 +1,6 @@
 import type { TileSize } from '../../../types/tile';
 import type { TileDataType } from '../../../services/storageManager';
+import type { BaseApiResponse } from '../../../services/dataMapper';
 
 export interface TimeTileData extends TileDataType {
   currentTime: string;
@@ -14,7 +15,7 @@ export interface TimeTileData extends TileDataType {
   lastUpdate: string;
 }
 
-export interface TimeApiData extends TileDataType {
+export interface TimeApiData extends BaseApiResponse {
   datetime: string;
   timezone: string;
   utc_datetime: string;

@@ -1,7 +1,8 @@
 import type { TileSize } from '../../../types/tile';
 import type { TileDataType } from '../../../services/storageManager';
+import type { BaseApiResponse } from '../../../services/dataMapper';
 
-export interface CryptocurrencyApiData extends TileDataType {
+export interface CryptocurrencyApiData extends BaseApiResponse {
   id: string;
   symbol: string;
   name: string;

@@ -1,4 +1,5 @@
 import type { TileDataType } from '../../../services/storageManager';
+import type { BaseApiResponse } from '../../../services/dataMapper';
 
 export interface EuriborRateTileData extends TileDataType {
   currentRate: number;
@@ -13,7 +14,7 @@ export interface EuriborRateHistoryEntry {
 
 export type TimeRange = '1M' | '3M' | '6M' | '1Y' | '5Y' | 'Max';
 
-export interface EuriborRateApiData extends TileDataType {
+export interface EuriborRateApiData extends BaseApiResponse {
   rates: Array<{
     date: string;
     value: string;

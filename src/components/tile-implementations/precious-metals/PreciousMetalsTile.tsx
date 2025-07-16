@@ -5,7 +5,12 @@ import { usePreciousMetalsApi } from './usePreciousMetalsApi';
 import type { PreciousMetalsTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function usePreciousMetalsTileData(tileId: string): { loading: boolean; error: string | null; hasData: boolean; data?: PreciousMetalsTileData } {
+function usePreciousMetalsTileData(tileId: string): {
+  loading: boolean;
+  error: string | null;
+  hasData: boolean;
+  data?: PreciousMetalsTileData;
+} {
   const { getPreciousMetals } = usePreciousMetalsApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<PreciousMetalsTileData | undefined>(undefined);

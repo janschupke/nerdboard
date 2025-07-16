@@ -5,7 +5,12 @@ import { useCryptoApi } from './useCryptoApi';
 import type { CryptocurrencyTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useCryptoTileData(tileId: string): { loading: boolean; error: string | null; hasData: boolean; data?: CryptocurrencyTileData } {
+function useCryptoTileData(tileId: string): {
+  loading: boolean;
+  error: string | null;
+  hasData: boolean;
+  data?: CryptocurrencyTileData;
+} {
   const { getCryptocurrencyMarkets } = useCryptoApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<CryptocurrencyTileData | undefined>(undefined);
@@ -28,7 +33,12 @@ function useCryptoTileData(tileId: string): { loading: boolean; error: string | 
         setLoading(false);
       });
   }, [tileId, getCryptocurrencyMarkets, isForceRefresh]);
-  return { loading, error, hasData: !!data && Array.isArray(data.coins) && data.coins.length > 0, data };
+  return {
+    loading,
+    error,
+    hasData: !!data && Array.isArray(data.coins) && data.coins.length > 0,
+    data,
+  };
 }
 
 export const CryptocurrencyTile = React.memo(

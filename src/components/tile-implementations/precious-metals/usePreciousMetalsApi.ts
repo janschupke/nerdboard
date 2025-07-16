@@ -20,12 +20,11 @@ export function usePreciousMetalsApi() {
       forceRefresh = false,
     ): Promise<PreciousMetalsTileData> => {
       const url = buildApiUrl(PRECIOUS_METALS_ENDPOINT, params);
-      const result = await DataFetcher.fetchAndMap<'precious-metals', PreciousMetalsApiDataWithIndex, PreciousMetalsTileData>(
-        () => fetch(url).then((res) => res.json()),
-        tileId,
+      const result = await DataFetcher.fetchAndMap<
         'precious-metals',
-        { forceRefresh },
-      );
+        PreciousMetalsApiDataWithIndex,
+        PreciousMetalsTileData
+      >(() => fetch(url).then((res) => res.json()), tileId, 'precious-metals', { forceRefresh });
       if (result.error || !result.data) throw new Error(result.error || 'No data');
       return result.data;
     },

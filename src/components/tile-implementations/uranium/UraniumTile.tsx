@@ -5,7 +5,12 @@ import { useUraniumApi } from './useUraniumApi';
 import type { UraniumTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useUraniumTileData(tileId: string): { loading: boolean; error: string | null; hasData: boolean; data?: UraniumTileData } {
+function useUraniumTileData(tileId: string): {
+  loading: boolean;
+  error: string | null;
+  hasData: boolean;
+  data?: UraniumTileData;
+} {
   const { getUraniumPrice } = useUraniumApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<UraniumTileData | undefined>(undefined);

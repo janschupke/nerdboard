@@ -5,7 +5,12 @@ import { useFederalFundsApi } from './useFederalFundsApi';
 import type { FederalFundsRateTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useFederalFundsTileData(tileId: string): { loading: boolean; error: string | null; hasData: boolean; data?: FederalFundsRateTileData } {
+function useFederalFundsTileData(tileId: string): {
+  loading: boolean;
+  error: string | null;
+  hasData: boolean;
+  data?: FederalFundsRateTileData;
+} {
   const { getFederalFundsRate } = useFederalFundsApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<FederalFundsRateTileData | undefined>(undefined);

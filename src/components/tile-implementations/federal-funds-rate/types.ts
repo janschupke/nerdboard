@@ -1,5 +1,6 @@
 import type { TileSize } from '../../../types/tile';
 import type { TileDataType } from '../../../services/storageManager';
+import type { BaseApiResponse } from '../../../services/dataMapper';
 
 export interface FederalFundsRateTileData extends TileDataType {
   currentRate: number;
@@ -25,7 +26,7 @@ export interface FederalFundsRateTileProps {
 
 export type TimeRange = '1M' | '3M' | '6M' | '1Y' | '5Y' | 'Max';
 
-export interface FederalFundsRateApiData extends TileDataType {
+export interface FederalFundsRateApiData extends BaseApiResponse {
   observations: Array<{
     realtime_start: string;
     realtime_end: string;

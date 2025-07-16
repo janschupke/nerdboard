@@ -7,7 +7,10 @@ export interface UraniumApiDataWithIndex extends UraniumApiData {
   [key: string]: unknown;
 }
 
-export class UraniumDataMapper extends BaseDataMapper<UraniumApiDataWithIndex, UraniumTileDataType> {
+export class UraniumDataMapper extends BaseDataMapper<
+  UraniumApiDataWithIndex,
+  UraniumTileDataType
+> {
   map(apiResponse: UraniumApiDataWithIndex): UraniumTileDataType {
     return {
       spotPrice: apiResponse.spotPrice,

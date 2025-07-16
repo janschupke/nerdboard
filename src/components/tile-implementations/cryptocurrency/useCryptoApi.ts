@@ -19,15 +19,14 @@ export function useCryptoApi() {
       forceRefresh = false,
     ): Promise<CryptocurrencyTileData> => {
       const url = buildApiUrl(COINGECKO_MARKETS_ENDPOINT, params);
-      const result = await DataFetcher.fetchAndMap<'cryptocurrency', CryptocurrencyApiData[], CryptocurrencyTileData>(
-        () => fetch(url).then((res) => res.json()),
-        tileId,
+      const result = await DataFetcher.fetchAndMap<
         'cryptocurrency',
-        {
-          apiCall: 'CoinGecko Markets API',
-          forceRefresh,
-        },
-      );
+        CryptocurrencyApiData[],
+        CryptocurrencyTileData
+      >(() => fetch(url).then((res) => res.json()), tileId, 'cryptocurrency', {
+        apiCall: 'CoinGecko Markets API',
+        forceRefresh,
+      });
       if (result.error) throw new Error(result.error);
       return result.data as CryptocurrencyTileData;
     },

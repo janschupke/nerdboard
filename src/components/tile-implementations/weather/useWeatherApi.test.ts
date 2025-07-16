@@ -50,7 +50,7 @@ describe('useWeatherApi', () => {
           pressure: expect.any(Number),
           visibility: expect.any(Number),
           timestamp: expect.any(Number),
-        })
+        }),
       );
     });
 
@@ -136,9 +136,7 @@ describe('useWeatherApi', () => {
       EndpointTestUtils.clearMocks();
       setupWeatherSuccessMock();
       const { result } = renderHook(() => useWeatherApi());
-      const testParams: WeatherParams[] = [
-        { lat: 52.52, lon: 13.405 },
-      ];
+      const testParams: WeatherParams[] = [{ lat: 52.52, lon: 13.405 }];
       for (const params of testParams) {
         const data = await result.current.getWeather(mockTileId, params);
         expect(typeof data.temperature.current).toBe('number');
@@ -175,7 +173,7 @@ describe('useWeatherApi', () => {
           pressure: expect.any(Number),
           visibility: expect.any(Number),
           timestamp: expect.any(Number),
-        })
+        }),
       );
     });
 

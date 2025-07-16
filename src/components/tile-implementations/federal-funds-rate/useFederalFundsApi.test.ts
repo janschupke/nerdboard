@@ -36,7 +36,7 @@ describe('useFederalFundsApi', () => {
         expect.objectContaining({
           date: expect.any(Date),
           rate: expect.any(Number),
-        })
+        }),
       );
     });
 

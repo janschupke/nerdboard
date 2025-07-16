@@ -5,7 +5,12 @@ import { useWeatherApi } from './useWeatherApi';
 import type { WeatherTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useWeatherTileData(tileId: string): { loading: boolean; error: string | null; hasData: boolean; data?: WeatherTileData } {
+function useWeatherTileData(tileId: string): {
+  loading: boolean;
+  error: string | null;
+  hasData: boolean;
+  data?: WeatherTileData;
+} {
   const { getWeather } = useWeatherApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<WeatherTileData | undefined>(undefined);

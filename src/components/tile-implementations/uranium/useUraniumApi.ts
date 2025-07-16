@@ -19,12 +19,11 @@ export function useUraniumApi() {
       forceRefresh = false,
     ): Promise<UraniumTileData> => {
       const url = buildApiUrl(TRADINGECONOMICS_URANIUM_ENDPOINT, params);
-      const result = await DataFetcher.fetchAndMap<'uranium', UraniumApiDataWithIndex, UraniumTileData>(
-        () => fetch(url).then((res) => res.json()),
-        tileId,
+      const result = await DataFetcher.fetchAndMap<
         'uranium',
-        { forceRefresh },
-      );
+        UraniumApiDataWithIndex,
+        UraniumTileData
+      >(() => fetch(url).then((res) => res.json()), tileId, 'uranium', { forceRefresh });
       if (result.error || !result.data) throw new Error(result.error || 'No data');
       return result.data;
     },

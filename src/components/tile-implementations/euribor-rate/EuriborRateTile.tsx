@@ -5,7 +5,12 @@ import { useEuriborApi } from './useEuriborApi';
 import type { EuriborRateTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useEuriborTileData(tileId: string): { loading: boolean; error: string | null; hasData: boolean; data?: EuriborRateTileData } {
+function useEuriborTileData(tileId: string): {
+  loading: boolean;
+  error: string | null;
+  hasData: boolean;
+  data?: EuriborRateTileData;
+} {
   const { getEuriborRate } = useEuriborApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<EuriborRateTileData | undefined>(undefined);

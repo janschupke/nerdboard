@@ -1,4 +1,5 @@
 import type { TileDataType } from '../../../services/storageManager';
+import type { BaseApiResponse } from '../../../services/dataMapper';
 
 export interface WeatherTileData extends TileDataType {
   city: string;
@@ -80,7 +81,7 @@ export interface WeatherTileConfig {
   refreshInterval?: number;
 }
 
-export interface WeatherApiData {
+export interface WeatherApiData extends BaseApiResponse {
   [key: string]: unknown;
   current: {
     temp: number;

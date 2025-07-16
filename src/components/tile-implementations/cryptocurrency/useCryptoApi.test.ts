@@ -46,7 +46,7 @@ describe('useCryptoApi', () => {
               current_price: expect.any(Number),
             }),
           ]),
-        })
+        }),
       );
     });
 

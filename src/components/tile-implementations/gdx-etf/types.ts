@@ -1,5 +1,6 @@
 import type { TileSize } from '../../../types/tile';
 import type { TileDataType } from '../../../services/storageManager';
+import type { BaseApiResponse } from '../../../services/dataMapper';
 
 export interface GdxEtfTileData extends TileDataType {
   symbol: string;
@@ -44,7 +45,7 @@ export interface MarketHours {
   currentTime: string;
 }
 
-export interface GdxEtfApiData extends TileDataType {
+export interface GdxEtfApiData extends BaseApiResponse {
   symbol: string;
   name: string;
   currentPrice: number;

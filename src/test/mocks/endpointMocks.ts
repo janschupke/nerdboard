@@ -1,11 +1,11 @@
-import type { CryptocurrencyData } from '../../components/tile-implementations/cryptocurrency/types';
-import type { WeatherApiResponse } from '../../components/tile-implementations/weather/types';
-import type { FredApiResponse } from '../../components/tile-implementations/federal-funds-rate/types';
-import type { TimeData } from '../../components/tile-implementations/time/types';
-import type { UraniumApiResponse } from '../../components/tile-implementations/uranium/types';
-import type { PreciousMetalsData } from '../../components/tile-implementations/precious-metals/types';
-import type { GDXETFData } from '../../components/tile-implementations/gdx-etf/types';
-import type { EuriborRateApiResponse } from '../../components/tile-implementations/euribor-rate/types';
+import type { CryptocurrencyApiData } from '../../components/tile-implementations/cryptocurrency/types';
+import type { WeatherApiResponseType } from '../../components/tile-implementations/weather/types';
+import type { FederalFundsRateApiData } from '../../components/tile-implementations/federal-funds-rate/types';
+import type { TimeApiData } from '../../components/tile-implementations/time/types';
+import type { UraniumApiData } from '../../components/tile-implementations/uranium/types';
+import type { PreciousMetalsApiData } from '../../components/tile-implementations/precious-metals/types';
+import type { GdxEtfApiData } from '../../components/tile-implementations/gdx-etf/types';
+import type { EuriborRateApiData } from '../../components/tile-implementations/euribor-rate/types';
 
 export type MockApiErrorType = 'network' | 'timeout' | 'api' | 'malformed';
 
@@ -24,7 +24,7 @@ export interface EndpointMockConfig extends MockApiConfig {
 
 // Mock response data generators
 export class MockResponseData {
-  static getCryptocurrencyData(): CryptocurrencyData[] {
+  static getCryptocurrencyData(): CryptocurrencyApiData[] {
     return [
       {
         id: 'bitcoin',
@@ -67,7 +67,7 @@ export class MockResponseData {
     ];
   }
 
-  static getWeatherData(): WeatherApiResponse {
+  static getWeatherData(): WeatherApiResponseType {
     return {
       current: {
         temp: 22.5,
@@ -108,7 +108,7 @@ export class MockResponseData {
     };
   }
 
-  static getFederalFundsRateData(): FredApiResponse {
+  static getFederalFundsRateData(): FederalFundsRateApiData {
     return {
       observations: [
         {
@@ -127,22 +127,22 @@ export class MockResponseData {
     };
   }
 
-  static getTimeData(): TimeData {
+  static getTimeData(): TimeApiData {
     return {
-      currentTime: '14:30:25',
+      datetime: '2024-01-15T14:30:25.000Z',
       timezone: 'Europe/Berlin',
+      utc_datetime: '2024-01-15T13:30:25.000Z',
+      utc_offset: '+01:00',
+      day_of_week: 1,
+      day_of_year: 15,
+      week_number: 3,
       abbreviation: 'CET',
-      offset: '+01:00',
-      dayOfWeek: 'Monday',
-      date: '2024-01-15',
-      isBusinessHours: true,
-      businessStatus: 'open',
-      timeUntilNextDay: '9h 29m 35s',
-      lastUpdate: '2024-01-15T14:30:25.000Z',
+      client_ip: '127.0.0.1',
+      // Optionally, add any extra fields as needed
     };
   }
 
-  static getUraniumData(): UraniumApiResponse {
+  static getUraniumData(): UraniumApiData {
     return {
       spotPrice: 85.5,
       history: [
@@ -159,7 +159,7 @@ export class MockResponseData {
     };
   }
 
-  static getPreciousMetalsData(): PreciousMetalsData {
+  static getPreciousMetalsData(): PreciousMetalsApiData {
     return {
       gold: {
         price: 2050.75,
@@ -174,7 +174,7 @@ export class MockResponseData {
     };
   }
 
-  static getGDXETFData(): GDXETFData {
+  static getGDXETFData(): GdxEtfApiData {
     return {
       symbol: 'GDX',
       name: 'VanEck Gold Miners ETF',
@@ -192,7 +192,7 @@ export class MockResponseData {
     };
   }
 
-  static getEuriborRateData(): EuriborRateApiResponse {
+  static getEuriborRateData(): EuriborRateApiData {
     return {
       rates: [
         {
