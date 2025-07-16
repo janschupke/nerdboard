@@ -72,7 +72,7 @@ export class DataFetcher {
       // Fetch fresh data with timeout
       let data: T;
       try {
-        data = await this.fetchWithTimeout(fetchFunction, timeout);
+        data = await DataFetcher.fetchWithTimeout(fetchFunction, timeout);
       } catch (fetchError) {
         // Log fetch error (network, timeout, etc.)
         const errorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
@@ -91,7 +91,7 @@ export class DataFetcher {
         });
 
         // Update lastDataRequest even on error to prevent infinite retry loops
-        this.setTileState<T>(storageKey, null, false);
+        DataFetcher.setTileState<T>(storageKey, null, false);
 
         return {
           data: null,
@@ -121,7 +121,7 @@ export class DataFetcher {
         });
 
         // Update lastDataRequest even on API error to prevent infinite retry loops
-        this.setTileState<T>(storageKey, null, false);
+        DataFetcher.setTileState<T>(storageKey, null, false);
 
         return {
           data: null,
@@ -133,7 +133,7 @@ export class DataFetcher {
       }
 
       // Cache the fresh data
-      this.setTileState<T>(storageKey, data as unknown as T, true);
+      DataFetcher.setTileState<T>(storageKey, data as unknown as T, true);
 
       return {
         data,
@@ -160,7 +160,7 @@ export class DataFetcher {
       });
 
       // Update lastDataRequest even on general error to prevent infinite retry loops
-      this.setTileState<T>(storageKey, null, false);
+      DataFetcher.setTileState<T>(storageKey, null, false);
 
       return {
         data: null,
@@ -205,7 +205,7 @@ export class DataFetcher {
       // Schedule background refresh
       setTimeout(async () => {
         try {
-          await this.fetchWithRetry(fetchFunction, storageKey, {
+          await DataFetcher.fetchWithRetry(fetchFunction, storageKey, {
             ...options,
             forceRefresh: true,
           });
@@ -236,7 +236,7 @@ export class DataFetcher {
     }
 
     // No cached data, fetch immediately
-    return this.fetchWithRetry(fetchFunction, storageKey, options);
+    return DataFetcher.fetchWithRetry(fetchFunction, storageKey, options);
   }
 
   // Helper method to log warnings for non-critical issues
@@ -277,14 +277,14 @@ export class DataFetcher {
     }
 
     try {
-      const result = await this.fetchWithRetry(fetchFunction, storageKey, options);
+      const result = await DataFetcher.fetchWithRetry(fetchFunction, storageKey, options);
 
       if (result.data) {
         // Map the API response to tile content data
         const mappedData = mapper.safeMap(result.data);
 
         // Cache the mapped data
-        this.setTileState<TTileData>(storageKey, mappedData, true);
+        DataFetcher.setTileState<TTileData>(storageKey, mappedData, true);
 
         return {
           data: mappedData,
@@ -297,7 +297,7 @@ export class DataFetcher {
         // Return default data if no API data
         const defaultData = mapper.createDefault();
 
-        this.setTileState<TTileData>(storageKey, defaultData, false);
+        DataFetcher.setTileState<TTileData>(storageKey, defaultData, false);
 
         return {
           data: defaultData,
@@ -311,7 +311,7 @@ export class DataFetcher {
       // Return default data on error
       const defaultData = mapper.createDefault();
 
-      this.setTileState<TTileData>(storageKey, defaultData, false);
+      DataFetcher.setTileState<TTileData>(storageKey, defaultData, false);
 
       return {
         data: defaultData,
