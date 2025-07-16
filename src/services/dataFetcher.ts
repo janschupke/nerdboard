@@ -5,6 +5,7 @@ import {
   type TileDataType,
 } from './storageManager';
 import { type BaseApiResponse, DataMapperRegistry } from './dataMapper';
+import { DataParserRegistry } from './dataParser';
 
 // 10-minute interval constant for data freshness
 export const DATA_FRESHNESS_INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
@@ -319,6 +320,148 @@ export class DataFetcher {
         error: error instanceof Error ? error.message : String(error),
         lastUpdated: new Date(),
         retryCount: 0,
+      };
+    }
+  }
+
+  /**
+   * Fetches data using a scraping-based approach and parses it using a registered parser.
+   * @param fetchFunction - Function to fetch raw (scraped) data
+   * @param storageKey - Unique key for caching and storage
+   * @param tileType - Tile type identifier (string)
+   * @param options - Fetch options (forceRefresh, retry, etc.)
+   */
+  static async fetchAndParse<
+    TTileType extends string,
+    TRawData,
+    TTileData extends TileDataType,
+  >(
+    fetchFunction: () => Promise<TRawData>,
+    storageKey: string,
+    tileType: TTileType,
+    options: FetchOptions = {},
+  ): Promise<FetchResult<TTileData>> {
+    const { forceRefresh = false, retryCount = 0, timeout = 10000, apiCall = storageKey } = options;
+    try {
+      // Check cache first unless forcing refresh
+      if (!forceRefresh) {
+        const cached = storageManager.getTileState<TTileData>(storageKey);
+        if (cached) {
+          const now = Date.now();
+          const dataAge = now - cached.lastDataRequest;
+          const isDataFresh = dataAge < DATA_FRESHNESS_INTERVAL;
+          // Only return cached data if it is fresh AND not null
+          if (isDataFresh && cached.data) {
+            return {
+              data: cached.data as TTileData,
+              isCached: true,
+              error: null,
+              lastUpdated: new Date(cached.lastDataRequest),
+              retryCount: 0,
+            };
+          }
+          // If cached data is null, proceed to fetch fresh data
+        }
+      }
+      // Fetch raw data with timeout
+      let rawData: TRawData;
+      try {
+        rawData = await DataFetcher.fetchWithTimeout(fetchFunction, timeout);
+      } catch (fetchError) {
+        const errorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
+        const logDetails: APILogDetails = {
+          storageKey,
+          retryCount,
+          forceRefresh: forceRefresh ? 1 : 0,
+          errorName: fetchError instanceof Error ? fetchError.name : 'Unknown',
+          errorMessage,
+        };
+        storageManager.addLog({
+          level: APILogLevel.ERROR,
+          apiCall,
+          reason: errorMessage,
+          details: logDetails,
+        });
+        DataFetcher.setTileState<TTileData>(storageKey, null, false);
+        return {
+          data: null,
+          isCached: false,
+          error: String(errorMessage),
+          lastUpdated: new Date(),
+          retryCount: retryCount + 1,
+        };
+      }
+      // Get parser for tileType
+      const parser = DataParserRegistry.get<TTileType, TRawData, TTileData>(tileType);
+      if (!parser) {
+        const errorMessage = `No parser registered for tile type: ${tileType}`;
+        storageManager.addLog({
+          level: APILogLevel.ERROR,
+          apiCall,
+          reason: errorMessage,
+          details: { storageKey, retryCount, forceRefresh: forceRefresh ? 1 : 0, errorName: 'ParserNotFound', errorMessage },
+        });
+        DataFetcher.setTileState<TTileData>(storageKey, null, false);
+        return {
+          data: null,
+          isCached: false,
+          error: String(errorMessage),
+          lastUpdated: new Date(),
+          retryCount: retryCount + 1,
+        };
+      }
+      // Parse the raw data
+      let tileData: TTileData;
+      try {
+        tileData = parser.safeParse(rawData);
+      } catch (parseError) {
+        const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+        storageManager.addLog({
+          level: APILogLevel.ERROR,
+          apiCall,
+          reason: String(errorMessage),
+          details: { storageKey, retryCount, forceRefresh: forceRefresh ? 1 : 0, errorName: 'ParseError', errorMessage: String(errorMessage) },
+        });
+        DataFetcher.setTileState<TTileData>(storageKey, null, false);
+        return {
+          data: null,
+          isCached: false,
+          error: String(errorMessage),
+          lastUpdated: new Date(),
+          retryCount: retryCount + 1,
+        };
+      }
+      // Cache the parsed data
+      DataFetcher.setTileState<TTileData>(storageKey, tileData, true);
+      return {
+        data: tileData,
+        isCached: false,
+        error: null,
+        lastUpdated: new Date(),
+        retryCount: 0,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const logDetails: APILogDetails = {
+        storageKey,
+        retryCount,
+        forceRefresh: forceRefresh ? 1 : 0,
+        errorName: error instanceof Error ? error.name : 'Unknown',
+        errorMessage,
+      };
+      storageManager.addLog({
+        level: APILogLevel.ERROR,
+        apiCall,
+        reason: errorMessage,
+        details: logDetails,
+      });
+      DataFetcher.setTileState<TTileData>(storageKey, null, false);
+      return {
+        data: null,
+        isCached: false,
+        error: String(errorMessage),
+        lastUpdated: new Date(),
+        retryCount: retryCount + 1,
       };
     }
   }

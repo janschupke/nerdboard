@@ -18,6 +18,7 @@ A modern, extensible dashboard application built with React 19, TypeScript, and 
 
 - **Real-time Market Data**: Track cryptocurrency, precious metals, ETFs, interest rates, and weather in real time.
 - **Interactive Dashboard**: Drag-and-drop, resizable tile layout with responsive design.
+- **Unified Data Flow**: All tiles use a single, type-safe data layer for both API and scraping-based data sources, with robust error handling and caching.
 - **Generic, App-Agnostic Dragboard**: The Dragboard framework provides a reusable, implementation-agnostic system for draggable and resizable dashboard layouts. All drag/resize logic is encapsulated and exposed via a clean API/context. No app-specific or persistence logic is present in Dragboard.
 - **Generic Tile System**: Tiles are defined generically, with a base tile component and a registry/factory for specific implementations. Each tile implementation (e.g., Cryptocurrency, Weather, ETF) provides its own data fetching and display logic, while the base tile handles layout, status, and error display.
 - **Centralized Data Fetching**: All API calls and data fetching are handled by a centralized dataFetcher service, which manages retries, caching, and error handling. API endpoints are proxied via serverless functions to avoid CORS issues.
@@ -49,6 +50,8 @@ A modern, extensible dashboard application built with React 19, TypeScript, and 
 - Centralized manager for all API/data endpoint calls.
 - Handles retries, timeouts, caching, and background refresh.
 - Integrates with storageManager for local caching.
+- Supports both API and scraping-based data retrieval via `fetchAndMap` and the new `fetchAndParse` method.
+- Uses a `dataParser` registry for scraping-based tiles, ensuring type-safe, testable, and unified data flow.
 - All tile implementations use this service for data population.
 
 ### Local Storage (src/services/storageManager.ts)
