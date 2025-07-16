@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DataFetcher } from './dataFetcher';
+import { DataFetcher, DATA_FRESHNESS_INTERVAL } from './dataFetcher';
 import { storageManager } from './storageManager';
 
-// Mock fetch globally
-global.fetch = vi.fn();
+// Mock fetch globally, allow any return type for test mocks
+global.fetch = vi.fn() as unknown as typeof fetch;
 
 describe('DataFetcher', () => {
   beforeEach(() => {
@@ -20,14 +20,14 @@ describe('DataFetcher', () => {
   describe('fetchWithRetry - Error Logging', () => {
     it('should log errors to api-log system when fetch fails', async () => {
       // Arrange
-      const mockFetch = vi.mocked(fetch);
+      const mockFetch = vi.fn();
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       const storageKey = 'test-storage-key';
       const apiCall = 'Test API';
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey, {
+      const result = await DataFetcher.fetchWithRetry(() => mockFetch('/api/test'), storageKey, {
         apiCall,
       });
 
@@ -55,7 +55,7 @@ describe('DataFetcher', () => {
     it('should log timeout errors to api-log system', async () => {
       // Arrange
       storageManager.clearTileState(); // Ensure no cache
-      const mockFetch = vi.mocked(fetch);
+      const mockFetch = vi.fn();
       mockFetch.mockImplementationOnce(
         () =>
           new Promise((_, reject) => {
@@ -67,7 +67,7 @@ describe('DataFetcher', () => {
       const apiCall = 'Test API';
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey, {
+      const result = await DataFetcher.fetchWithRetry(() => mockFetch('/api/test'), storageKey, {
         apiCall,
         timeout: 50,
       });
@@ -89,13 +89,13 @@ describe('DataFetcher', () => {
     it('should use storageKey as default apiCall when not provided', async () => {
       // Arrange
       storageManager.clearTileState(); // Ensure no cache
-      const mockFetch = vi.mocked(fetch);
+      const mockFetch = vi.fn();
       mockFetch.mockRejectedValueOnce(new Error('Test error'));
 
       const storageKey = 'test-storage-key';
 
       // Act
-      await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey);
+      await DataFetcher.fetchWithRetry(() => mockFetch('/api/test'), storageKey);
 
       // Assert
       const logs = storageManager.getLogs();
@@ -108,10 +108,8 @@ describe('DataFetcher', () => {
     it.skip('should log background refresh failures as warnings', async () => {
       // Arrange
       vi.useFakeTimers();
-      const mockFetch = vi.mocked(fetch);
-      mockFetch.mockResolvedValueOnce({
-        json: () => Promise.resolve({ data: 'cached' }),
-      } as Response);
+      const mockFetch = vi.fn();
+      mockFetch.mockResolvedValueOnce({ data: 'cached' });
       mockFetch.mockRejectedValueOnce(new Error('Background refresh failed'));
 
       const storageKey = 'test-storage-key';
@@ -126,7 +124,7 @@ describe('DataFetcher', () => {
 
       // Act
       const result = await DataFetcher.fetchWithBackgroundRefresh(
-        () => fetch('/api/test'),
+        () => mockFetch('/api/test'),
         storageKey,
         { apiCall },
       );
@@ -203,10 +201,8 @@ describe('DataFetcher', () => {
   describe('fetchWithRetry - Data Age Validation', () => {
     it('should return cached data if less than 10 minutes old', async () => {
       // Arrange
-      const mockFetch = vi.mocked(fetch);
-      mockFetch.mockResolvedValueOnce({
-        json: () => Promise.resolve({ data: 'fresh' }),
-      } as Response);
+      const mockFetch = vi.fn();
+      mockFetch.mockResolvedValueOnce({ data: 'fresh' });
 
       const storageKey = 'test-storage-key';
       const apiCall = 'Test API';
@@ -220,7 +216,7 @@ describe('DataFetcher', () => {
       });
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey, {
+      const result = await DataFetcher.fetchWithRetry(() => mockFetch('/api/test'), storageKey, {
         apiCall,
       });
 
@@ -235,22 +231,22 @@ describe('DataFetcher', () => {
       const storageKey = 'test-storage-key';
       const apiCall = 'Test API';
 
-      // Mock storage with old data (15 minutes old)
-      const fifteenMinutesAgo = Date.now() - 15 * 60 * 1000;
+      // Mock storage with old data (1.5x freshness interval ago)
+      const oldTimestamp = Date.now() - DATA_FRESHNESS_INTERVAL * 1.5;
       storageManager.setTileState(storageKey, {
         data: { cached: 'data' },
-        lastDataRequest: fifteenMinutesAgo,
+        lastDataRequest: oldTimestamp,
         lastDataRequestSuccessful: true,
       });
 
+      // Mock fetch
+      const mockFetch = vi.fn();
+      mockFetch.mockResolvedValueOnce({ data: 'fresh' });
+
       // Act
-      const result = await DataFetcher.fetchWithRetry(
-        () => Promise.resolve({ data: 'fresh' }),
-        storageKey,
-        {
-          apiCall,
-        },
-      );
+      const result = await DataFetcher.fetchWithRetry(() => mockFetch('/api/test'), storageKey, {
+        apiCall,
+      });
 
       // Assert
       expect(result.data).toEqual({ data: 'fresh' });
@@ -262,23 +258,23 @@ describe('DataFetcher', () => {
       const storageKey = 'test-storage-key';
       const apiCall = 'Test API';
 
-      // Mock storage with recent data (5 minutes old)
-      const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+      // Mock storage with recent data (half freshness interval ago)
+      const recentTimestamp = Date.now() - DATA_FRESHNESS_INTERVAL / 2;
       storageManager.setTileState(storageKey, {
         data: { cached: 'data' },
-        lastDataRequest: fiveMinutesAgo,
+        lastDataRequest: recentTimestamp,
         lastDataRequestSuccessful: true,
       });
 
+      // Mock fetch
+      const mockFetch = vi.fn();
+      mockFetch.mockResolvedValueOnce({ data: 'fresh' });
+
       // Act
-      const result = await DataFetcher.fetchWithRetry(
-        () => Promise.resolve({ data: 'fresh' }),
-        storageKey,
-        {
-          apiCall,
-          forceRefresh: true,
-        },
-      );
+      const result = await DataFetcher.fetchWithRetry(() => mockFetch('/api/test'), storageKey, {
+        apiCall,
+        forceRefresh: true,
+      });
 
       // Assert
       expect(result.data).toEqual({ data: 'fresh' });
@@ -293,14 +289,14 @@ describe('DataFetcher', () => {
       // Ensure no cached data exists
       storageManager.clearTileState();
 
+      // Mock fetch
+      const mockFetch = vi.fn();
+      mockFetch.mockResolvedValueOnce({ data: 'fresh' });
+
       // Act
-      const result = await DataFetcher.fetchWithRetry(
-        () => Promise.resolve({ data: 'fresh' }),
-        storageKey,
-        {
-          apiCall,
-        },
-      );
+      const result = await DataFetcher.fetchWithRetry(() => mockFetch('/api/test'), storageKey, {
+        apiCall,
+      });
 
       // Assert
       expect(result.data).toEqual({ data: 'fresh' });
@@ -317,13 +313,16 @@ describe('DataFetcher', () => {
         lastDataRequest: Date.now(),
         lastDataRequestSuccessful: false,
       });
-      const fetchFn = vi.fn().mockResolvedValue({ data: 'fresh' });
+      const mockFetch = vi.fn();
+      mockFetch.mockResolvedValue({ data: 'fresh' }); // Should not be called
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(fetchFn, storageKey, { apiCall });
+      const result = await DataFetcher.fetchWithRetry(() => mockFetch('/api/test'), storageKey, {
+        apiCall,
+      });
 
       // Assert
-      expect(fetchFn).not.toHaveBeenCalled();
+      expect(mockFetch).not.toHaveBeenCalled();
       expect(result.data).toBeNull();
       expect(result.isCached).toBe(true);
       expect(result.error).toBe('No data (cached error or previous failure)');
@@ -334,26 +333,29 @@ describe('DataFetcher', () => {
       const storageKey = 'test-storage-key';
       const apiCall = 'Test API';
       // Mock storage with null data (stale)
-      const old = Date.now() - 15 * 60 * 1000;
+      const old = Date.now() - DATA_FRESHNESS_INTERVAL * 1.5;
       storageManager.setTileState(storageKey, {
         data: null,
         lastDataRequest: old,
         lastDataRequestSuccessful: false,
       });
-      const fetchFn = vi.fn().mockResolvedValue({ data: 'fresh' });
+      const mockFetch = vi.fn();
+      mockFetch.mockResolvedValueOnce({ data: 'fresh' });
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(fetchFn, storageKey, { apiCall });
+      const result = await DataFetcher.fetchWithRetry(() => mockFetch('/api/test'), storageKey, {
+        apiCall,
+      });
 
       // Assert
-      expect(fetchFn).toHaveBeenCalled();
+      expect(mockFetch).toHaveBeenCalled();
       expect(result.data).toEqual({ data: 'fresh' });
       expect(result.isCached).toBe(false);
     });
 
     it('should handle force refresh with network error', async () => {
       // Arrange
-      const mockFetch = vi.mocked(fetch);
+      const mockFetch = vi.fn();
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       const storageKey = 'test-storage-key';
@@ -368,7 +370,7 @@ describe('DataFetcher', () => {
       });
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey, {
+      const result = await DataFetcher.fetchWithRetry(() => mockFetch('/api/test'), storageKey, {
         apiCall,
         forceRefresh: true,
       });
@@ -440,7 +442,7 @@ describe('DataFetcher', () => {
 
     it('should update lastDataRequest on network error', async () => {
       // Arrange
-      const mockFetch = vi.mocked(fetch);
+      const mockFetch = vi.fn();
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       const storageKey = 'test-storage-key';
@@ -450,7 +452,7 @@ describe('DataFetcher', () => {
       storageManager.clearTileState();
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey, {
+      const result = await DataFetcher.fetchWithRetry(() => mockFetch('/api/test'), storageKey, {
         apiCall,
       });
 
@@ -478,13 +480,13 @@ describe('DataFetcher', () => {
       });
 
       // Spy on fetch function to ensure it is NOT called
-      const fetchFn = vi.fn().mockResolvedValue({ data: 'should not be called' });
+      const mockFetch = vi.fn().mockResolvedValue({ data: 'should not be called' });
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(fetchFn, storageKey, { apiCall });
+      const result = await DataFetcher.fetchWithRetry(mockFetch, storageKey, { apiCall });
 
       // Assert
-      expect(fetchFn).not.toHaveBeenCalled();
+      expect(mockFetch).not.toHaveBeenCalled();
       expect(result.data).toBeNull();
       expect(result.isCached).toBe(true);
       expect(result.error).toBe('No data (cached error or previous failure)');
