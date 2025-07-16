@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { GenericTile, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useTimeApi } from './useTimeApi';
 import type { TimeTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useTimeTileData(tileId: string): {
-  loading: boolean;
-  error: string | null;
-  hasData: boolean;
-  data?: TimeTileData;
-} {
+function useTimeTileData(tileId: string): ReturnType<GenericTileDataHook<TimeTileData>> {
   const { getTime } = useTimeApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<TimeTileData | undefined>(undefined);

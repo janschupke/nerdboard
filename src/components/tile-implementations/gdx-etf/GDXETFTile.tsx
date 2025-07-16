@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { GenericTile, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useGdxEtfApi } from './useGdxEtfApi';
 import type { GdxEtfTileData } from './types';
+import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useGdxEtfTileData(
-  tileId: string,
-  refreshKey?: number,
-): { loading: boolean; error: string | null; hasData: boolean; data?: GdxEtfTileData } {
+function useGdxEtfTileData(tileId: string): ReturnType<GenericTileDataHook<GdxEtfTileData>> {
   const { getGDXETF } = useGdxEtfApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<GdxEtfTileData | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
-
+  const isForceRefresh = useForceRefreshFromKey();
+  
   useEffect(() => {
     setLoading(true);
     setData(undefined);
     setError(null);
-    getGDXETF(tileId)
+    getGDXETF(tileId, isForceRefresh)
       .then((result) => {
         setData(result);
         setError(null);
@@ -28,22 +27,17 @@ function useGdxEtfTileData(
         setError(err?.message || 'Error');
         setLoading(false);
       });
-  }, [tileId, getGDXETF, refreshKey]);
+  }, [tileId, getGDXETF, isForceRefresh]);
   return { loading, error, hasData: !!data, data };
 }
 
 export const GDXETFTile = React.memo(
-  ({
-    tile,
-    meta,
-    refreshKey,
-    ...rest
-  }: {
+  ({ tile, meta, ...rest }: {
     tile: DragboardTileData;
     meta: TileMeta;
     refreshKey?: number;
   }) => {
-    const tileData = useGdxEtfTileData(tile.id, refreshKey);
+    const tileData = useGdxEtfTileData(tile.id);
     return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
   (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,

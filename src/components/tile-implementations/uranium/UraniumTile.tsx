@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { GenericTile, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useUraniumApi } from './useUraniumApi';
 import type { UraniumTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useUraniumTileData(tileId: string): {
-  loading: boolean;
-  error: string | null;
-  hasData: boolean;
-  data?: UraniumTileData;
-} {
+function useUraniumTileData(tileId: string): ReturnType<GenericTileDataHook<UraniumTileData>> {
   const { getUraniumPrice } = useUraniumApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<UraniumTileData | undefined>(undefined);

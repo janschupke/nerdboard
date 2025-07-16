@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { GenericTile, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useCryptoApi } from './useCryptoApi';
 import type { CryptocurrencyTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useCryptoTileData(tileId: string): {
-  loading: boolean;
-  error: string | null;
-  hasData: boolean;
-  data?: CryptocurrencyTileData;
-} {
+function useCryptoTileData(tileId: string): ReturnType<GenericTileDataHook<CryptocurrencyTileData>> {
   const { getCryptocurrencyMarkets } = useCryptoApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<CryptocurrencyTileData | undefined>(undefined);

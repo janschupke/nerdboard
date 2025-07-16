@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { GenericTile, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useFederalFundsApi } from './useFederalFundsApi';
 import type { FederalFundsRateTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useFederalFundsTileData(tileId: string): {
-  loading: boolean;
-  error: string | null;
-  hasData: boolean;
-  data?: FederalFundsRateTileData;
-} {
+function useFederalFundsTileData(tileId: string): ReturnType<GenericTileDataHook<FederalFundsRateTileData>> {
   const { getFederalFundsRate } = useFederalFundsApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<FederalFundsRateTileData | undefined>(undefined);
