@@ -1,19 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useWeatherApi } from './useWeatherApi';
 import type { WeatherTileData } from './types';
+import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useWeatherTileData(
-  tileId: string,
-  refreshKey?: number,
-): ReturnType<GenericTileDataHook<WeatherTileData>> {
+function useWeatherTileData(tileId: string): ReturnType<GenericTileDataHook<WeatherTileData>> {
   const { getWeather } = useWeatherApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
   const [data, setData] = useState<WeatherTileData | undefined>(undefined);
-  const prevRefreshKeyRef = useRef<number | undefined>(undefined);
+  const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
     let mounted = true;
@@ -21,10 +19,6 @@ function useWeatherTileData(
     setError(null);
     setHasData(false);
     setData(undefined);
-
-    // Determine if this is a force refresh (refreshKey changed)
-    const isForceRefresh = refreshKey !== undefined && refreshKey !== prevRefreshKeyRef.current;
-    prevRefreshKeyRef.current = refreshKey;
 
     getWeather(tileId, { lat: 60.1699, lon: 24.9384 }, isForceRefresh)
       .then((result) => {
@@ -42,26 +36,17 @@ function useWeatherTileData(
     return () => {
       mounted = false;
     };
-  }, [tileId, getWeather, refreshKey]);
+  }, [tileId, getWeather, isForceRefresh]);
   return { loading, error, hasData, data };
 }
 
 export const WeatherTile = React.memo(
-  ({
-    tile,
-    meta,
-    refreshKey,
-    ...rest
-  }: {
-    tile: DragboardTileData;
-    meta: TileMeta;
-    refreshKey?: number;
-  }) => {
+  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
     // Call the hook at the top level
-    const tileData = useWeatherTileData(tile.id, refreshKey);
+    const tileData = useWeatherTileData(tile.id);
     return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
-  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
+  (prev, next) => prev.tile.id === next.tile.id,
 );
 
 WeatherTile.displayName = 'WeatherTile';

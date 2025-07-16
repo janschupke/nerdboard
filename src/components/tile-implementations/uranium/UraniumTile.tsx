@@ -1,19 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useUraniumApi } from './useUraniumApi';
 import type { UraniumPriceData } from './types';
+import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useUraniumTileData(
-  tileId: string,
-  refreshKey?: number,
-): ReturnType<GenericTileDataHook<UraniumPriceData>> {
+function useUraniumTileData(tileId: string): ReturnType<GenericTileDataHook<UraniumPriceData>> {
   const { getUraniumPrice } = useUraniumApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
   const [data, setData] = useState<UraniumPriceData | undefined>(undefined);
-  const prevRefreshKeyRef = useRef<number | undefined>(undefined);
+  const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
     let mounted = true;
@@ -21,10 +19,6 @@ function useUraniumTileData(
     setError(null);
     setHasData(false);
     setData(undefined);
-
-    // Determine if this is a force refresh (refreshKey changed)
-    const isForceRefresh = refreshKey !== undefined && refreshKey !== prevRefreshKeyRef.current;
-    prevRefreshKeyRef.current = refreshKey;
 
     getUraniumPrice(tileId, {}, isForceRefresh)
       .then((result) => {
@@ -42,25 +36,16 @@ function useUraniumTileData(
     return () => {
       mounted = false;
     };
-  }, [tileId, getUraniumPrice, refreshKey]);
+  }, [tileId, getUraniumPrice, isForceRefresh]);
   return { loading, error, hasData, data };
 }
 
 export const UraniumTile = React.memo(
-  ({
-    tile,
-    meta,
-    refreshKey,
-    ...rest
-  }: {
-    tile: DragboardTileData;
-    meta: TileMeta;
-    refreshKey?: number;
-  }) => {
-    const tileData = useUraniumTileData(tile.id, refreshKey);
+  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+    const tileData = useUraniumTileData(tile.id);
     return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
-  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
+  (prev, next) => prev.tile.id === next.tile.id,
 );
 
 UraniumTile.displayName = 'UraniumTile';
