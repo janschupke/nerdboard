@@ -38,13 +38,14 @@ function OverlayContent({
   const refreshAllTiles = useCallback(async () => {
     if (isRefreshing) return;
 
+    // TODO: do actual implementation of checking pending state
     setIsRefreshing(true);
     try {
       // Increment refresh key to trigger re-renders of all tiles
       setRefreshKey((prev) => prev + 1);
 
       // Small delay to show loading state
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } finally {
       setIsRefreshing(false);
     }

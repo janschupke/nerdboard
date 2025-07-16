@@ -1,5 +1,10 @@
-import { storageManager, type APILogDetails, type TileDataType } from './storageManager';
-import { DataMapperRegistry, type BaseApiResponse } from './dataMapper';
+import {
+  APILogLevel,
+  storageManager,
+  type APILogDetails,
+  type TileDataType,
+} from './storageManager';
+import { type BaseApiResponse, DataMapperRegistry } from './dataMapper';
 
 // 10-minute interval constant for data freshness
 export const DATA_FRESHNESS_INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
@@ -21,6 +26,19 @@ export interface FetchResult<T> {
 }
 
 export class DataFetcher {
+  // Centralized helper for setting tile state
+  private static setTileState<T>(
+    storageKey: string,
+    data: T | null,
+    lastDataRequestSuccessful: boolean,
+  ) {
+    storageManager.setTileState<T>(storageKey, {
+      data,
+      lastDataRequest: Date.now(),
+      lastDataRequestSuccessful,
+    });
+  }
+
   static async fetchWithRetry<T>(
     fetchFunction: () => Promise<T>,
     storageKey: string,
@@ -66,18 +84,14 @@ export class DataFetcher {
           errorMessage,
         };
         storageManager.addLog({
-          level: 'error',
+          level: APILogLevel.ERROR,
           apiCall,
           reason: errorMessage,
           details: logDetails,
         });
 
         // Update lastDataRequest even on error to prevent infinite retry loops
-        storageManager.setTileState<T>(storageKey, {
-          data: null,
-          lastDataRequest: Date.now(),
-          lastDataRequestSuccessful: false,
-        });
+        this.setTileState<T>(storageKey, null, false);
 
         return {
           data: null,
@@ -100,18 +114,14 @@ export class DataFetcher {
           errorMessage,
         };
         storageManager.addLog({
-          level: 'error',
+          level: APILogLevel.ERROR,
           apiCall,
           reason: errorMessage,
           details: logDetails,
         });
 
         // Update lastDataRequest even on API error to prevent infinite retry loops
-        storageManager.setTileState<T>(storageKey, {
-          data: null,
-          lastDataRequest: Date.now(),
-          lastDataRequestSuccessful: false,
-        });
+        this.setTileState<T>(storageKey, null, false);
 
         return {
           data: null,
@@ -123,11 +133,7 @@ export class DataFetcher {
       }
 
       // Cache the fresh data
-      storageManager.setTileState<T>(storageKey, {
-        data: data as unknown as T,
-        lastDataRequest: Date.now(),
-        lastDataRequestSuccessful: true,
-      });
+      this.setTileState<T>(storageKey, data as unknown as T, true);
 
       return {
         data,
@@ -147,18 +153,14 @@ export class DataFetcher {
         errorMessage,
       };
       storageManager.addLog({
-        level: 'error',
+        level: APILogLevel.ERROR,
         apiCall,
         reason: errorMessage,
         details: logDetails,
       });
 
       // Update lastDataRequest even on general error to prevent infinite retry loops
-      storageManager.setTileState<T>(storageKey, {
-        data: null,
-        lastDataRequest: Date.now(),
-        lastDataRequestSuccessful: false,
-      });
+      this.setTileState<T>(storageKey, null, false);
 
       return {
         data: null,
@@ -216,7 +218,7 @@ export class DataFetcher {
           };
 
           storageManager.addLog({
-            level: 'warning',
+            level: APILogLevel.WARNING,
             apiCall: options.apiCall || storageKey,
             reason: `Background refresh failed: ${errorMessage}`,
             details: logDetails,
@@ -240,7 +242,7 @@ export class DataFetcher {
   // Helper method to log warnings for non-critical issues
   static logWarning(apiCall: string, reason: string, details?: APILogDetails): void {
     storageManager.addLog({
-      level: 'warning',
+      level: APILogLevel.WARNING,
       apiCall,
       reason,
       details,
@@ -250,7 +252,7 @@ export class DataFetcher {
   // Helper method to log errors for critical issues
   static logError(apiCall: string, reason: string, details?: APILogDetails): void {
     storageManager.addLog({
-      level: 'error',
+      level: APILogLevel.ERROR,
       apiCall,
       reason,
       details,
@@ -282,11 +284,7 @@ export class DataFetcher {
         const mappedData = mapper.safeMap(result.data);
 
         // Cache the mapped data
-        storageManager.setTileState<TTileData>(storageKey, {
-          data: mappedData,
-          lastDataRequest: Date.now(),
-          lastDataRequestSuccessful: true,
-        });
+        this.setTileState<TTileData>(storageKey, mappedData, true);
 
         return {
           data: mappedData,
@@ -299,11 +297,7 @@ export class DataFetcher {
         // Return default data if no API data
         const defaultData = mapper.createDefault();
 
-        storageManager.setTileState<TTileData>(storageKey, {
-          data: defaultData,
-          lastDataRequest: Date.now(),
-          lastDataRequestSuccessful: false,
-        });
+        this.setTileState<TTileData>(storageKey, defaultData, false);
 
         return {
           data: defaultData,
@@ -317,11 +311,7 @@ export class DataFetcher {
       // Return default data on error
       const defaultData = mapper.createDefault();
 
-      storageManager.setTileState<TTileData>(storageKey, {
-        data: defaultData,
-        lastDataRequest: Date.now(),
-        lastDataRequestSuccessful: false,
-      });
+      this.setTileState<TTileData>(storageKey, defaultData, false);
 
       return {
         data: defaultData,

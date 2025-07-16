@@ -7,6 +7,7 @@ export interface RefreshButtonProps {
   disabled?: boolean;
 }
 
+// TODO: Animated icon is small and ugly
 export const RefreshButton: React.FC<RefreshButtonProps> = ({
   onRefresh,
   isRefreshing,
