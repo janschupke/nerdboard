@@ -1,45 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
+import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { usePreciousMetalsApi } from './usePreciousMetalsApi';
-import type { PreciousMetalsData } from './types';
+import type { PreciousMetalsTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
 function usePreciousMetalsTileData(
   tileId: string,
-): ReturnType<GenericTileDataHook<PreciousMetalsData>> {
+): ReturnType<GenericTileDataHook<PreciousMetalsTileData>> {
   const { getPreciousMetals } = usePreciousMetalsApi();
   const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<PreciousMetalsTileData | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
-  const [hasData, setHasData] = useState(false);
-  const [data, setData] = useState<PreciousMetalsData | undefined>(undefined);
   const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
-    let mounted = true;
     setLoading(true);
-    setError(null);
-    setHasData(false);
     setData(undefined);
-
+    setError(null);
     getPreciousMetals(tileId, {}, isForceRefresh)
       .then((result) => {
-        if (!mounted) return;
         setData(result);
-        setHasData(!!result && !!result.gold && !!result.silver);
+        setError(null);
         setLoading(false);
       })
       .catch((err) => {
-        if (!mounted) return;
-        setError(err.message || 'Error');
-        setHasData(false);
+        setData(undefined);
+        setError(err?.message || 'Error');
         setLoading(false);
       });
-    return () => {
-      mounted = false;
-    };
   }, [tileId, getPreciousMetals, isForceRefresh]);
-  return { loading, error, hasData, data };
+  return { loading, error, hasData: !!data, data };
 }
 
 export const PreciousMetalsTile = React.memo(

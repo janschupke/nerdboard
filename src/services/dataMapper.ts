@@ -7,7 +7,7 @@ export interface BaseApiResponse {
 }
 
 // Base interface for data mappers - maps API response to tile content data
-export interface DataMapper<TApiResponse extends BaseApiResponse, TTileData> {
+export interface DataMapper<TApiResponse extends BaseApiResponse | BaseApiResponse[], TTileData> {
   /**
    * Maps API response to tile content data
    * @param apiResponse - Raw API response
@@ -40,8 +40,10 @@ export interface DataMapper<TApiResponse extends BaseApiResponse, TTileData> {
 export type TileDataFactory<TTileData> = () => TTileData;
 
 // Base implementation for common data mapping patterns
-export abstract class BaseDataMapper<TApiResponse extends BaseApiResponse, TTileData>
-  implements DataMapper<TApiResponse, TTileData>
+export abstract class BaseDataMapper<
+  TApiResponse extends BaseApiResponse | BaseApiResponse[],
+  TTileData,
+> implements DataMapper<TApiResponse, TTileData>
 {
   abstract map(apiResponse: TApiResponse): TTileData;
   abstract validate(apiResponse: unknown): apiResponse is TApiResponse;
@@ -75,10 +77,11 @@ export class DataMapperRegistry {
    * @param tileType - Unique identifier for the tile type
    * @param mapper - Data mapper instance
    */
-  static register<TTileType extends string, TApiResponse extends BaseApiResponse, TTileData>(
-    tileType: TTileType,
-    mapper: DataMapper<TApiResponse, TTileData>,
-  ): void {
+  static register<
+    TTileType extends string,
+    TApiResponse extends BaseApiResponse | BaseApiResponse[],
+    TTileData,
+  >(tileType: TTileType, mapper: DataMapper<TApiResponse, TTileData>): void {
     this.mappers.set(tileType, mapper as DataMapper<BaseApiResponse, unknown>);
   }
 
@@ -87,9 +90,11 @@ export class DataMapperRegistry {
    * @param tileType - Unique identifier for the tile type
    * @returns Data mapper instance or undefined if not found
    */
-  static get<TTileType extends string, TApiResponse extends BaseApiResponse, TTileData>(
-    tileType: TTileType,
-  ): DataMapper<TApiResponse, TTileData> | undefined {
+  static get<
+    TTileType extends string,
+    TApiResponse extends BaseApiResponse | BaseApiResponse[],
+    TTileData,
+  >(tileType: TTileType): DataMapper<TApiResponse, TTileData> | undefined {
     return this.mappers.get(tileType) as DataMapper<TApiResponse, TTileData> | undefined;
   }
 

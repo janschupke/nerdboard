@@ -1,43 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
+import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useUraniumApi } from './useUraniumApi';
-import type { UraniumPriceData } from './types';
+import type { UraniumTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useUraniumTileData(tileId: string): ReturnType<GenericTileDataHook<UraniumPriceData>> {
+function useUraniumTileData(tileId: string): ReturnType<GenericTileDataHook<UraniumTileData>> {
   const { getUraniumPrice } = useUraniumApi();
   const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<UraniumTileData | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
-  const [hasData, setHasData] = useState(false);
-  const [data, setData] = useState<UraniumPriceData | undefined>(undefined);
   const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
-    let mounted = true;
     setLoading(true);
-    setError(null);
-    setHasData(false);
     setData(undefined);
-
+    setError(null);
     getUraniumPrice(tileId, {}, isForceRefresh)
       .then((result) => {
-        if (!mounted) return;
         setData(result);
-        setHasData(!!result && typeof result.spotPrice === 'number');
+        setError(null);
         setLoading(false);
       })
       .catch((err) => {
-        if (!mounted) return;
-        setError(err.message || 'Error');
-        setHasData(false);
+        setData(undefined);
+        setError(err?.message || 'Error');
         setLoading(false);
       });
-    return () => {
-      mounted = false;
-    };
   }, [tileId, getUraniumPrice, isForceRefresh]);
-  return { loading, error, hasData, data };
+  return { loading, error, hasData: !!data, data };
 }
 
 export const UraniumTile = React.memo(

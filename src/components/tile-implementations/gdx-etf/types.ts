@@ -1,7 +1,8 @@
 import type { TileSize } from '../../../types/tile';
 import type { TileDataType } from '../../../services/storageManager';
+import type { BaseApiResponse } from '../../../services/dataMapper';
 
-export interface GDXETFData extends TileDataType {
+export interface GdxEtfTileData extends TileDataType {
   symbol: string;
   name: string;
   currentPrice: number;
@@ -17,7 +18,7 @@ export interface GDXETFData extends TileDataType {
   tradingStatus: 'open' | 'closed' | 'pre-market' | 'after-hours';
 }
 
-export interface GDXETFPriceHistory {
+export interface GdxEtfHistoryEntry {
   timestamp: number;
   price: number;
   volume?: number;
@@ -42,4 +43,20 @@ export interface MarketHours {
   nextOpen: string;
   nextClose: string;
   currentTime: string;
+}
+
+export interface GdxEtfApiResponse extends BaseApiResponse {
+  symbol: string;
+  name: string;
+  currentPrice: number;
+  previousClose: number;
+  priceChange: number;
+  priceChangePercent: number;
+  volume: number;
+  marketCap: number;
+  high: number;
+  low: number;
+  open: number;
+  lastUpdated: string;
+  tradingStatus: 'open' | 'closed' | 'pre-market' | 'after-hours';
 }

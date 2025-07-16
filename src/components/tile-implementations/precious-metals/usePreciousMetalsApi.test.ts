@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { usePreciousMetalsApi } from './usePreciousMetalsApi';
+import './dataMapper';
 import {
   EndpointTestUtils,
   API_ENDPOINTS,

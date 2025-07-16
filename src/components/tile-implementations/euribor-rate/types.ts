@@ -1,19 +1,20 @@
 import type { TileDataType } from '../../../services/storageManager';
+import type { BaseApiResponse } from '../../../services/dataMapper';
 
-export interface EuriborRateData extends TileDataType {
+export interface EuriborRateTileData extends TileDataType {
   currentRate: number;
   lastUpdate: Date;
-  historicalData: EuriborRatePoint[];
+  historicalData: EuriborRateHistoryEntry[];
 }
 
-export interface EuriborRatePoint {
+export interface EuriborRateHistoryEntry {
   date: Date;
   rate: number;
 }
 
 export type TimeRange = '1M' | '3M' | '6M' | '1Y' | '5Y' | 'Max';
 
-export interface EuriborRateApiResponse {
+export interface EuriborRateApiResponse extends BaseApiResponse {
   rates: Array<{
     date: string;
     value: string;

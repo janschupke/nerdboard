@@ -1,43 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
+import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useTimeApi } from './useTimeApi';
-import type { TimeData } from './types';
+import type { TimeTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useTimeTileData(tileId: string): ReturnType<GenericTileDataHook<TimeData>> {
+function useTimeTileData(tileId: string): ReturnType<GenericTileDataHook<TimeTileData>> {
   const { getTime } = useTimeApi();
   const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<TimeTileData | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
-  const [hasData, setHasData] = useState(false);
-  const [data, setData] = useState<TimeData | undefined>(undefined);
   const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
-    let mounted = true;
     setLoading(true);
-    setError(null);
-    setHasData(false);
     setData(undefined);
-
+    setError(null);
     getTime(tileId, { city: 'Helsinki' }, isForceRefresh)
       .then((result) => {
-        if (!mounted) return;
         setData(result);
-        setHasData(!!result && !!result.currentTime);
+        setError(null);
         setLoading(false);
       })
       .catch((err) => {
-        if (!mounted) return;
-        setError(err.message || 'Error');
-        setHasData(false);
+        setData(undefined);
+        setError(err?.message || 'Error');
         setLoading(false);
       });
-    return () => {
-      mounted = false;
-    };
   }, [tileId, getTime, isForceRefresh]);
-  return { loading, error, hasData, data };
+  return { loading, error, hasData: !!data && !!data.currentTime, data };
 }
 
 export const TimeTile = React.memo(

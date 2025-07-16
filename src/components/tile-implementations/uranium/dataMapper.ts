@@ -1,16 +1,17 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
-import type { UraniumPriceData, UraniumApiResponse } from './types';
+import type { UraniumTileData, UraniumApiResponse } from './types';
+export type { UraniumTileData as UraniumTileData };
 
-// Extend UraniumApiResponse to satisfy BaseApiResponse constraint
-interface ExtendedUraniumApiResponse extends UraniumApiResponse {
+// Extend UraniumApiData to satisfy BaseApiResponse constraint
+export interface UraniumApiResponseWithIndex extends UraniumApiResponse {
   [key: string]: unknown;
 }
 
 export class UraniumDataMapper extends BaseDataMapper<
-  ExtendedUraniumApiResponse,
-  UraniumPriceData
+  UraniumApiResponseWithIndex,
+  UraniumTileData
 > {
-  map(apiResponse: ExtendedUraniumApiResponse): UraniumPriceData {
+  map(apiResponse: UraniumApiResponseWithIndex): UraniumTileData {
     return {
       spotPrice: apiResponse.spotPrice,
       change: apiResponse.change,
@@ -20,40 +21,37 @@ export class UraniumDataMapper extends BaseDataMapper<
       supply: apiResponse.supply,
       demand: apiResponse.demand,
       marketStatus: apiResponse.marketStatus,
+      history: Array.isArray(apiResponse.history) ? apiResponse.history : [],
     };
   }
 
-  validate(apiResponse: unknown): apiResponse is ExtendedUraniumApiResponse {
+  validate(apiResponse: unknown): apiResponse is UraniumApiResponseWithIndex {
     if (!apiResponse || typeof apiResponse !== 'object') {
       return false;
     }
-
     const response = apiResponse as Record<string, unknown>;
-
-    // Check for required fields
-    const requiredFields = ['spotPrice', 'change', 'changePercent', 'lastUpdated'];
-
+    const requiredFields = ['spotPrice', 'change', 'changePercent', 'lastUpdated', 'history'];
     for (const field of requiredFields) {
       if (!(field in response)) {
         return false;
       }
     }
-
-    // Validate data types
     return (
       typeof response.spotPrice === 'number' &&
       typeof response.change === 'number' &&
       typeof response.changePercent === 'number' &&
-      typeof response.lastUpdated === 'string'
+      typeof response.lastUpdated === 'string' &&
+      Array.isArray(response.history)
     );
   }
 
-  createDefault(): UraniumPriceData {
+  createDefault(): UraniumTileData {
     return {
       spotPrice: 0,
       change: 0,
       changePercent: 0,
       lastUpdated: new Date().toISOString(),
+      history: [],
     };
   }
 }

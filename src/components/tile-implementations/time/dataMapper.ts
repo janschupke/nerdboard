@@ -1,38 +1,25 @@
-import { BaseDataMapper, type BaseApiResponse } from '../../../services/dataMapper';
-import type { TimeData } from './types';
+import { BaseDataMapper } from '../../../services/dataMapper';
+import type { TimeTileData, TimeApiResponse } from './types';
+import { DateTime } from 'luxon';
+import { TileType } from '../../../types/tile';
 
-// API response type from WorldTimeAPI
-export interface WorldTimeApiResponse extends BaseApiResponse {
-  datetime: string;
-  timezone: string;
-  utc_datetime: string;
-  utc_offset: string;
-  day_of_week: number;
-  day_of_year: number;
-  week_number: number;
-  abbreviation: string;
-  client_ip: string;
-}
-
-export class TimeDataMapper extends BaseDataMapper<WorldTimeApiResponse, TimeData> {
-  map(apiResponse: WorldTimeApiResponse): TimeData {
-    const date = new Date(apiResponse.datetime);
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
+export class TimeDataMapper extends BaseDataMapper<TimeApiResponse, TimeTileData> {
+  map(apiResponse: TimeApiResponse): TimeTileData {
+    const dt = DateTime.fromISO(apiResponse.datetime, { zone: apiResponse.timezone });
     return {
-      currentTime: date.toLocaleTimeString(),
+      currentTime: dt.toFormat('HH:mm:ss'),
       timezone: apiResponse.timezone,
       abbreviation: apiResponse.abbreviation,
       offset: apiResponse.utc_offset,
-      dayOfWeek: dayNames[apiResponse.day_of_week],
-      date: date.toLocaleDateString(),
-      isBusinessHours: this.isBusinessHours(date),
-      businessStatus: this.getBusinessStatus(date),
-      lastUpdate: new Date().toISOString(),
+      dayOfWeek: dt.weekdayLong ?? '',
+      date: dt.toISODate() ?? '',
+      isBusinessHours: this.isBusinessHours(dt),
+      businessStatus: this.getBusinessStatus(dt),
+      lastUpdate: DateTime.now().toISO(),
     };
   }
 
-  validate(apiResponse: unknown): apiResponse is WorldTimeApiResponse {
+  validate(apiResponse: unknown): apiResponse is TimeApiResponse {
     if (!apiResponse || typeof apiResponse !== 'object') {
       return false;
     }
@@ -70,7 +57,7 @@ export class TimeDataMapper extends BaseDataMapper<WorldTimeApiResponse, TimeDat
     );
   }
 
-  createDefault(): TimeData {
+  createDefault(): TimeTileData {
     return {
       currentTime: '--:--:--',
       timezone: 'Europe/Helsinki',
@@ -84,14 +71,14 @@ export class TimeDataMapper extends BaseDataMapper<WorldTimeApiResponse, TimeDat
     };
   }
 
-  private isBusinessHours(date: Date): boolean {
-    const hour = date.getHours();
+  private isBusinessHours(dt: DateTime): boolean {
+    const hour = dt.hour;
     return hour >= 9 && hour < 17; // 9 AM to 5 PM
   }
 
-  private getBusinessStatus(date: Date): 'open' | 'closed' | 'opening soon' | 'closing soon' {
-    const hour = date.getHours();
-    const minute = date.getMinutes();
+  private getBusinessStatus(dt: DateTime): 'open' | 'closed' | 'opening soon' | 'closing soon' {
+    const hour = dt.hour;
+    const minute = dt.minute;
 
     if (hour >= 9 && hour < 17) {
       if (hour === 16 && minute >= 45) {
@@ -106,7 +93,8 @@ export class TimeDataMapper extends BaseDataMapper<WorldTimeApiResponse, TimeDat
   }
 }
 
-// Register the mapper
 import { DataMapperRegistry } from '../../../services/dataMapper';
 
-DataMapperRegistry.register('time', new TimeDataMapper());
+DataMapperRegistry.register(TileType.TIME_HELSINKI, new TimeDataMapper());
+DataMapperRegistry.register(TileType.TIME_PRAGUE, new TimeDataMapper());
+DataMapperRegistry.register(TileType.TIME_TAIPEI, new TimeDataMapper());

@@ -1,4 +1,4 @@
-import type { GDXETFData } from '../gdx-etf/types';
+import type { GdxEtfTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 
@@ -6,14 +6,14 @@ import { useCallback } from 'react';
  * Yahoo Finance endpoint is currently broken (proxy disabled).
  * @param tileId - Unique tile identifier for storage
  * @param params - Query params for Yahoo Finance chart endpoint
- * @returns Promise<GDXETFData>
+ * @returns Promise<GdxEtfTileData>
  */
 export function useGdxEtfApi() {
   const getGDXETF = useCallback(
-    async (tileId: string, forceRefresh = false): Promise<GDXETFData> => {
+    async (tileId: string, forceRefresh = false): Promise<GdxEtfTileData> => {
       // This endpoint is broken, so we'll return a mock error through dataFetcher
       // to ensure lastDataRequest gets updated properly
-      const result = await DataFetcher.fetchWithRetry<GDXETFData>(
+      const result = await DataFetcher.fetchWithRetry<GdxEtfTileData>(
         () => {
           throw new Error('Yahoo Finance endpoint is currently broken (proxy disabled)');
         },
@@ -24,7 +24,7 @@ export function useGdxEtfApi() {
         },
       );
       if (result.error) throw new Error(result.error);
-      return result.data as GDXETFData;
+      return result.data as GdxEtfTileData;
     },
     [],
   );

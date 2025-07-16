@@ -1,16 +1,15 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
-import type { FederalFundsRateData, FredApiResponse } from './types';
+import type { FederalFundsRateTileData, FederalFundsRateApiResponse } from './types';
 
-// Extend FredApiResponse to satisfy BaseApiResponse constraint
-interface ExtendedFredApiResponse extends FredApiResponse {
+export interface FederalFundsRateApiResponseWithIndex extends FederalFundsRateApiResponse {
   [key: string]: unknown;
 }
 
 export class FederalFundsRateDataMapper extends BaseDataMapper<
-  ExtendedFredApiResponse,
-  FederalFundsRateData
+  FederalFundsRateApiResponseWithIndex,
+  FederalFundsRateTileData
 > {
-  map(apiResponse: ExtendedFredApiResponse): FederalFundsRateData {
+  map(apiResponse: FederalFundsRateApiResponseWithIndex): FederalFundsRateTileData {
     const observations = apiResponse.observations;
     const latestObservation = observations[observations.length - 1];
 
@@ -24,14 +23,13 @@ export class FederalFundsRateDataMapper extends BaseDataMapper<
     };
   }
 
-  validate(apiResponse: unknown): apiResponse is ExtendedFredApiResponse {
+  validate(apiResponse: unknown): apiResponse is FederalFundsRateApiResponseWithIndex {
     if (!apiResponse || typeof apiResponse !== 'object') {
       return false;
     }
 
     const response = apiResponse as Record<string, unknown>;
 
-    // Check for required fields
     if (!response.observations || !Array.isArray(response.observations)) {
       return false;
     }
@@ -42,7 +40,6 @@ export class FederalFundsRateDataMapper extends BaseDataMapper<
       return false;
     }
 
-    // Check required fields for each observation
     const requiredFields = ['realtime_start', 'realtime_end', 'date', 'value'];
 
     for (const observation of observations) {
@@ -53,7 +50,6 @@ export class FederalFundsRateDataMapper extends BaseDataMapper<
       }
     }
 
-    // Validate data types for the first observation
     const firstObs = observations[0];
     return (
       typeof firstObs.realtime_start === 'string' &&
@@ -63,7 +59,7 @@ export class FederalFundsRateDataMapper extends BaseDataMapper<
     );
   }
 
-  createDefault(): FederalFundsRateData {
+  createDefault(): FederalFundsRateTileData {
     return {
       currentRate: 0,
       lastUpdate: new Date(),
@@ -72,7 +68,5 @@ export class FederalFundsRateDataMapper extends BaseDataMapper<
   }
 }
 
-// Register the mapper
 import { DataMapperRegistry } from '../../../services/dataMapper';
-
 DataMapperRegistry.register('federal-funds-rate', new FederalFundsRateDataMapper());

@@ -262,7 +262,7 @@ export class DataFetcher {
   // New method for fetching and mapping data with type safety
   static async fetchAndMap<
     TTileType extends string,
-    TApiResponse extends BaseApiResponse,
+    TApiResponse extends BaseApiResponse | BaseApiResponse[],
     TTileData extends TileDataType,
   >(
     fetchFunction: () => Promise<TApiResponse>,

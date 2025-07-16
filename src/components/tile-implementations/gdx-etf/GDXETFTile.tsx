@@ -1,57 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
+import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useGdxEtfApi } from './useGdxEtfApi';
+import type { GdxEtfTileData } from './types';
+import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useGdxEtfTileData(
-  tileId: string,
-  refreshKey?: number,
-): ReturnType<GenericTileDataHook<unknown>> {
+function useGdxEtfTileData(tileId: string): ReturnType<GenericTileDataHook<GdxEtfTileData>> {
   const { getGDXETF } = useGdxEtfApi();
   const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<GdxEtfTileData | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
-  const [hasData, setHasData] = useState(false);
-  const [data, setData] = useState<unknown>(undefined);
+  const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
-    let mounted = true;
     setLoading(true);
-    setError(null);
-    setHasData(false);
     setData(undefined);
-
-    getGDXETF(tileId)
+    setError(null);
+    getGDXETF(tileId, isForceRefresh)
       .then((result) => {
-        if (!mounted) return;
         setData(result);
-        setHasData(!!result);
+        setError(null);
         setLoading(false);
       })
       .catch((err) => {
-        if (!mounted) return;
-        setError(err.message || 'Error');
-        setHasData(false);
+        setData(undefined);
+        setError(err?.message || 'Error');
         setLoading(false);
       });
-    return () => {
-      mounted = false;
-    };
-  }, [tileId, getGDXETF, refreshKey]);
-  return { loading, error, hasData, data };
+  }, [tileId, getGDXETF, isForceRefresh]);
+  return { loading, error, hasData: !!data, data };
 }
 
 export const GDXETFTile = React.memo(
-  ({
-    tile,
-    meta,
-    refreshKey,
-    ...rest
-  }: {
-    tile: DragboardTileData;
-    meta: TileMeta;
-    refreshKey?: number;
-  }) => {
-    const tileData = useGdxEtfTileData(tile.id, refreshKey);
+  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta; refreshKey?: number }) => {
+    const tileData = useGdxEtfTileData(tile.id);
     return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
   (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
