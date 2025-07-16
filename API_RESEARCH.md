@@ -724,202 +724,149 @@ The recommended implementation order:
 
 ---
 
-## 1A. Scraping Framework: Actionable Integration Steps (Update)
+## 1A. Scraping & API Framework: Final Architecture Proposal
 
-- For any tile requiring scraping, the tile hook should:
-  1. Fetch the HTML (e.g., using `fetch(url).then(res => res.text())`).
-  2. Pass the HTML to a per-tile scraper function (e.g., `scraper.ts` in the tile folder).
-  3. The scraper returns a typed object matching the expected API response shape for the tile's data mapper.
-  4. The fetch function passed to `DataFetcher.fetchAndMap` should return this parsed object.
-- Example for a scraping tile hook:
+- **dataFetcher** exposes two entry points:
+  - `fetchAndMap` for API endpoints (expects a fetch function returning API data, applies data mapping, saves to storage).
+  - `fetchAndParse` for scraped endpoints (expects a fetch function returning raw HTML, applies a parsing function from `dataParser`, then mapping, then saves to storage).
+- **Tile hooks** are responsible for:
+  - Calling `fetchAndMap` for API endpoints.
+  - Calling `fetchAndParse` for scraped endpoints.
+  - They know which method to use based on the selected retrieval method for the tile.
+- **dataParser** (new file in `src/services/`):
+  - Similar to `dataMapper`, but for parsing raw HTML (or other non-API formats) into usable objects.
+  - Each tile that uses scraping registers its parser in `dataParser`.
+  - Parsers are pure functions, unit-tested with sample HTML.
+- **dataMapper**: Remains responsible for mapping parsed data (from API or parser) to `TileData`.
+- **storageManager**: Unchanged; handles persistence.
 
-```typescript
-import { DataFetcher } from '../../../services/dataFetcher';
-import { myScraper } from './scraper';
+### Example Usage
 
-export function useMyScrapedApi() {
-  const getData = async (tileId: string, url: string, forceRefresh = false) => {
-    const result = await DataFetcher.fetchAndMap(
-      async () => {
-        const html = await fetch(url).then((res) => res.text());
-        return myScraper(html); // returns ScrapedResponse<T>
-      },
-      tileId,
-      'my_tile_type',
-      { apiCall: 'My Scraped Endpoint', forceRefresh },
-    );
-    if (result.error) throw new Error(result.error);
-    return result.data;
-  };
-  return { getData };
-}
-```
-
-- Place scraper logic in `scraper.ts` in the tile folder. Scraper should be pure and unit-tested with sample HTML.
-
----
-
-## 1B. Type Definitions: Additions and Usage
-
-Add to `src/types/index.ts` or a new `src/types/endpoint.ts`:
-
-```typescript
-export type RetrievalMethod = 'API' | 'SCRAPE';
-
-export interface EndpointResponse<T> {
-  source: RetrievalMethod;
-  raw: unknown;
-  data: T;
-}
-
-export interface ApiResponse<T> extends EndpointResponse<T> {
-  source: 'API';
-}
-
-export interface ScrapedResponse<T> extends EndpointResponse<T> {
-  source: 'SCRAPE';
-}
-```
-
-- Scraper functions should return `ScrapedResponse<T>`. API fetches should return `ApiResponse<T>`.
-- Use type guards:
-
-```typescript
-function isApiResponse<T>(resp: EndpointResponse<T>): resp is ApiResponse<T> {
-  return resp.source === 'API';
-}
-function isScrapedResponse<T>(resp: EndpointResponse<T>): resp is ScrapedResponse<T> {
-  return resp.source === 'SCRAPE';
-}
-```
-
----
-
-## 1C. Compatibility: Mapper and Fetcher Usage
-
-- Data mappers should accept `EndpointResponse<T>` and branch if needed, or expect the fetch function to always return the correct shape for the tile.
-- Example:
-
-```typescript
-// In dataMapper.ts
-export interface DataMapper<TApiResponse extends EndpointResponse<any>, TTileData> {
-  map(apiResponse: TApiResponse): TTileData;
-  // ...
-}
-```
-
-- If you want to keep mappers agnostic, ensure the scraper returns the same shape as the API response for the tile.
-
----
-
-## 1D. Per-Tile Scraping Fallbacks: Actionable Steps
-
-- For each tile with a scraping fallback, specify:
-  - The URL to scrape.
-  - The selectors or parsing logic (document in the tile's `scraper.ts`).
-  - The expected output type (should match the API response type for the tile).
-  - Example:
-
-```typescript
-// src/components/tile-implementations/euribor-rate/scraper.ts
-export function euriborScraper(html: string): ScrapedResponse<EuriborScrapingData> {
-  // Use DOMParser or cheerio to extract rates
-  // Return { source: 'SCRAPE', raw: html, data: { rates: [...] } }
-}
-```
-
-- In the tile hook, use:
+**API tile hook:**
 
 ```typescript
 const result = await DataFetcher.fetchAndMap(
-  async () => {
-    const html = await fetch(url).then((res) => res.text());
-    return euriborScraper(html);
-  },
+  () => fetch(apiUrl).then((res) => res.json()),
   tileId,
-  TileType.EURIBOR_RATE,
-  { apiCall: 'EMMI Euribor Rate Scrape', forceRefresh },
+  TileType.MY_API_TILE,
+  { apiCall: 'My API', forceRefresh },
+);
+```
+
+**Scraped tile hook:**
+
+```typescript
+import { DataFetcher } from '../../../services/dataFetcher';
+import { dataParser } from '../../../services/dataParser';
+
+const result = await DataFetcher.fetchAndParse(
+  () => fetch(scrapeUrl).then((res) => res.text()),
+  tileId,
+  TileType.MY_SCRAPED_TILE,
+  dataParser.get('MY_SCRAPED_TILE'),
+  { apiCall: 'My Scraped Endpoint', forceRefresh },
 );
 ```
 
 ---
 
-## 1E. API Key Acquisition and Usage (Clarification)
+## 1B. dataParser: Structure and Usage
 
-- For each API, ensure the following steps are followed:
-  1. Register for a free account at the API provider.
-  2. Obtain the API key and add it to `.env` (e.g., `OPENWEATHERMAP_API_KEY=...`).
-  3. Reference the key in code using `process.env.KEY_NAME`.
-  4. Document the process in the tile's README or in this document.
+- Create `src/services/dataParser.ts`:
+  - Export a registry and interface similar to `dataMapper`.
+  - Each parser is registered by tile type.
+  - Example:
+
+```typescript
+export interface DataParser<TRaw, TParsed> {
+  parse(raw: TRaw): TParsed;
+  validate(raw: unknown): raw is TRaw;
+}
+
+export class DataParserRegistry {
+  private static parsers = new Map<string, DataParser<any, any>>();
+  static register<TileType extends string, TRaw, TParsed>(
+    tileType: TileType,
+    parser: DataParser<TRaw, TParsed>,
+  ) {
+    this.parsers.set(tileType, parser);
+  }
+  static get<TileType extends string, TRaw, TParsed>(
+    tileType: TileType,
+  ): DataParser<TRaw, TParsed> | undefined {
+    return this.parsers.get(tileType) as DataParser<TRaw, TParsed> | undefined;
+  }
+}
+```
+
+- Each tile with scraping registers its parser in `dataParser.ts`.
 
 ---
 
-## 1F. Explicit API vs. Alternative Table (Clarification)
+## 1C. Per-Tile Retrieval Method Selection
 
-- For each tile, specify:
-  - **Primary**: The function to call (e.g., `getCryptocurrencyMarkets` in `useCryptoApi`)
-  - **Fallback**: The scraping function (e.g., `euriborScraper` in `scraper.ts`)
-  - **Status**: Working, broken, needs scraping, etc.
-
----
-
-## 1G. Implementation Plan (Actionable)
-
-- For each tile:
-  - [ ] Confirm the primary API is working and tested.
-  - [ ] If not, implement and test the scraping fallback.
-  - [ ] Ensure all types are up to date and used in both API and scraping flows.
-  - [ ] Add or update unit tests for both API and scraping fetch functions.
-  - [ ] Document any special requirements (e.g., selectors for scraping, rate limits, etc.).
+- For each tile, the research must specify:
+  - The selected retrieval method: `API` or `SCRAPE` (never both).
+  - The rationale (e.g., "No viable API found, so scraping is used").
+  - The function to use (API fetch or parser).
+  - If `SCRAPE`, provide the parser function signature and expected output.
 
 ---
 
-## 1H. Example: Scraping Integration for Euribor Tile
+## 1D. Wording and Documentation Clarification
 
-- **Primary**: ECB API (JSON/XML)
-- **Fallback**: EMMI HTML scraping
-- **Tile hook**:
+- Remove references to "fallback" except when discussing alternatives in the research phase.
+- Use "retrieval method" (API or SCRAPE) as the terminology for the selected approach.
+- Each tile implements only one retrieval method, determined by research.
+
+---
+
+## 1E. Implementation Plan (Actionable)
+
+- [ ] Implement `fetchAndMap` and `fetchAndParse` in `dataFetcher`.
+- [ ] Create and document `dataParser` in `src/services/`.
+- [ ] Update tile hooks to call the correct fetcher method based on retrieval method.
+- [ ] For each tile, document the selected retrieval method and rationale.
+- [ ] Ensure all types and interfaces are up to date and used consistently.
+- [ ] Add or update unit tests for all parsers and fetchers.
+- [ ] Keep this document up to date as endpoints or requirements change.
+
+---
+
+## 1F. Example: Scraped Tile Integration
+
+**Parser registration:**
+
+```typescript
+// src/services/dataParser.ts
+import { DataParserRegistry } from './dataParser';
+import { myScraper } from '../components/tile-implementations/my-tile/scraper';
+
+DataParserRegistry.register('MY_SCRAPED_TILE', myScraper);
+```
+
+**Tile hook:**
 
 ```typescript
 import { DataFetcher } from '../../../services/dataFetcher';
-import { euriborScraper } from './scraper';
+import { DataParserRegistry } from '../../../services/dataParser';
 
-export function useEuriborApi() {
-  const getEuriborRate = async (tileId: string, forceRefresh = false) => {
-    // Try ECB API first...
-    // If fails, fallback:
-    const result = await DataFetcher.fetchAndMap(
-      async () => {
-        const html = await fetch('https://www.emmi-benchmarks.eu/euribor-rates').then((res) =>
-          res.text(),
-        );
-        return euriborScraper(html);
-      },
-      tileId,
-      'euribor_rate',
-      { apiCall: 'EMMI Euribor Rate Scrape', forceRefresh },
-    );
-    if (result.error) throw new Error(result.error);
-    return result.data;
-  };
-  return { getEuriborRate };
-}
+const parser = DataParserRegistry.get('MY_SCRAPED_TILE');
+const result = await DataFetcher.fetchAndParse(
+  () => fetch(scrapeUrl).then((res) => res.text()),
+  tileId,
+  TileType.MY_SCRAPED_TILE,
+  parser,
+  { apiCall: 'My Scraped Endpoint', forceRefresh },
+);
 ```
 
 ---
 
-## 1I. Testing and Documentation
+## 1G. Summary
 
-- All scraper functions must have unit tests with sample HTML fixtures.
-- All API fetches must be tested with mocked responses.
-- Document the fallback logic and scraper details in the tile's README or in this document.
-
----
-
-## 1J. Summary of Required Codebase Updates
-
-- [ ] Add `RetrievalMethod`, `EndpointResponse`, `ApiResponse`, and `ScrapedResponse` types to the codebase.
-- [ ] Update tile hooks and mappers to use these types where appropriate.
-- [ ] Implement and test scraper functions for all tiles with scraping fallbacks.
-- [ ] Ensure all API key usage is documented and environment variables are set.
-- [ ] Keep this document up to date as endpoints or requirements change.
+- The architecture now clearly separates API and scraping flows.
+- Each tile uses only one retrieval method, as determined by research.
+- Parsing logic for scraped data is centralized in `dataParser` and registered per tile.
+- Tile hooks are responsible for calling the correct fetcher method.
+- All other detail, research, and actionable steps remain as previously documented.
