@@ -54,6 +54,7 @@ describe('DataFetcher', () => {
 
     it('should log timeout errors to api-log system', async () => {
       // Arrange
+      storageManager.clearTileState(); // Ensure no cache
       const mockFetch = vi.mocked(fetch);
       mockFetch.mockImplementationOnce(
         () =>
@@ -87,6 +88,7 @@ describe('DataFetcher', () => {
 
     it('should use storageKey as default apiCall when not provided', async () => {
       // Arrange
+      storageManager.clearTileState(); // Ensure no cache
       const mockFetch = vi.mocked(fetch);
       mockFetch.mockRejectedValueOnce(new Error('Test error'));
 
@@ -305,28 +307,46 @@ describe('DataFetcher', () => {
       expect(result.isCached).toBe(false);
     });
 
-    it('should fetch fresh data when cached data is null', async () => {
+    it('should use cached error if cached data is null and lastDataRequest is recent', async () => {
       // Arrange
       const storageKey = 'test-storage-key';
       const apiCall = 'Test API';
-
-      // Mock storage with null data
+      // Mock storage with null data (recent)
       storageManager.setTileState(storageKey, {
         data: null,
         lastDataRequest: Date.now(),
-        lastDataRequestSuccessful: true,
+        lastDataRequestSuccessful: false,
       });
+      const fetchFn = vi.fn().mockResolvedValue({ data: 'fresh' });
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(
-        () => Promise.resolve({ data: 'fresh' }),
-        storageKey,
-        {
-          apiCall,
-        },
-      );
+      const result = await DataFetcher.fetchWithRetry(fetchFn, storageKey, { apiCall });
 
       // Assert
+      expect(fetchFn).not.toHaveBeenCalled();
+      expect(result.data).toBeNull();
+      expect(result.isCached).toBe(true);
+      expect(result.error).toBe('No data (cached error or previous failure)');
+    });
+
+    it('should fetch fresh data when cached data is null and lastDataRequest is stale', async () => {
+      // Arrange
+      const storageKey = 'test-storage-key';
+      const apiCall = 'Test API';
+      // Mock storage with null data (stale)
+      const old = Date.now() - 15 * 60 * 1000;
+      storageManager.setTileState(storageKey, {
+        data: null,
+        lastDataRequest: old,
+        lastDataRequestSuccessful: false,
+      });
+      const fetchFn = vi.fn().mockResolvedValue({ data: 'fresh' });
+
+      // Act
+      const result = await DataFetcher.fetchWithRetry(fetchFn, storageKey, { apiCall });
+
+      // Assert
+      expect(fetchFn).toHaveBeenCalled();
       expect(result.data).toEqual({ data: 'fresh' });
       expect(result.isCached).toBe(false);
     });
@@ -443,6 +463,31 @@ describe('DataFetcher', () => {
       expect(tileState).not.toBeNull();
       expect(tileState?.lastDataRequest).toBeGreaterThan(Date.now() - 1000); // Should be recent
       expect(tileState?.lastDataRequestSuccessful).toBe(false);
+    });
+
+    it('should respect lockout interval after failed fetch (data: null)', async () => {
+      // Arrange
+      const storageKey = 'test-storage-key-lockout';
+      const apiCall = 'Test API';
+      const now = Date.now();
+      // Simulate a previous failed fetch (data: null, recent lastDataRequest)
+      storageManager.setTileState(storageKey, {
+        data: null,
+        lastDataRequest: now,
+        lastDataRequestSuccessful: false,
+      });
+
+      // Spy on fetch function to ensure it is NOT called
+      const fetchFn = vi.fn().mockResolvedValue({ data: 'should not be called' });
+
+      // Act
+      const result = await DataFetcher.fetchWithRetry(fetchFn, storageKey, { apiCall });
+
+      // Assert
+      expect(fetchFn).not.toHaveBeenCalled();
+      expect(result.data).toBeNull();
+      expect(result.isCached).toBe(true);
+      expect(result.error).toBe('No data (cached error or previous failure)');
     });
   });
 });

@@ -32,7 +32,7 @@ export class DataFetcher {
       // Check cache first unless forcing refresh
       if (!forceRefresh) {
         const cached = storageManager.getTileState<T>(storageKey);
-        if (cached && cached.data) {
+        if (cached) {
           // Check if data is fresh (less than 10 minutes old)
           const now = Date.now();
           const dataAge = now - cached.lastDataRequest;
@@ -42,7 +42,7 @@ export class DataFetcher {
             return {
               data: cached.data as T,
               isCached: true,
-              error: null,
+              error: cached.data ? null : 'No data (cached error or previous failure)',
               lastUpdated: new Date(cached.lastDataRequest),
               retryCount: 0,
             };
