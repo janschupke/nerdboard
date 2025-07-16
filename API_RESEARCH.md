@@ -721,3 +721,205 @@ The recommended implementation order:
 3. **Test Alternative Weather APIs**: Try WeatherAPI.com with valid API key
 4. **Implement USGS Earthquake**: Start with USGS API for earthquake data
 5. **Add Error Handling**: Implement proper error handling for API failures
+
+---
+
+## 1A. Scraping Framework: Actionable Integration Steps (Update)
+
+- For any tile requiring scraping, the tile hook should:
+  1. Fetch the HTML (e.g., using `fetch(url).then(res => res.text())`).
+  2. Pass the HTML to a per-tile scraper function (e.g., `scraper.ts` in the tile folder).
+  3. The scraper returns a typed object matching the expected API response shape for the tile's data mapper.
+  4. The fetch function passed to `DataFetcher.fetchAndMap` should return this parsed object.
+- Example for a scraping tile hook:
+
+```typescript
+import { DataFetcher } from '../../../services/dataFetcher';
+import { myScraper } from './scraper';
+
+export function useMyScrapedApi() {
+  const getData = async (tileId: string, url: string, forceRefresh = false) => {
+    const result = await DataFetcher.fetchAndMap(
+      async () => {
+        const html = await fetch(url).then((res) => res.text());
+        return myScraper(html); // returns ScrapedResponse<T>
+      },
+      tileId,
+      'my_tile_type',
+      { apiCall: 'My Scraped Endpoint', forceRefresh },
+    );
+    if (result.error) throw new Error(result.error);
+    return result.data;
+  };
+  return { getData };
+}
+```
+
+- Place scraper logic in `scraper.ts` in the tile folder. Scraper should be pure and unit-tested with sample HTML.
+
+---
+
+## 1B. Type Definitions: Additions and Usage
+
+Add to `src/types/index.ts` or a new `src/types/endpoint.ts`:
+
+```typescript
+export type RetrievalMethod = 'API' | 'SCRAPE';
+
+export interface EndpointResponse<T> {
+  source: RetrievalMethod;
+  raw: unknown;
+  data: T;
+}
+
+export interface ApiResponse<T> extends EndpointResponse<T> {
+  source: 'API';
+}
+
+export interface ScrapedResponse<T> extends EndpointResponse<T> {
+  source: 'SCRAPE';
+}
+```
+
+- Scraper functions should return `ScrapedResponse<T>`. API fetches should return `ApiResponse<T>`.
+- Use type guards:
+
+```typescript
+function isApiResponse<T>(resp: EndpointResponse<T>): resp is ApiResponse<T> {
+  return resp.source === 'API';
+}
+function isScrapedResponse<T>(resp: EndpointResponse<T>): resp is ScrapedResponse<T> {
+  return resp.source === 'SCRAPE';
+}
+```
+
+---
+
+## 1C. Compatibility: Mapper and Fetcher Usage
+
+- Data mappers should accept `EndpointResponse<T>` and branch if needed, or expect the fetch function to always return the correct shape for the tile.
+- Example:
+
+```typescript
+// In dataMapper.ts
+export interface DataMapper<TApiResponse extends EndpointResponse<any>, TTileData> {
+  map(apiResponse: TApiResponse): TTileData;
+  // ...
+}
+```
+
+- If you want to keep mappers agnostic, ensure the scraper returns the same shape as the API response for the tile.
+
+---
+
+## 1D. Per-Tile Scraping Fallbacks: Actionable Steps
+
+- For each tile with a scraping fallback, specify:
+  - The URL to scrape.
+  - The selectors or parsing logic (document in the tile's `scraper.ts`).
+  - The expected output type (should match the API response type for the tile).
+  - Example:
+
+```typescript
+// src/components/tile-implementations/euribor-rate/scraper.ts
+export function euriborScraper(html: string): ScrapedResponse<EuriborScrapingData> {
+  // Use DOMParser or cheerio to extract rates
+  // Return { source: 'SCRAPE', raw: html, data: { rates: [...] } }
+}
+```
+
+- In the tile hook, use:
+
+```typescript
+const result = await DataFetcher.fetchAndMap(
+  async () => {
+    const html = await fetch(url).then((res) => res.text());
+    return euriborScraper(html);
+  },
+  tileId,
+  TileType.EURIBOR_RATE,
+  { apiCall: 'EMMI Euribor Rate Scrape', forceRefresh },
+);
+```
+
+---
+
+## 1E. API Key Acquisition and Usage (Clarification)
+
+- For each API, ensure the following steps are followed:
+  1. Register for a free account at the API provider.
+  2. Obtain the API key and add it to `.env` (e.g., `OPENWEATHERMAP_API_KEY=...`).
+  3. Reference the key in code using `process.env.KEY_NAME`.
+  4. Document the process in the tile's README or in this document.
+
+---
+
+## 1F. Explicit API vs. Alternative Table (Clarification)
+
+- For each tile, specify:
+  - **Primary**: The function to call (e.g., `getCryptocurrencyMarkets` in `useCryptoApi`)
+  - **Fallback**: The scraping function (e.g., `euriborScraper` in `scraper.ts`)
+  - **Status**: Working, broken, needs scraping, etc.
+
+---
+
+## 1G. Implementation Plan (Actionable)
+
+- For each tile:
+  - [ ] Confirm the primary API is working and tested.
+  - [ ] If not, implement and test the scraping fallback.
+  - [ ] Ensure all types are up to date and used in both API and scraping flows.
+  - [ ] Add or update unit tests for both API and scraping fetch functions.
+  - [ ] Document any special requirements (e.g., selectors for scraping, rate limits, etc.).
+
+---
+
+## 1H. Example: Scraping Integration for Euribor Tile
+
+- **Primary**: ECB API (JSON/XML)
+- **Fallback**: EMMI HTML scraping
+- **Tile hook**:
+
+```typescript
+import { DataFetcher } from '../../../services/dataFetcher';
+import { euriborScraper } from './scraper';
+
+export function useEuriborApi() {
+  const getEuriborRate = async (tileId: string, forceRefresh = false) => {
+    // Try ECB API first...
+    // If fails, fallback:
+    const result = await DataFetcher.fetchAndMap(
+      async () => {
+        const html = await fetch('https://www.emmi-benchmarks.eu/euribor-rates').then((res) =>
+          res.text(),
+        );
+        return euriborScraper(html);
+      },
+      tileId,
+      'euribor_rate',
+      { apiCall: 'EMMI Euribor Rate Scrape', forceRefresh },
+    );
+    if (result.error) throw new Error(result.error);
+    return result.data;
+  };
+  return { getEuriborRate };
+}
+```
+
+---
+
+## 1I. Testing and Documentation
+
+- All scraper functions must have unit tests with sample HTML fixtures.
+- All API fetches must be tested with mocked responses.
+- Document the fallback logic and scraper details in the tile's README or in this document.
+
+---
+
+## 1J. Summary of Required Codebase Updates
+
+- [ ] Add `RetrievalMethod`, `EndpointResponse`, `ApiResponse`, and `ScrapedResponse` types to the codebase.
+- [ ] Update tile hooks and mappers to use these types where appropriate.
+- [ ] Implement and test scraper functions for all tiles with scraping fallbacks.
+- [ ] Ensure all API key usage is documented and environment variables are set.
+- [ ] Keep this document up to date as endpoints or requirements change.
