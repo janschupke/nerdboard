@@ -1,8 +1,8 @@
 import type { TileCategory } from '../../../types/tileCategories';
 import type { TileMeta } from '../../tile/GenericTile';
 
-export const typhoonTileMeta: TileMeta = {
-  title: 'Typhoon',
-  icon: 'typhoon',
+export const earthquakeTileMeta: TileMeta = {
+  title: 'Earthquakes',
+  icon: 'earthquake',
   category: 'Weather' as TileCategory,
 }; 

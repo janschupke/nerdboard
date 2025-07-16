@@ -50,6 +50,10 @@ export function Icon({ name, size = 'md', className = '' }: IconProps) {
     'information-circle': 'ℹ',
     trash: '🗑',
     x: '✕',
+
+    // Weather/geo icons
+    earthquake: '🌎',
+    typhoon: '🌪️',
   };
 
   const icon = iconMap[name] || '?';
