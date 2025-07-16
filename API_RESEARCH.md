@@ -870,3 +870,197 @@ const result = await DataFetcher.fetchAndParse(
 - Parsing logic for scraped data is centralized in `dataParser` and registered per tile.
 - Tile hooks are responsible for calling the correct fetcher method.
 - All other detail, research, and actionable steps remain as previously documented.
+
+---
+
+### [UPDATE] Fed Funds Rate (FRED)
+
+- **Selected Method:** API (FRED)
+- **API Key:** Required. Register at [fredaccount.stlouisfed.org](https://fredaccount.stlouisfed.org/), then request an API key at [API Key page](https://fred.stlouisfed.org/docs/api/api_key.html).
+- **Endpoint:**
+  `https://api.stlouisfed.org/fred/series/observations?series_id=FEDFUNDS&api_key=YOUR_API_KEY&file_type=json`
+- **Implementation Steps:**
+  1. Store API key as `FRED_API_KEY` in environment variables.
+  2. In the tile hook, call `dataFetcher.fetchAndMap` with a fetch function that requests the above endpoint and parses JSON.
+  3. Pass the response to the tile's dataMapper.
+- **Response Example:**
+
+```json
+{
+  "observations": [
+    { "date": "2024-06-01", "value": "5.33" },
+    ...
+  ]
+}
+```
+
+- **Type Definition:**
+
+```typescript
+export interface FredObservation {
+  date: string;
+  value: string;
+}
+export interface FredApiResponse {
+  observations: FredObservation[];
+}
+```
+
+---
+
+### [UPDATE] Euribor Rates
+
+- **Selected Method:** API (ECB/EMMI JSON endpoint)
+- **API Key:** Not required for ECB endpoints.
+- **Endpoint:**
+  - ECB SDW REST API: `https://sdw-wsrest.ecb.europa.eu/service/data/EST.B.EUR.4F.KR.MRR_FR.LEV?format=json`
+  - EMMI: [https://www.emmi-benchmarks.eu/euribor-org/euribor-rates.html](https://www.emmi-benchmarks.eu/euribor-org/euribor-rates.html) (scraping fallback if ECB API is insufficient)
+- **Implementation Steps:**
+  1. Use the ECB endpoint for JSON data.
+  2. In the tile hook, call `dataFetcher.fetchAndMap` with a fetch function that requests the endpoint and parses JSON.
+  3. Pass the response to the tile's dataMapper.
+  4. If ECB API is unavailable, implement a scraper for the EMMI HTML page.
+- **Response Example:**
+
+```json
+{
+  "dataSets": [ ... ],
+  "structure": { ... }
+}
+```
+
+- **Type Definition:**
+
+```typescript
+export interface EuriborApiResponse {
+  // Define based on actual ECB JSON structure
+  dataSets: any[];
+  structure: any;
+}
+```
+
+- **Note:** Scraping is only a fallback if the API is not sufficient. Only one method is implemented at a time.
+
+---
+
+### [UPDATE] GDX ETF (Alpha Vantage)
+
+- **Selected Method:** API (Alpha Vantage)
+- **API Key:** Required. Register at [https://www.alphavantage.co/support/#api-key](https://www.alphavantage.co/support/#api-key).
+- **Endpoint:**
+  `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=GDX&apikey=YOUR_API_KEY`
+- **Implementation Steps:**
+  1. Store API key as `ALPHA_VANTAGE_API_KEY` in environment variables.
+  2. In the tile hook, call `dataFetcher.fetchAndMap` with a fetch function that requests the endpoint and parses JSON.
+  3. Pass the response to the tile's dataMapper.
+- **Response Example:**
+
+```json
+{
+  "Time Series (Daily)": {
+    "2024-06-07": {
+      "1. open": "32.00",
+      "2. high": "32.50",
+      "3. low": "31.80",
+      "4. close": "32.10",
+      ...
+    },
+    ...
+  }
+}
+```
+
+- **Type Definition:**
+
+```typescript
+export interface GdxApiResponse {
+  'Time Series (Daily)': {
+    [date: string]: {
+      '1. open': string;
+      '2. high': string;
+      '3. low': string;
+      '4. close': string;
+      // ...
+    };
+  };
+}
+```
+
+---
+
+### [UPDATE] Uranium
+
+- **Selected Method:** Scraping (no free API found)
+- **Scraping URL:** [https://tradingeconomics.com/commodity/uranium](https://tradingeconomics.com/commodity/uranium)
+- **Implementation Steps:**
+  1. In the tile hook, call `dataFetcher.fetchAndParse` with a fetch function that retrieves the HTML from the above URL.
+  2. Implement a parser in `src/services/dataParser.ts` (e.g., `parseUraniumHtml`) to extract the spot price from the HTML.
+  3. Pass the parsed object to the tile's dataMapper.
+- **Scraper Example:**
+
+```typescript
+export function parseUraniumHtml(html: string): UraniumScrapedResponse {
+  // Use DOMParser or regex to extract price
+  // Example: const price = ...;
+  return { price, date };
+}
+```
+
+- **Type Definition:**
+
+```typescript
+export interface UraniumScrapedResponse {
+  price: string;
+  date: string;
+}
+```
+
+---
+
+### [UPDATE] Precious Metals (Metals-API)
+
+- **Selected Method:** API (Metals-API)
+- **API Key:** Required. Register at [https://metals-api.com/](https://metals-api.com/).
+- **Endpoint:**
+  `https://metals-api.com/api/latest?access_key=YOUR_API_KEY&base=USD&symbols=XAU,XAG`
+- **Implementation Steps:**
+  1. Store API key as `METALS_API_KEY` in environment variables.
+  2. In the tile hook, call `dataFetcher.fetchAndMap` with a fetch function that requests the endpoint and parses JSON.
+  3. Pass the response to the tile's dataMapper.
+- **Response Example:**
+
+```json
+{
+  "success": true,
+  "timestamp": 1718040000,
+  "base": "USD",
+  "rates": {
+    "XAU": 2320.12,
+    "XAG": 29.45
+  }
+}
+```
+
+- **Type Definition:**
+
+```typescript
+export interface MetalsApiResponse {
+  success: boolean;
+  timestamp: number;
+  base: string;
+  rates: {
+    XAU: number;
+    XAG: number;
+  };
+}
+```
+
+---
+
+### [UPDATE] Synchronize Summary & Recommendations
+
+- Each tile now has a single, clearly selected retrieval method (API or scraping), with rationale and implementation steps.
+- API key acquisition and endpoint URLs are specified for all APIs.
+- Type definitions and response examples are provided for all endpoints.
+- Scraping is only used where no viable API is available, and the scraping URL and parser function are specified.
+- The summary and recommendations sections should now reflect these updates and be in sync with the detailed sections above.
