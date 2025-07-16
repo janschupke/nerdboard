@@ -1,4 +1,4 @@
-import { BaseDataMapper } from '../../../services/dataMapper';
+import { BaseDataMapper, DataMapperRegistry } from '../../../services/dataMapper';
 import type { TimeTileData, TimeApiResponse } from './types';
 import { DateTime } from 'luxon';
 import { TileType } from '../../../types/tile';
@@ -92,8 +92,6 @@ export class TimeDataMapper extends BaseDataMapper<TimeApiResponse, TimeTileData
     }
   }
 }
-
-import { DataMapperRegistry } from '../../../services/dataMapper';
 
 DataMapperRegistry.register(TileType.TIME_HELSINKI, new TimeDataMapper());
 DataMapperRegistry.register(TileType.TIME_PRAGUE, new TimeDataMapper());

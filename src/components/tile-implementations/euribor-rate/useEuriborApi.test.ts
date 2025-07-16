@@ -1,23 +1,48 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { useEuriborApi } from './useEuriborApi';
+import { registerEcbEuriborDataMapper } from './dataMapper';
+import { setupEuriborRateSuccessMock } from '../../../test/utils/endpointTestUtils';
+import { EndpointTestUtils, API_ENDPOINTS } from '../../../test/utils/endpointTestUtils';
 
 describe('useEuriborApi', () => {
-  describe('getEuriborRate - Current State (Broken Endpoint)', () => {
-    it('should validate that endpoint is marked as broken in apiEndpoints', () => {
-      // This test ensures the endpoint is properly marked as broken
-      // so developers know it needs to be fixed
-      expect(true).toBe(true); // Placeholder for broken endpoint validation
-    });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    registerEcbEuriborDataMapper();
+    setupEuriborRateSuccessMock();
   });
 
-  describe('getEuriborRate - Future Implementation Tests', () => {
-    it('should be updated when Euribor endpoint is fixed', () => {
-      // This test will be updated when the Euribor endpoint is implemented
-      expect(true).toBe(true); // Placeholder for future implementation
+  it('fetches and maps ECB Euribor data successfully', async () => {
+    const { result } = renderHook(() => useEuriborApi());
+    let data: Awaited<ReturnType<ReturnType<typeof useEuriborApi>['getEuriborRate']>> | undefined;
+    await act(async () => {
+      data = await result.current.getEuriborRate('test-tile');
     });
+    expect(data).toBeDefined();
+    if (data) {
+      expect(typeof data.currentRate).toBe('number');
+      expect(Array.isArray(data.historicalData)).toBe(true);
+      expect(data.lastUpdate).toBeInstanceOf(Date);
+    }
+  });
 
-    it('should handle successful Euribor rate data when endpoint is working', () => {
-      // This test will be implemented when the Euribor endpoint is fixed
-      expect(true).toBe(true); // Placeholder for future implementation
+  // Error cases can still use direct fetch mocking if needed
+  it('throws error if API returns not ok', async () => {
+    EndpointTestUtils.configureMock(API_ENDPOINTS.EMMI_EURIBOR, {
+      shouldFail: false,
+      status: 500,
+      responseData: { error: 'API error' },
     });
+    const { result } = renderHook(() => useEuriborApi());
+    await expect(result.current.getEuriborRate('test-tile')).rejects.toThrow();
+  });
+
+  it('throws error if fetch fails', async () => {
+    EndpointTestUtils.configureMock(API_ENDPOINTS.EMMI_EURIBOR, {
+      shouldFail: true,
+      errorType: 'network',
+    });
+    const { result } = renderHook(() => useEuriborApi());
+    await expect(result.current.getEuriborRate('test-tile')).rejects.toThrow('Network error');
   });
 });

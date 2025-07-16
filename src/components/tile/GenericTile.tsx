@@ -80,10 +80,17 @@ export const GenericTile = React.memo(
             </div>
           );
         }
+        const handleDebugClick = (e: React.MouseEvent) => {
+          e.stopPropagation();
+
+          console.dir(data);
+        };
         if (status.error && !status.hasData) {
           return (
             <div className="flex flex-col items-center justify-center h-full space-y-2">
-              <Icon name="close" size="lg" className="text-theme-status-error" />
+              <button type="button" onClick={handleDebugClick} aria-label="Show tile data">
+                <Icon name="close" size="lg" className="text-theme-status-error" />
+              </button>
               <p className="text-theme-status-error text-sm text-center">Data failed to fetch</p>
             </div>
           );
@@ -91,7 +98,9 @@ export const GenericTile = React.memo(
         if (status.error && status.hasData) {
           return (
             <div className="flex flex-col items-center justify-center h-full space-y-2">
-              <Icon name="warning" size="lg" className="text-theme-status-warning" />
+              <button type="button" onClick={handleDebugClick} aria-label="Show tile data">
+                <Icon name="warning" size="lg" className="text-theme-status-warning" />
+              </button>
               <p className="text-theme-status-warning text-sm text-center">Data may be outdated</p>
             </div>
           );
@@ -99,7 +108,9 @@ export const GenericTile = React.memo(
         if (status.hasData) {
           return (
             <div className="flex flex-col items-center justify-center h-full space-y-2">
-              <Icon name="check" size="lg" className="text-theme-status-success" />
+              <button type="button" onClick={handleDebugClick} aria-label="Show tile data">
+                <Icon name="check" size="lg" className="text-theme-status-success" />
+              </button>
               <p className="text-theme-status-success text-sm text-center">Data available</p>
             </div>
           );

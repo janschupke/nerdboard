@@ -4,6 +4,7 @@ import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { FRED_SERIES_OBSERVATIONS_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { FredSeriesObservationsParams } from '../../../services/apiEndpoints';
+import { TileApiCallTitle, TileType } from '../../../types/tile';
 
 /**
  * Fetches Federal Funds Rate data from FRED.
@@ -21,10 +22,13 @@ export function useFederalFundsApi() {
     ): Promise<FederalFundsRateTileData> => {
       const url = buildApiUrl(FRED_SERIES_OBSERVATIONS_ENDPOINT, params);
       const result = await DataFetcher.fetchAndMap<
-        'federal-funds-rate',
+        (typeof TileType)['FEDERAL_FUNDS_RATE'],
         FederalFundsRateApiResponseWithIndex,
         FederalFundsRateTileData
-      >(() => fetch(url).then((res) => res.json()), tileId, 'federal-funds-rate', { forceRefresh });
+      >(() => fetch(url).then((res) => res.json()), tileId, TileType.FEDERAL_FUNDS_RATE, {
+        apiCall: TileApiCallTitle.FEDERAL_FUNDS_RATE,
+        forceRefresh,
+      });
       if (result.error || !result.data) throw new Error(result.error || 'No data');
       return result.data;
     },

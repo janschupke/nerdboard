@@ -16,7 +16,8 @@ function useGdxEtfTileData(tileId: string): ReturnType<GenericTileDataHook<GdxEt
     setLoading(true);
     setData(undefined);
     setError(null);
-    getGDXETF(tileId, isForceRefresh)
+    // Provide required params for AlphaVantage
+    getGDXETF(tileId, { function: 'GLOBAL_QUOTE', symbol: 'GDX', apikey: 'demo' }, isForceRefresh)
       .then((result) => {
         setData(result);
         setError(null);

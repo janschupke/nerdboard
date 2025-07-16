@@ -1,5 +1,6 @@
-import { BaseDataMapper } from '../../../services/dataMapper';
+import { BaseDataMapper, DataMapperRegistry } from '../../../services/dataMapper';
 import type { FederalFundsRateTileData, FederalFundsRateApiResponse } from './types';
+import { TileType } from '../../../types/tile';
 
 export interface FederalFundsRateApiResponseWithIndex extends FederalFundsRateApiResponse {
   [key: string]: unknown;
@@ -68,5 +69,4 @@ export class FederalFundsRateDataMapper extends BaseDataMapper<
   }
 }
 
-import { DataMapperRegistry } from '../../../services/dataMapper';
-DataMapperRegistry.register('federal-funds-rate', new FederalFundsRateDataMapper());
+DataMapperRegistry.register(TileType.FEDERAL_FUNDS_RATE, new FederalFundsRateDataMapper());

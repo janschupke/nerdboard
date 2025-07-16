@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
-import { usePreciousMetalsApi } from './usePreciousMetalsApi';
-import type { PreciousMetalsTileData } from './types';
+import { useEarthquakeApi } from './useEarthquakeApi';
+import type { EarthquakeTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function usePreciousMetalsTileData(
+function useEarthquakeTileData(
   tileId: string,
-): ReturnType<GenericTileDataHook<PreciousMetalsTileData>> {
-  const { getPreciousMetals } = usePreciousMetalsApi();
+): ReturnType<GenericTileDataHook<EarthquakeTileData[]>> {
+  const { getEarthquakes } = useEarthquakeApi();
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<PreciousMetalsTileData | undefined>(undefined);
+  const [data, setData] = useState<EarthquakeTileData[] | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const isForceRefresh = useForceRefreshFromKey();
 
@@ -18,9 +18,7 @@ function usePreciousMetalsTileData(
     setLoading(true);
     setData(undefined);
     setError(null);
-    // Provide required access_key for Metals API
-    const params = { access_key: 'demo' };
-    getPreciousMetals(tileId, params, isForceRefresh)
+    getEarthquakes(tileId, {}, isForceRefresh)
       .then((result) => {
         setData(result);
         setError(null);
@@ -31,16 +29,14 @@ function usePreciousMetalsTileData(
         setError(err?.message || 'Error');
         setLoading(false);
       });
-  }, [tileId, getPreciousMetals, isForceRefresh]);
-  return { loading, error, hasData: !!data, data };
+  }, [tileId, getEarthquakes, isForceRefresh]);
+  return { loading, error, hasData: !!data && data.length > 0, data };
 }
 
-export const PreciousMetalsTile = React.memo(
+export const EarthquakeTile = React.memo(
   ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-    const tileData = usePreciousMetalsTileData(tile.id);
+    const tileData = useEarthquakeTileData(tile.id);
     return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
   (prev, next) => prev.tile.id === next.tile.id,
 );
-
-PreciousMetalsTile.displayName = 'PreciousMetalsTile';

@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 import { DataFetcher, DATA_FRESHNESS_INTERVAL } from './dataFetcher';
 import { storageManager } from './storageManager';
+import { DataParserRegistry, BaseDataParser } from './dataParser';
 
 // Mock fetch globally, allow any return type for test mocks
 global.fetch = vi.fn() as unknown as typeof fetch;
@@ -491,5 +492,107 @@ describe('DataFetcher', () => {
       expect(result.isCached).toBe(true);
       expect(result.error).toBe('No data (cached error or previous failure)');
     });
+  });
+});
+
+describe('DataFetcher.fetchAndParse', () => {
+  type RawData = { value: number };
+  type TileData = { doubled: number };
+  const tileType = 'test-tile';
+
+  class MockParser extends BaseDataParser<RawData, TileData> {
+    parse(rawData: RawData): TileData {
+      return { doubled: rawData.value * 2 };
+    }
+    validate(rawData: unknown): rawData is RawData {
+      return typeof rawData === 'object' && rawData !== null && 'value' in rawData;
+    }
+    createDefault(): TileData {
+      return { doubled: 0 };
+    }
+  }
+
+  beforeAll(() => {
+    DataParserRegistry.register(tileType, new MockParser());
+  });
+
+  beforeEach(() => {
+    storageManager.clearTileState();
+  });
+
+  it('parses raw data successfully', async () => {
+    const fetchFunction = async () => ({ value: 5 });
+    const result = await DataFetcher.fetchAndParse(fetchFunction, 'parse-success-key', tileType);
+    expect(result.data).toEqual({ doubled: 10 });
+    expect(result.error).toBeNull();
+    expect(result.isCached).toBe(false);
+  });
+
+  it('returns error if parser not found', async () => {
+    const fetchFunction = async () => ({ value: 5 });
+    const result = await DataFetcher.fetchAndParse(
+      fetchFunction,
+      'parser-not-found-key',
+      'unknown-tile',
+    );
+    expect(result.data).toBeNull();
+    expect(result.error).toMatch(/No parser registered/);
+  });
+
+  it('returns error if parse throws', async () => {
+    class ThrowingParser extends BaseDataParser<RawData, TileData> {
+      parse(): TileData {
+        throw new Error('Parse failed');
+      }
+      validate(_rawData: unknown): _rawData is RawData {
+        return true;
+      }
+      createDefault(): TileData {
+        return { doubled: 0 };
+      }
+    }
+    DataParserRegistry.register('throw-tile', new ThrowingParser());
+    const fetchFunction = async () => ({ value: 5 });
+    const result = await DataFetcher.fetchAndParse(fetchFunction, 'parse-throws-key', 'throw-tile');
+    expect(result.data).toEqual({ doubled: 0 });
+    expect(result.error).toBeNull();
+  });
+
+  it('returns cached data if fresh', async () => {
+    // First call to cache data
+    const fetchFunction = async () => ({ value: 7 });
+    await DataFetcher.fetchAndParse(fetchFunction, 'cache-key', tileType, {
+      forceRefresh: true,
+      apiCall: tileType,
+    });
+    // Second call should return cached data
+    const result = await DataFetcher.fetchAndParse(fetchFunction, 'cache-key', tileType);
+    expect(result.isCached).toBe(true);
+    expect(result.data).toEqual({ doubled: 14 });
+  });
+});
+
+describe('DataParserRegistry', () => {
+  type Raw = { foo: string };
+  type Data = { bar: string };
+  class TestParser extends BaseDataParser<Raw, Data> {
+    parse(raw: Raw): Data {
+      return { bar: raw.foo };
+    }
+    validate(raw: unknown): raw is Raw {
+      return typeof raw === 'object' && raw !== null && 'foo' in raw;
+    }
+    createDefault(): Data {
+      return { bar: '' };
+    }
+  }
+  it('registers and retrieves a parser', () => {
+    DataParserRegistry.register('test', new TestParser());
+    const parser = DataParserRegistry.get<'test', Raw, Data>('test');
+    expect(parser).toBeDefined();
+    expect(parser?.parse({ foo: 'baz' })).toEqual({ bar: 'baz' });
+  });
+  it('returns undefined for unknown type', () => {
+    expect(DataParserRegistry.get<'unknown', Raw, Data>('unknown')).toBeUndefined();
   });
 });

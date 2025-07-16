@@ -11,6 +11,8 @@ export const TileType = {
   TIME_PRAGUE: 'time_prague',
   TIME_TAIPEI: 'time_taipei',
   URANIUM: 'uranium',
+  EARTHQUAKE: 'earthquake',
+  TYPHOON: 'typhoon',
 } as const;
 
 export type TileType = (typeof TileType)[keyof typeof TileType];
@@ -24,6 +26,8 @@ export const TileApiCallTitle = {
   GDX_ETF: 'Yahoo Finance Chart API',
   TIME: 'WorldTimeAPI',
   URANIUM: 'TradingEconomics Uranium API',
+  EARTHQUAKE: 'USGS Earthquake API',
+  TYPHOON: 'CWB Open Data API',
 } as const;
 
 export type TileApiCallTitle = (typeof TileApiCallTitle)[keyof typeof TileApiCallTitle];

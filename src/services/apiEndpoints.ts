@@ -33,15 +33,15 @@ export const OPENWEATHERMAP_ONECALL_ENDPOINT: ApiEndpoint<WeatherParams> = {
   queryParams: {} as WeatherParams,
 };
 
-// --- GDX ETF (Yahoo Finance) ---
-export interface YahooFinanceChartParams {
-  symbol: string; // required, path param
+// --- GDX ETF (Alpha Vantage) ---
+export interface AlphaVantageParams {
+  function: string; // e.g. 'GLOBAL_QUOTE'
+  symbol: string; // e.g. 'GDX'
+  apikey: string;
 }
-
-export const YAHOO_FINANCE_CHART_ENDPOINT: ApiEndpoint<YahooFinanceChartParams> = {
-  url: '/api/yahoo-finance/v8/finance/chart',
-  queryParams: {} as YahooFinanceChartParams,
-  broken: true, // proxy is disabled
+export const ALPHA_VANTAGE_GDX_ENDPOINT: ApiEndpoint<AlphaVantageParams> = {
+  url: '/api/alpha-vantage/query',
+  queryParams: {} as AlphaVantageParams,
 };
 
 // --- Federal Funds Rate (FRED) ---
@@ -60,23 +60,26 @@ export type EuriborParams = object;
 export const EMMI_EURIBOR_ENDPOINT: ApiEndpoint<EuriborParams> = {
   url: '/api/emmi/euribor-rates',
   queryParams: {} as EuriborParams,
-  broken: true, // HTML-scraped, not a public JSON API
 };
 
-// --- Uranium Price (TradingEconomics) ---
-export interface UraniumParams {
+// --- Uranium Price (HTML Scraping) ---
+export interface UraniumHtmlParams {
   range?: string; // optional, e.g. '1Y'
 }
-export const TRADINGECONOMICS_URANIUM_ENDPOINT: ApiEndpoint<UraniumParams> = {
-  url: '/api/tradingeconomics/commodity/uranium',
-  queryParams: {} as UraniumParams,
+export const URANIUM_HTML_ENDPOINT: ApiEndpoint<UraniumHtmlParams> = {
+  url: '/api/uranium-html',
+  queryParams: {} as UraniumHtmlParams,
 };
 
-// --- Precious Metals ---
-export type PreciousMetalsParams = object;
-export const PRECIOUS_METALS_ENDPOINT: ApiEndpoint<PreciousMetalsParams> = {
-  url: '/api/precious-metals',
-  queryParams: {} as PreciousMetalsParams,
+// --- Precious Metals (Metals-API) ---
+export interface MetalsApiParams {
+  access_key: string;
+  base?: string;
+  symbols?: string;
+}
+export const METALS_API_ENDPOINT: ApiEndpoint<MetalsApiParams> = {
+  url: '/api/metals-api/latest',
+  queryParams: {} as MetalsApiParams,
 };
 
 // --- Time (WorldTimeAPI) ---
@@ -86,6 +89,27 @@ export interface TimeParams {
 export const TIME_API_ENDPOINT: ApiEndpoint<TimeParams> = {
   url: '/api/time',
   queryParams: {} as TimeParams,
+};
+
+// --- Typhoon (CWB) ---
+export interface TyphoonParams {
+  Authorization: string; // required API key
+  format?: 'JSON' | 'XML'; // optional
+  dataid?: string; // optional
+}
+
+export const CWB_TYPHOON_ENDPOINT: ApiEndpoint<TyphoonParams> = {
+  url: '/api/cwb/v1/rest/datastore/W-C0034-002',
+  queryParams: {} as TyphoonParams,
+};
+
+// --- Earthquake (USGS) ---
+export interface UsgsEarthquakeParams {
+  [key: string]: string | number;
+}
+export const USGS_EARTHQUAKE_ENDPOINT: ApiEndpoint<UsgsEarthquakeParams> = {
+  url: '/api/usgs/fdsnws/event/1/query',
+  queryParams: {} as UsgsEarthquakeParams,
 };
 
 // --- Endpoint Parser ---

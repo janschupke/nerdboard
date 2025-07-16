@@ -10,6 +10,7 @@ import { uraniumTileMeta } from '../tile-implementations/uranium/meta';
 import { timeTileMeta } from '../tile-implementations/time/meta';
 import { weatherTileMeta } from '../tile-implementations/weather/meta';
 import { euriborRateTileMeta } from '../tile-implementations/euribor-rate/meta';
+import { earthquakeTileMeta } from '../tile-implementations/earthquake/meta';
 
 export interface TileCatalogEntry {
   type: TileType;
@@ -134,6 +135,16 @@ export const TILE_CATALOG: TileCatalogEntry[] = [
         })),
       ),
     meta: uraniumTileMeta,
+  },
+  {
+    type: TileType.EARTHQUAKE,
+    getLazyComponent: () =>
+      React.lazy(() =>
+        import('../tile-implementations/earthquake/EarthquakeTile').then((m) => ({
+          default: m.EarthquakeTile,
+        })),
+      ),
+    meta: earthquakeTileMeta,
   },
 ];
 

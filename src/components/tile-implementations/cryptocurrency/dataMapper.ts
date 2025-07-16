@@ -1,5 +1,7 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
 import type { CryptocurrencyApiResponse, CryptocurrencyTileData } from './types';
+import { DataMapperRegistry } from '../../../services/dataMapper';
+import { TileType } from '../../../types/tile';
 
 export class CryptocurrencyDataMapper extends BaseDataMapper<
   CryptocurrencyApiResponse[],
@@ -31,6 +33,4 @@ export class CryptocurrencyDataMapper extends BaseDataMapper<
   }
 }
 
-import { DataMapperRegistry } from '../../../services/dataMapper';
-
-DataMapperRegistry.register('cryptocurrency', new CryptocurrencyDataMapper());
+DataMapperRegistry.register(TileType.CRYPTOCURRENCY, new CryptocurrencyDataMapper());
