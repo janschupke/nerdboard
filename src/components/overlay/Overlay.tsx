@@ -166,6 +166,20 @@ function TilePersistenceListener({
           config: tile.config || {},
         })),
       });
+      // Remove tile state for tiles that no longer exist
+      if (prevTiles) {
+        const prevIds = new Set(prevTiles.map((t) => t.id));
+        const currentIds = new Set(tiles.map((t) => t.id));
+        for (const id of prevIds) {
+          if (!currentIds.has(id)) {
+            storage.setTileState(id, { data: null, lastDataRequest: 0, lastDataRequestSuccessful: false });
+          }
+        }
+      }
+      // Optionally clear all tile state if all tiles are removed
+      if (tiles.length === 0) {
+        storage.clearTileState();
+      }
     }
     prevTilesRef.current = tiles;
   }, [tiles, storage]);

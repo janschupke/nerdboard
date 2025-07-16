@@ -1,8 +1,7 @@
 import type { TyphoonApiResponse, TyphoonTileData } from './types';
-import { DataMapperRegistry, BaseDataMapper } from '../../../services/dataMapper';
-import { TileType } from '../../../types/tile';
+import { BaseDataMapper } from '../../../services/dataMapper';
 
-class TyphoonDataMapper extends BaseDataMapper<TyphoonApiResponse, TyphoonTileData> {
+export class TyphoonDataMapper extends BaseDataMapper<TyphoonApiResponse, TyphoonTileData> {
   map(apiResponse: TyphoonApiResponse): TyphoonTileData {
     const locations = apiResponse.records?.location || [];
     const typhoons = locations.map((loc) => {
@@ -65,5 +64,3 @@ class TyphoonDataMapper extends BaseDataMapper<TyphoonApiResponse, TyphoonTileDa
     return { typhoons: [], lastUpdated: '' };
   }
 }
-
-DataMapperRegistry.register(TileType.TYPHOON, new TyphoonDataMapper());

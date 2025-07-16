@@ -1,6 +1,5 @@
-import { DataMapperRegistry, type DataMapper } from '../../../services/dataMapper';
 import type { GdxEtfApiResponse, GdxEtfTileData } from './types';
-import { TileType } from '../../../types/tile';
+import type { DataMapper } from '../../../services/dataMapper';
 
 /**
  * Maps GDX ETF API response to GdxEtfTileData for the tile.
@@ -53,10 +52,3 @@ export const gdxEtfDataMapper: DataMapper<GdxEtfApiResponse, GdxEtfTileData> = {
     tradingStatus: 'closed',
   }),
 };
-
-/**
- * Registers the GDX ETF data mapper with the DataMapperRegistry.
- */
-export function registerGdxEtfDataMapper() {
-  DataMapperRegistry.register(TileType.GDX_ETF, gdxEtfDataMapper);
-}

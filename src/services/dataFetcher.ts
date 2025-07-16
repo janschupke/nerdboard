@@ -4,8 +4,8 @@ import {
   type APILogDetails,
   type TileDataType,
 } from './storageManager';
-import { type BaseApiResponse, DataMapperRegistry } from './dataMapper';
-import { DataParserRegistry } from './dataParser';
+import { type BaseApiResponse } from './dataMapper';
+import { tileDataMappers, tileDataParsers } from './tileTypeRegistry';
 
 // 10-minute interval constant for data freshness
 export const DATA_FRESHNESS_INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
@@ -58,6 +58,7 @@ export class DataFetcher {
           const isDataFresh = dataAge < DATA_FRESHNESS_INTERVAL;
 
           if (isDataFresh) {
+            console.log('[DataFetcher] Returning cached data for', storageKey, cached);
             return {
               data: cached.data as T,
               isCached: true,
@@ -134,6 +135,7 @@ export class DataFetcher {
       }
 
       // Cache the fresh data
+      console.log('[DataFetcher] Storing fresh data for', storageKey, data);
       DataFetcher.setTileState<T>(storageKey, data as unknown as T, true);
 
       return {
@@ -177,8 +179,10 @@ export class DataFetcher {
     fetchFunction: () => Promise<T>,
     timeout: number,
   ): Promise<T> {
+    console.log('[DataFetcher] fetchWithTimeout called, timeout:', timeout);
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
+        console.log('[DataFetcher] fetchWithTimeout timed out after', timeout, 'ms');
         reject(new Error('Request timeout'));
       }, timeout);
 
@@ -273,9 +277,12 @@ export class DataFetcher {
       apiCall: tileType,
     },
   ): Promise<FetchResult<TTileData>> {
-    const mapper = DataMapperRegistry.get<TTileType, TApiResponse, TTileData>(tileType);
-
+    console.log('[DataFetcher] fetchAndMap called for tileType:', tileType);
+    const mapperFactory = tileDataMappers[tileType as keyof typeof tileDataMappers];
+    const mapper = mapperFactory ? mapperFactory() : undefined;
+    console.log('[DataFetcher] tileDataMappers result for tileType:', tileType, mapper);
     if (!mapper) {
+      console.error('[DataFetcher] No data mapper found for tile type:', tileType);
       throw new Error(`No data mapper found for tile type: ${tileType}`);
     }
 
@@ -284,8 +291,8 @@ export class DataFetcher {
 
       if (result.data) {
         // Map the API response to tile content data
-        const mappedData = mapper.safeMap(result.data);
-
+        const mappedData = mapper.safeMap(result.data) as unknown as TTileData;
+        console.log('[DataFetcher] Mapped data for', storageKey, mappedData);
         // Cache the mapped data
         DataFetcher.setTileState<TTileData>(storageKey, mappedData, true);
 
@@ -298,8 +305,8 @@ export class DataFetcher {
         };
       } else {
         // Return default data if no API data
-        const defaultData = mapper.createDefault();
-
+        const defaultData = mapper.createDefault() as unknown as TTileData;
+        console.log('[DataFetcher] No API data, storing default for', storageKey, defaultData);
         DataFetcher.setTileState<TTileData>(storageKey, defaultData, false);
 
         return {
@@ -312,8 +319,8 @@ export class DataFetcher {
       }
     } catch (error) {
       // Return default data on error
-      const defaultData = mapper.createDefault();
-
+      const defaultData = mapper.createDefault() as unknown as TTileData;
+      console.log('[DataFetcher] Error, storing default for', storageKey, defaultData);
       DataFetcher.setTileState<TTileData>(storageKey, defaultData, false);
 
       return {
@@ -390,7 +397,8 @@ export class DataFetcher {
         };
       }
       // Get parser for tileType
-      const parser = DataParserRegistry.get<TTileType, TRawData, TTileData>(tileType);
+      const parserFactory = tileDataParsers[tileType as keyof typeof tileDataParsers];
+      const parser = parserFactory ? parserFactory() : undefined;
       if (!parser) {
         const errorMessage = `No parser registered for tile type: ${tileType}`;
         storageManager.addLog({
@@ -417,7 +425,7 @@ export class DataFetcher {
       // Parse the raw data
       let tileData: TTileData;
       try {
-        tileData = parser.safeParse(rawData);
+        tileData = parser.safeParse(rawData) as unknown as TTileData;
       } catch (parseError) {
         const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
         storageManager.addLog({

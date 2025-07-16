@@ -16,9 +16,11 @@ function useTyphoonTileData(
   const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
+    console.log('[TyphoonTile] useEffect running for tileId:', tileId, 'apiKey:', apiKey);
     setLoading(true);
     setData(undefined);
     setError(null);
+    console.log('[TyphoonTile] Calling getTyphoonData for tileId:', tileId);
     getTyphoonData(tileId, apiKey, isForceRefresh)
       .then((result) => {
         setData(result);
@@ -43,12 +45,12 @@ export const TyphoonTile = React.memo(
   ({
     tile,
     meta,
-    apiKey,
+    apiKey = '',
     ...rest
   }: {
     tile: DragboardTileData;
     meta: TileMeta;
-    apiKey: string;
+    apiKey?: string;
   }) => {
     const tileData = useTyphoonTileData(tile.id, apiKey);
     return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;

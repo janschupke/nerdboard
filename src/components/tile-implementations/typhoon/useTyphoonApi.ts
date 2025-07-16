@@ -16,14 +16,26 @@ export function useTyphoonApi() {
     apiKey: string,
     forceRefresh = false,
   ): Promise<TyphoonTileData> => {
+    console.log('[TyphoonApi] getTyphoonData called for tileId:', tileId, 'apiKey:', apiKey, 'forceRefresh:', forceRefresh);
     const params = { Authorization: apiKey, format: 'JSON' as const };
     const url = buildApiUrl(CWB_TYPHOON_ENDPOINT, params);
-    const result = await DataFetcher.fetchAndMap(
-      () => fetch(url).then((res) => res.json()),
-      tileId,
-      TileType.TYPHOON,
-      { apiCall: TileApiCallTitle.TYPHOON, forceRefresh },
-    );
+    let result;
+    try {
+      console.log('[TyphoonApi] About to call DataFetcher.fetchAndMap for tileId:', tileId);
+      result = await DataFetcher.fetchAndMap(
+        () => {
+          console.log('[TyphoonApi] fetch function invoked for tileId:', tileId, 'url:', url);
+          return fetch(url).then((res) => res.json());
+        },
+        tileId,
+        TileType.TYPHOON,
+        { apiCall: TileApiCallTitle.TYPHOON, forceRefresh },
+      );
+      console.log('[TyphoonApi] DataFetcher.fetchAndMap result for tileId:', tileId, result);
+    } catch (err) {
+      console.error('[TyphoonApi] DataFetcher.fetchAndMap threw for tileId:', tileId, err);
+      throw err;
+    }
     if (result.error) throw new Error(result.error);
     return result.data as TyphoonTileData;
   };
