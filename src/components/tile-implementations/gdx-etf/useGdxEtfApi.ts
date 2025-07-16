@@ -2,7 +2,7 @@ import type { GdxEtfTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { ALPHA_VANTAGE_GDX_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
-import { TileType } from '../../../types/tile';
+import { TileApiCallTitle, TileType } from '../../../types/tile';
 import type { AlphaVantageParams } from '../../../services/apiEndpoints';
 
 /**
@@ -31,7 +31,7 @@ export function useGdxEtfApi() {
         },
         tileId,
         TileType.GDX_ETF,
-        { forceRefresh },
+        { apiCall: TileApiCallTitle.GDX_ETF, forceRefresh },
       );
       if (result.error) throw new Error(result.error);
       return result.data as GdxEtfTileData;

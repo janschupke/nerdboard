@@ -2,7 +2,7 @@ import type { PreciousMetalsTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { METALS_API_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
-import { TileType } from '../../../types/tile';
+import { TileApiCallTitle, TileType } from '../../../types/tile';
 import type { MetalsApiParams } from '../../../services/apiEndpoints';
 
 /**
@@ -28,7 +28,7 @@ export function usePreciousMetalsApi() {
         },
         tileId,
         TileType.PRECIOUS_METALS,
-        { forceRefresh },
+        { apiCall: TileApiCallTitle.PRECIOUS_METALS, forceRefresh },
       );
       if (result.error || !result.data) throw new Error(result.error || 'No data');
       return result.data as PreciousMetalsTileData;

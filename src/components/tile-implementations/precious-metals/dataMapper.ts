@@ -1,4 +1,4 @@
-import { BaseDataMapper } from '../../../services/dataMapper';
+import { BaseDataMapper, DataMapperRegistry } from '../../../services/dataMapper';
 import type { PreciousMetalsTileData, PreciousMetalsApiResponse } from './types';
 import { TileType } from '../../../types/tile';
 
@@ -78,5 +78,4 @@ export class PreciousMetalsDataMapper extends BaseDataMapper<
   }
 }
 
-import { DataMapperRegistry } from '../../../services/dataMapper';
 DataMapperRegistry.register(TileType.PRECIOUS_METALS, new PreciousMetalsDataMapper());

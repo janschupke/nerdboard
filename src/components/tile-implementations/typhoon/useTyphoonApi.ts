@@ -1,7 +1,7 @@
 import type { TyphoonTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { CWB_TYPHOON_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
-import { TileType } from '../../../types/tile';
+import { TileApiCallTitle, TileType } from '../../../types/tile';
 
 /**
  * Fetches Typhoon data from the CWB API using the unified dataFetcher and dataMapper.
@@ -22,7 +22,7 @@ export function useTyphoonApi() {
       () => fetch(url).then((res) => res.json()),
       tileId,
       TileType.TYPHOON,
-      { forceRefresh },
+      { apiCall: TileApiCallTitle.TYPHOON, forceRefresh },
     );
     if (result.error) throw new Error(result.error);
     return result.data as TyphoonTileData;

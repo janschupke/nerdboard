@@ -2,7 +2,7 @@ import type { EuriborRateTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { EMMI_EURIBOR_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
-import { TileType } from '../../../types/tile';
+import { TileApiCallTitle, TileType } from '../../../types/tile';
 
 /**
  * Fetches Euribor rate data from the ECB API using the unified dataFetcher and dataMapper.
@@ -18,7 +18,7 @@ export function useEuriborApi() {
         () => fetch(url).then((res) => res.json()),
         tileId,
         TileType.EURIBOR_RATE,
-        { forceRefresh },
+        { apiCall: TileApiCallTitle.EURIBOR_RATE, forceRefresh },
       );
       if (result.error) throw new Error(result.error);
       return result.data as EuriborRateTileData;

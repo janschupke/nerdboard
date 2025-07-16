@@ -32,7 +32,9 @@ export const gdxEtfDataMapper: DataMapper<GdxEtfApiResponse, GdxEtfTileData> = {
     return (
       typeof data === 'object' &&
       data !== null &&
-      typeof (data as GdxEtfApiResponse).symbol === 'string'
+      typeof (data as GdxEtfApiResponse).symbol === 'string' &&
+      typeof (data as GdxEtfApiResponse).currentPrice === 'number' &&
+      typeof (data as GdxEtfApiResponse).tradingStatus === 'string'
     );
   },
   createDefault: (): GdxEtfTileData => ({

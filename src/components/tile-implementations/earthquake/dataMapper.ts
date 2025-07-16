@@ -1,5 +1,6 @@
 import { DataMapperRegistry, type DataMapper } from '../../../services/dataMapper';
 import type { EarthquakeApiResponse, EarthquakeTileData } from './types';
+import { TileType } from '../../../types/tile';
 
 /**
  * Maps USGS Earthquake API response to an array of EarthquakeTileData for the tile.
@@ -38,6 +39,5 @@ export const earthquakeDataMapper: DataMapper<EarthquakeApiResponse, EarthquakeT
  * Registers the Earthquake data mapper with the DataMapperRegistry.
  */
 export function registerEarthquakeDataMapper() {
-  DataMapperRegistry.register('earthquake', earthquakeDataMapper);
-  DataMapperRegistry.register('/api/usgs/fdsnws/event/1/query', earthquakeDataMapper);
+  DataMapperRegistry.register(TileType.EARTHQUAKE, earthquakeDataMapper);
 }

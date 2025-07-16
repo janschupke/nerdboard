@@ -561,7 +561,10 @@ describe('DataFetcher.fetchAndParse', () => {
   it('returns cached data if fresh', async () => {
     // First call to cache data
     const fetchFunction = async () => ({ value: 7 });
-    await DataFetcher.fetchAndParse(fetchFunction, 'cache-key', tileType, { forceRefresh: true });
+    await DataFetcher.fetchAndParse(fetchFunction, 'cache-key', tileType, {
+      forceRefresh: true,
+      apiCall: tileType,
+    });
     // Second call should return cached data
     const result = await DataFetcher.fetchAndParse(fetchFunction, 'cache-key', tileType);
     expect(result.isCached).toBe(true);

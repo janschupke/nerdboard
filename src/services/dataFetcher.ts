@@ -15,7 +15,7 @@ export interface FetchOptions {
   retryCount?: number;
   retryDelay?: number;
   timeout?: number;
-  apiCall?: string; // Add API call identifier for logging
+  apiCall: string;
 }
 
 export interface FetchResult<T> {
@@ -43,7 +43,7 @@ export class DataFetcher {
   static async fetchWithRetry<T>(
     fetchFunction: () => Promise<T>,
     storageKey: string,
-    options: FetchOptions = {},
+    options: FetchOptions = { apiCall: storageKey },
   ): Promise<FetchResult<T>> {
     const { forceRefresh = false, retryCount = 0, timeout = 10000, apiCall = storageKey } = options;
 
@@ -197,7 +197,7 @@ export class DataFetcher {
   static async fetchWithBackgroundRefresh<T>(
     fetchFunction: () => Promise<T>,
     storageKey: string,
-    options: FetchOptions = {},
+    options: FetchOptions,
   ): Promise<FetchResult<T>> {
     // First, try to get cached data immediately
     const cached = storageManager.getTileState<T>(storageKey);
@@ -269,7 +269,9 @@ export class DataFetcher {
     fetchFunction: () => Promise<TApiResponse>,
     storageKey: string,
     tileType: TTileType,
-    options: FetchOptions = {},
+    options: FetchOptions = {
+      apiCall: tileType,
+    },
   ): Promise<FetchResult<TTileData>> {
     const mapper = DataMapperRegistry.get<TTileType, TApiResponse, TTileData>(tileType);
 
@@ -335,7 +337,7 @@ export class DataFetcher {
     fetchFunction: () => Promise<TRawData>,
     storageKey: string,
     tileType: TTileType,
-    options: FetchOptions = {},
+    options: FetchOptions = { apiCall: tileType },
   ): Promise<FetchResult<TTileData>> {
     const { forceRefresh = false, retryCount = 0, timeout = 10000, apiCall = storageKey } = options;
     try {

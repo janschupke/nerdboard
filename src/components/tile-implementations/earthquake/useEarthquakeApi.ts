@@ -2,7 +2,7 @@ import type { EarthquakeTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { USGS_EARTHQUAKE_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
-import { TileType } from '../../../types/tile';
+import { TileApiCallTitle, TileType } from '../../../types/tile';
 
 /**
  * Fetches recent earthquake data from the USGS API using the unified dataFetcher and dataMapper.
@@ -23,7 +23,7 @@ export function useEarthquakeApi() {
         () => fetch(url).then((res) => res.json()),
         tileId,
         TileType.EARTHQUAKE,
-        { forceRefresh },
+        { apiCall: TileApiCallTitle.EARTHQUAKE, forceRefresh },
       );
       if (result.error || !result.data || !Array.isArray(result.data))
         throw new Error(result.error || 'No data');

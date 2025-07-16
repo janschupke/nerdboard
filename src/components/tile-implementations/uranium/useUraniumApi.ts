@@ -2,7 +2,7 @@ import type { UraniumTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { URANIUM_HTML_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
-import { TileType } from '../../../types/tile';
+import { TileApiCallTitle, TileType } from '../../../types/tile';
 import type { UraniumHtmlParams } from '../../../services/apiEndpoints';
 
 /**
@@ -28,7 +28,7 @@ export function useUraniumApi() {
         },
         tileId,
         TileType.URANIUM,
-        { forceRefresh },
+        { apiCall: TileApiCallTitle.URANIUM, forceRefresh },
       );
       if (result.error || !result.data) throw new Error(result.error || 'No data');
       return result.data as UraniumTileData;
