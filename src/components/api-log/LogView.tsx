@@ -1,7 +1,11 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { Icon } from '../ui/Icon.tsx';
 import { useLogContext } from './useLogContext.ts';
-import type { APILogEntry, APILogLevel } from '../../services/storageManager.ts';
+import {
+  type APILogEntry,
+  APILogLevel,
+  type APILogLevelType,
+} from '../../services/storageManager.ts';
 
 interface LogViewProps {
   isOpen: boolean;
@@ -53,15 +57,15 @@ export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
   };
 
   // Return Tailwind color classes based on log level
-  const getLevelColor = (level: APILogLevel) => {
-    return level === 'error'
+  const getLevelColor = (level: APILogLevelType) => {
+    return level === APILogLevel.ERROR
       ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
       : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
   };
 
   // Return icon name based on log level
-  const getLevelIcon = (level: APILogLevel) => {
-    return level === 'error' ? 'exclamation-triangle' : 'exclamation-circle';
+  const getLevelIcon = (level: APILogLevelType) => {
+    return level === APILogLevel.ERROR ? 'exclamation-triangle' : 'exclamation-circle';
   };
 
   // Position exactly over the tile grid area
@@ -152,8 +156,8 @@ interface LogRowProps {
   log: APILogEntry;
   onRemove: () => void;
   formatTimestamp: (timestamp: number) => string;
-  getLevelColor: (level: APILogLevel) => string;
-  getLevelIcon: (level: APILogLevel) => string;
+  getLevelColor: (level: APILogLevelType) => string;
+  getLevelIcon: (level: APILogLevelType) => string;
   showDetails: boolean;
   onToggleDetails: () => void;
 }

@@ -3,16 +3,15 @@ import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useTimeApi } from './useTimeApi';
 import type { TimeData } from './types';
+import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useTimeTileData(
-  tileId: string,
-  refreshKey?: number,
-): ReturnType<GenericTileDataHook<TimeData>> {
+function useTimeTileData(tileId: string): ReturnType<GenericTileDataHook<TimeData>> {
   const { getTime } = useTimeApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
   const [data, setData] = useState<TimeData | undefined>(undefined);
+  const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
     let mounted = true;
@@ -20,7 +19,8 @@ function useTimeTileData(
     setError(null);
     setHasData(false);
     setData(undefined);
-    getTime(tileId, { city: 'Helsinki' })
+
+    getTime(tileId, { city: 'Helsinki' }, isForceRefresh)
       .then((result) => {
         if (!mounted) return;
         setData(result);
@@ -36,25 +36,16 @@ function useTimeTileData(
     return () => {
       mounted = false;
     };
-  }, [tileId, getTime, refreshKey]);
+  }, [tileId, getTime, isForceRefresh]);
   return { loading, error, hasData, data };
 }
 
 export const TimeTile = React.memo(
-  ({
-    tile,
-    meta,
-    refreshKey,
-    ...rest
-  }: {
-    tile: DragboardTileData;
-    meta: TileMeta;
-    refreshKey?: number;
-  }) => {
-    const tileData = useTimeTileData(tile.id, refreshKey);
+  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+    const tileData = useTimeTileData(tile.id);
     return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
-  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
+  (prev, next) => prev.tile.id === next.tile.id,
 );
 
 TimeTile.displayName = 'TimeTile';

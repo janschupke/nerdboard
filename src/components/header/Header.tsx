@@ -1,6 +1,8 @@
 import React from 'react';
-import { Icon } from '../ui/Icon';
 import { LogButton } from '../api-log/LogButton';
+import { CollapseButton } from './CollapseButton';
+import { RefreshButton } from './RefreshButton';
+import { ThemeButton } from './ThemeButton';
 
 export interface HeaderProps {
   isLogViewOpen: boolean;
@@ -9,6 +11,8 @@ export interface HeaderProps {
   theme: 'light' | 'dark';
   toggleCollapse: () => void;
   tilesCount: number;
+  refreshAllTiles?: () => void;
+  isRefreshing?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,27 +22,18 @@ export const Header: React.FC<HeaderProps> = ({
   theme,
   toggleCollapse,
   tilesCount,
+  refreshAllTiles,
+  isRefreshing = false,
 }) => (
   <header className="fixed top-0 left-0 right-0 z-50 bg-surface-primary border-b border-theme-primary px-4 py-3 flex items-center justify-between h-16">
     <div className="flex items-center space-x-3">
-      <button
-        onClick={toggleCollapse}
-        className="p-2 text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary rounded-lg transition-colors"
-        aria-label="Toggle sidebar"
-      >
-        <Icon name="menu" size="md" />
-      </button>
+      <CollapseButton onToggle={toggleCollapse} />
       <h1 className="text-xl font-semibold text-theme-primary">Dashboard</h1>
     </div>
     <div className="flex items-center space-x-2">
       <LogButton isOpen={isLogViewOpen} onToggle={toggleLogView} />
-      <button
-        onClick={toggleTheme}
-        className="p-2 text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary rounded-lg transition-colors"
-        aria-label="Toggle theme"
-      >
-        {theme === 'dark' ? <Icon name="sun" size="md" /> : <Icon name="moon" size="md" />}
-      </button>
+      <RefreshButton onRefresh={refreshAllTiles || (() => {})} isRefreshing={isRefreshing} />
+      <ThemeButton theme={theme} onToggle={toggleTheme} />
       <span className="text-sm text-theme-secondary">{tilesCount} tiles</span>
     </div>
   </header>

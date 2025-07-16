@@ -1,5 +1,13 @@
-import { storageManager, type APILogDetails, type TileDataType } from './storageManager';
-import { DataMapperRegistry, type BaseApiResponse } from './dataMapper';
+import {
+  APILogLevel,
+  storageManager,
+  type APILogDetails,
+  type TileDataType,
+} from './storageManager';
+import { type BaseApiResponse, DataMapperRegistry } from './dataMapper';
+
+// 10-minute interval constant for data freshness
+export const DATA_FRESHNESS_INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 export interface FetchOptions {
   forceRefresh?: boolean;
@@ -18,6 +26,19 @@ export interface FetchResult<T> {
 }
 
 export class DataFetcher {
+  // Centralized helper for setting tile state
+  private static setTileState<T>(
+    storageKey: string,
+    data: T | null,
+    lastDataRequestSuccessful: boolean,
+  ) {
+    storageManager.setTileState<T>(storageKey, {
+      data,
+      lastDataRequest: Date.now(),
+      lastDataRequestSuccessful,
+    });
+  }
+
   static async fetchWithRetry<T>(
     fetchFunction: () => Promise<T>,
     storageKey: string,
@@ -29,21 +50,29 @@ export class DataFetcher {
       // Check cache first unless forcing refresh
       if (!forceRefresh) {
         const cached = storageManager.getTileState<T>(storageKey);
-        if (cached && cached.data) {
-          return {
-            data: cached.data as T,
-            isCached: true,
-            error: null,
-            lastUpdated: new Date(cached.lastDataRequest),
-            retryCount: 0,
-          };
+        if (cached) {
+          // Check if data is fresh (less than 10 minutes old)
+          const now = Date.now();
+          const dataAge = now - cached.lastDataRequest;
+          const isDataFresh = dataAge < DATA_FRESHNESS_INTERVAL;
+
+          if (isDataFresh) {
+            return {
+              data: cached.data as T,
+              isCached: true,
+              error: cached.data ? null : 'No data (cached error or previous failure)',
+              lastUpdated: new Date(cached.lastDataRequest),
+              retryCount: 0,
+            };
+          }
+          // Data is stale, continue to fetch fresh data
         }
       }
 
       // Fetch fresh data with timeout
       let data: T;
       try {
-        data = await this.fetchWithTimeout(fetchFunction, timeout);
+        data = await DataFetcher.fetchWithTimeout(fetchFunction, timeout);
       } catch (fetchError) {
         // Log fetch error (network, timeout, etc.)
         const errorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
@@ -55,11 +84,15 @@ export class DataFetcher {
           errorMessage,
         };
         storageManager.addLog({
-          level: 'error',
+          level: APILogLevel.ERROR,
           apiCall,
           reason: errorMessage,
           details: logDetails,
         });
+
+        // Update lastDataRequest even on error to prevent infinite retry loops
+        DataFetcher.setTileState<T>(storageKey, null, false);
+
         return {
           data: null,
           isCached: false,
@@ -81,11 +114,15 @@ export class DataFetcher {
           errorMessage,
         };
         storageManager.addLog({
-          level: 'error',
+          level: APILogLevel.ERROR,
           apiCall,
           reason: errorMessage,
           details: logDetails,
         });
+
+        // Update lastDataRequest even on API error to prevent infinite retry loops
+        DataFetcher.setTileState<T>(storageKey, null, false);
+
         return {
           data: null,
           isCached: false,
@@ -96,11 +133,7 @@ export class DataFetcher {
       }
 
       // Cache the fresh data
-      storageManager.setTileState<T>(storageKey, {
-        data: data as unknown as T,
-        lastDataRequest: Date.now(),
-        lastDataRequestSuccessful: true,
-      });
+      DataFetcher.setTileState<T>(storageKey, data as unknown as T, true);
 
       return {
         data,
@@ -120,11 +153,15 @@ export class DataFetcher {
         errorMessage,
       };
       storageManager.addLog({
-        level: 'error',
+        level: APILogLevel.ERROR,
         apiCall,
         reason: errorMessage,
         details: logDetails,
       });
+
+      // Update lastDataRequest even on general error to prevent infinite retry loops
+      DataFetcher.setTileState<T>(storageKey, null, false);
+
       return {
         data: null,
         isCached: false,
@@ -168,7 +205,7 @@ export class DataFetcher {
       // Schedule background refresh
       setTimeout(async () => {
         try {
-          await this.fetchWithRetry(fetchFunction, storageKey, {
+          await DataFetcher.fetchWithRetry(fetchFunction, storageKey, {
             ...options,
             forceRefresh: true,
           });
@@ -181,7 +218,7 @@ export class DataFetcher {
           };
 
           storageManager.addLog({
-            level: 'warning',
+            level: APILogLevel.WARNING,
             apiCall: options.apiCall || storageKey,
             reason: `Background refresh failed: ${errorMessage}`,
             details: logDetails,
@@ -199,13 +236,13 @@ export class DataFetcher {
     }
 
     // No cached data, fetch immediately
-    return this.fetchWithRetry(fetchFunction, storageKey, options);
+    return DataFetcher.fetchWithRetry(fetchFunction, storageKey, options);
   }
 
   // Helper method to log warnings for non-critical issues
   static logWarning(apiCall: string, reason: string, details?: APILogDetails): void {
     storageManager.addLog({
-      level: 'warning',
+      level: APILogLevel.WARNING,
       apiCall,
       reason,
       details,
@@ -215,7 +252,7 @@ export class DataFetcher {
   // Helper method to log errors for critical issues
   static logError(apiCall: string, reason: string, details?: APILogDetails): void {
     storageManager.addLog({
-      level: 'error',
+      level: APILogLevel.ERROR,
       apiCall,
       reason,
       details,
@@ -240,18 +277,14 @@ export class DataFetcher {
     }
 
     try {
-      const result = await this.fetchWithRetry(fetchFunction, storageKey, options);
+      const result = await DataFetcher.fetchWithRetry(fetchFunction, storageKey, options);
 
       if (result.data) {
         // Map the API response to tile content data
         const mappedData = mapper.safeMap(result.data);
 
         // Cache the mapped data
-        storageManager.setTileState<TTileData>(storageKey, {
-          data: mappedData,
-          lastDataRequest: Date.now(),
-          lastDataRequestSuccessful: true,
-        });
+        DataFetcher.setTileState<TTileData>(storageKey, mappedData, true);
 
         return {
           data: mappedData,
@@ -264,11 +297,7 @@ export class DataFetcher {
         // Return default data if no API data
         const defaultData = mapper.createDefault();
 
-        storageManager.setTileState<TTileData>(storageKey, {
-          data: defaultData,
-          lastDataRequest: Date.now(),
-          lastDataRequestSuccessful: false,
-        });
+        DataFetcher.setTileState<TTileData>(storageKey, defaultData, false);
 
         return {
           data: defaultData,
@@ -282,11 +311,7 @@ export class DataFetcher {
       // Return default data on error
       const defaultData = mapper.createDefault();
 
-      storageManager.setTileState<TTileData>(storageKey, {
-        data: defaultData,
-        lastDataRequest: Date.now(),
-        lastDataRequestSuccessful: false,
-      });
+      DataFetcher.setTileState<TTileData>(storageKey, defaultData, false);
 
       return {
         data: defaultData,

@@ -54,6 +54,21 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/emmi/, ''),
       },
+      '/api/openweathermap': {
+        target: 'https://api.openweathermap.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/openweathermap/, ''),
+      },
+      '/api/time': {
+        target: 'https://worldtimeapi.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/time/, ''),
+      },
+      '/api/precious-metals': {
+        target: 'https://api.metals.live',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/precious-metals/, ''),
+      },
     },
   },
 });

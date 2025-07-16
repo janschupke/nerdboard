@@ -19,7 +19,8 @@ function useGdxEtfTileData(
     setError(null);
     setHasData(false);
     setData(undefined);
-    getGDXETF(tileId, { symbol: 'GDX' })
+
+    getGDXETF(tileId)
       .then((result) => {
         if (!mounted) return;
         setData(result);

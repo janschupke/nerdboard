@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useEuriborApi } from './useEuriborApi';
+import type { EuriborRateData } from './types';
+import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<unknown>> {
+function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<EuriborRateData>> {
   const { getEuriborRate } = useEuriborApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
-  const [data, setData] = useState<unknown>(undefined);
+  const [data, setData] = useState<EuriborRateData | undefined>(undefined);
+  const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
     let mounted = true;
@@ -16,11 +19,12 @@ function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<unkn
     setError(null);
     setHasData(false);
     setData(undefined);
-    getEuriborRate()
+
+    getEuriborRate(tileId, isForceRefresh)
       .then((result) => {
         if (!mounted) return;
         setData(result);
-        setHasData(!!result);
+        setHasData(!!result && typeof result.currentRate === 'number');
         setLoading(false);
       })
       .catch((err) => {
@@ -32,7 +36,7 @@ function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<unkn
     return () => {
       mounted = false;
     };
-  }, [getEuriborRate, tileId]);
+  }, [tileId, getEuriborRate, isForceRefresh]);
   return { loading, error, hasData, data };
 }
 

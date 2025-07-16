@@ -3,16 +3,17 @@ import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { usePreciousMetalsApi } from './usePreciousMetalsApi';
 import type { PreciousMetalsData } from './types';
+import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
 function usePreciousMetalsTileData(
   tileId: string,
-  refreshKey?: number,
 ): ReturnType<GenericTileDataHook<PreciousMetalsData>> {
   const { getPreciousMetals } = usePreciousMetalsApi();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
   const [data, setData] = useState<PreciousMetalsData | undefined>(undefined);
+  const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
     let mounted = true;
@@ -20,7 +21,8 @@ function usePreciousMetalsTileData(
     setError(null);
     setHasData(false);
     setData(undefined);
-    getPreciousMetals(tileId, {})
+
+    getPreciousMetals(tileId, {}, isForceRefresh)
       .then((result) => {
         if (!mounted) return;
         setData(result);
@@ -36,25 +38,16 @@ function usePreciousMetalsTileData(
     return () => {
       mounted = false;
     };
-  }, [tileId, getPreciousMetals, refreshKey]);
+  }, [tileId, getPreciousMetals, isForceRefresh]);
   return { loading, error, hasData, data };
 }
 
 export const PreciousMetalsTile = React.memo(
-  ({
-    tile,
-    meta,
-    refreshKey,
-    ...rest
-  }: {
-    tile: DragboardTileData;
-    meta: TileMeta;
-    refreshKey?: number;
-  }) => {
-    const tileData = usePreciousMetalsTileData(tile.id, refreshKey);
+  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+    const tileData = usePreciousMetalsTileData(tile.id);
     return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },
-  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
+  (prev, next) => prev.tile.id === next.tile.id,
 );
 
 PreciousMetalsTile.displayName = 'PreciousMetalsTile';
