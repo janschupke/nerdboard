@@ -88,6 +88,18 @@ export const TIME_API_ENDPOINT: ApiEndpoint<TimeParams> = {
   queryParams: {} as TimeParams,
 };
 
+// --- Typhoon (CWB) ---
+export interface TyphoonParams {
+  Authorization: string; // required API key
+  format?: 'JSON' | 'XML'; // optional
+  dataid?: string; // optional
+}
+
+export const CWB_TYPHOON_ENDPOINT: ApiEndpoint<TyphoonParams> = {
+  url: '/api/cwb/v1/rest/datastore/W-C0034-002',
+  queryParams: {} as TyphoonParams,
+};
+
 // --- Endpoint Parser ---
 export function buildApiUrl<TParams extends object>(
   endpoint: ApiEndpoint<TParams>,

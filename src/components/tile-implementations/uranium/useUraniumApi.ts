@@ -1,12 +1,11 @@
-import type { UraniumApiResponseWithIndex, UraniumTileData } from './dataMapper';
+import type { UraniumTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { TRADINGECONOMICS_URANIUM_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { UraniumParams } from '../../../services/apiEndpoints';
-import { TileType, TileApiCallTitle } from '../../../types/tile';
 
 /**
- * Fetches uranium price data from TradingEconomics.
+ * Fetches uranium price data from Trading Economics HTML using the unified dataFetcher and dataParser.
  * @param tileId - Unique tile identifier for storage
  * @param params - Query params for uranium endpoint
  * @param forceRefresh - Whether to bypass cache and force a fresh fetch
@@ -20,16 +19,18 @@ export function useUraniumApi() {
       forceRefresh = false,
     ): Promise<UraniumTileData> => {
       const url = buildApiUrl(TRADINGECONOMICS_URANIUM_ENDPOINT, params);
-      const result = await DataFetcher.fetchAndMap<
-        (typeof TileType)['URANIUM'],
-        UraniumApiResponseWithIndex,
-        UraniumTileData
-      >(() => fetch(url).then((res) => res.json()), tileId, TileType.URANIUM, {
-        apiCall: TileApiCallTitle.URANIUM,
-        forceRefresh,
-      });
+      const result = await DataFetcher.fetchAndParse(
+        async () => {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('Trading Economics HTML fetch error');
+          return res.text();
+        },
+        tileId,
+        'uranium-html',
+        { forceRefresh }
+      );
       if (result.error || !result.data) throw new Error(result.error || 'No data');
-      return result.data;
+      return result.data as UraniumTileData;
     },
     [],
   );
