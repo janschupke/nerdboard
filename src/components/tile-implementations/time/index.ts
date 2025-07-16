@@ -1,2 +1,8 @@
 export { TimeTile } from './TimeTile';
-export type { TimeTileProps, TimeTileConfig, TimeTileData, TimeApiData, TimeFormat } from './types';
+export type {
+  TimeTileProps,
+  TimeTileConfig,
+  TimeTileData,
+  TimeApiResponse,
+  TimeFormat,
+} from './types';

@@ -15,7 +15,7 @@ export interface TimeTileData extends TileDataType {
   lastUpdate: string;
 }
 
-export interface TimeApiData extends BaseApiResponse {
+export interface TimeApiResponse extends BaseApiResponse {
   datetime: string;
   timezone: string;
   utc_datetime: string;

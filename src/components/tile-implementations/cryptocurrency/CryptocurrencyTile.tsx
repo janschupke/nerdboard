@@ -5,7 +5,9 @@ import { useCryptoApi } from './useCryptoApi';
 import type { CryptocurrencyTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useCryptoTileData(tileId: string): ReturnType<GenericTileDataHook<CryptocurrencyTileData>> {
+function useCryptoTileData(
+  tileId: string,
+): ReturnType<GenericTileDataHook<CryptocurrencyTileData>> {
   const { getCryptocurrencyMarkets } = useCryptoApi();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<CryptocurrencyTileData | undefined>(undefined);

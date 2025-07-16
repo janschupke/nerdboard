@@ -26,7 +26,7 @@ export interface FederalFundsRateTileProps {
 
 export type TimeRange = '1M' | '3M' | '6M' | '1Y' | '5Y' | 'Max';
 
-export interface FederalFundsRateApiData extends BaseApiResponse {
+export interface FederalFundsRateApiResponse extends BaseApiResponse {
   observations: Array<{
     realtime_start: string;
     realtime_end: string;

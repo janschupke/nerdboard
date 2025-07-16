@@ -1,17 +1,17 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
-import type { CryptocurrencyApiData, CryptocurrencyTileData } from './types';
+import type { CryptocurrencyApiResponse, CryptocurrencyTileData } from './types';
 
 export class CryptocurrencyDataMapper extends BaseDataMapper<
-  CryptocurrencyApiData[],
+  CryptocurrencyApiResponse[],
   CryptocurrencyTileData
 > {
-  map(apiResponse: CryptocurrencyApiData[]): CryptocurrencyTileData {
+  map(apiResponse: CryptocurrencyApiResponse[]): CryptocurrencyTileData {
     return {
       coins: Array.isArray(apiResponse) ? apiResponse : [],
     };
   }
 
-  validate(apiResponse: unknown): apiResponse is CryptocurrencyApiData[] {
+  validate(apiResponse: unknown): apiResponse is CryptocurrencyApiResponse[] {
     return (
       Array.isArray(apiResponse) &&
       apiResponse.every(

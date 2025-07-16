@@ -1,17 +1,17 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
-import type { UraniumTileData as UraniumTileDataType, UraniumApiData } from './types';
-export type { UraniumTileDataType as UraniumTileData };
+import type { UraniumTileData, UraniumApiResponse } from './types';
+export type { UraniumTileData as UraniumTileData };
 
 // Extend UraniumApiData to satisfy BaseApiResponse constraint
-export interface UraniumApiDataWithIndex extends UraniumApiData {
+export interface UraniumApiResponseWithIndex extends UraniumApiResponse {
   [key: string]: unknown;
 }
 
 export class UraniumDataMapper extends BaseDataMapper<
-  UraniumApiDataWithIndex,
-  UraniumTileDataType
+  UraniumApiResponseWithIndex,
+  UraniumTileData
 > {
-  map(apiResponse: UraniumApiDataWithIndex): UraniumTileDataType {
+  map(apiResponse: UraniumApiResponseWithIndex): UraniumTileData {
     return {
       spotPrice: apiResponse.spotPrice,
       change: apiResponse.change,
@@ -25,7 +25,7 @@ export class UraniumDataMapper extends BaseDataMapper<
     };
   }
 
-  validate(apiResponse: unknown): apiResponse is UraniumApiDataWithIndex {
+  validate(apiResponse: unknown): apiResponse is UraniumApiResponseWithIndex {
     if (!apiResponse || typeof apiResponse !== 'object') {
       return false;
     }
@@ -45,7 +45,7 @@ export class UraniumDataMapper extends BaseDataMapper<
     );
   }
 
-  createDefault(): UraniumTileDataType {
+  createDefault(): UraniumTileData {
     return {
       spotPrice: 0,
       change: 0,

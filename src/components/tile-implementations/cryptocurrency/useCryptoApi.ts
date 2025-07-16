@@ -1,8 +1,9 @@
-import type { CryptocurrencyApiData, CryptocurrencyTileData } from './types';
+import type { CryptocurrencyApiResponse, CryptocurrencyTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { COINGECKO_MARKETS_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { CryptoMarketsParams } from '../../../services/apiEndpoints';
+import { TileType, TileApiCallTitle } from '../../../types/tile';
 
 /**
  * Fetches cryptocurrency market data from CoinGecko.
@@ -20,11 +21,11 @@ export function useCryptoApi() {
     ): Promise<CryptocurrencyTileData> => {
       const url = buildApiUrl(COINGECKO_MARKETS_ENDPOINT, params);
       const result = await DataFetcher.fetchAndMap<
-        'cryptocurrency',
-        CryptocurrencyApiData[],
+        (typeof TileType)['CRYPTOCURRENCY'],
+        CryptocurrencyApiResponse[],
         CryptocurrencyTileData
-      >(() => fetch(url).then((res) => res.json()), tileId, 'cryptocurrency', {
-        apiCall: 'CoinGecko Markets API',
+      >(() => fetch(url).then((res) => res.json()), tileId, TileType.CRYPTOCURRENCY, {
+        apiCall: TileApiCallTitle.CRYPTOCURRENCY,
         forceRefresh,
       });
       if (result.error) throw new Error(result.error);

@@ -1,9 +1,10 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
-import type { WeatherTileData, WeatherApiData, WeatherForecast } from './types';
+import type { WeatherTileData, WeatherApiResponse, WeatherForecast } from './types';
+import { TileType } from '../../../types/tile';
 
 // Relax the constraint for WeatherApiResponse
-export class WeatherDataMapper extends BaseDataMapper<WeatherApiData, WeatherTileData> {
-  map(apiResponse: WeatherApiData): WeatherTileData {
+export class WeatherDataMapper extends BaseDataMapper<WeatherApiResponse, WeatherTileData> {
+  map(apiResponse: WeatherApiResponse): WeatherTileData {
     const current = apiResponse.current;
     const weather = current.weather[0];
     const daily: WeatherForecast[] = Array.isArray(apiResponse.daily)
@@ -51,7 +52,7 @@ export class WeatherDataMapper extends BaseDataMapper<WeatherApiData, WeatherTil
     };
   }
 
-  validate(apiResponse: unknown): apiResponse is WeatherApiData {
+  validate(apiResponse: unknown): apiResponse is WeatherApiResponse {
     if (!apiResponse || typeof apiResponse !== 'object') {
       return false;
     }
@@ -145,4 +146,6 @@ export class WeatherDataMapper extends BaseDataMapper<WeatherApiData, WeatherTil
 // Register the mapper
 import { DataMapperRegistry } from '../../../services/dataMapper';
 
-DataMapperRegistry.register('weather', new WeatherDataMapper());
+DataMapperRegistry.register(TileType.WEATHER_HELSINKI, new WeatherDataMapper());
+DataMapperRegistry.register(TileType.WEATHER_PRAGUE, new WeatherDataMapper());
+DataMapperRegistry.register(TileType.WEATHER_TAIPEI, new WeatherDataMapper());

@@ -1,9 +1,10 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
-import type { TimeTileData, TimeApiData } from './types';
+import type { TimeTileData, TimeApiResponse } from './types';
 import { DateTime } from 'luxon';
+import { TileType } from '../../../types/tile';
 
-export class TimeDataMapper extends BaseDataMapper<TimeApiData, TimeTileData> {
-  map(apiResponse: TimeApiData): TimeTileData {
+export class TimeDataMapper extends BaseDataMapper<TimeApiResponse, TimeTileData> {
+  map(apiResponse: TimeApiResponse): TimeTileData {
     const dt = DateTime.fromISO(apiResponse.datetime, { zone: apiResponse.timezone });
     return {
       currentTime: dt.toFormat('HH:mm:ss'),
@@ -18,7 +19,7 @@ export class TimeDataMapper extends BaseDataMapper<TimeApiData, TimeTileData> {
     };
   }
 
-  validate(apiResponse: unknown): apiResponse is TimeApiData {
+  validate(apiResponse: unknown): apiResponse is TimeApiResponse {
     if (!apiResponse || typeof apiResponse !== 'object') {
       return false;
     }
@@ -94,4 +95,6 @@ export class TimeDataMapper extends BaseDataMapper<TimeApiData, TimeTileData> {
 
 import { DataMapperRegistry } from '../../../services/dataMapper';
 
-DataMapperRegistry.register('time', new TimeDataMapper());
+DataMapperRegistry.register(TileType.TIME_HELSINKI, new TimeDataMapper());
+DataMapperRegistry.register(TileType.TIME_PRAGUE, new TimeDataMapper());
+DataMapperRegistry.register(TileType.TIME_TAIPEI, new TimeDataMapper());

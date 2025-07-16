@@ -11,7 +11,7 @@ function useGdxEtfTileData(tileId: string): ReturnType<GenericTileDataHook<GdxEt
   const [data, setData] = useState<GdxEtfTileData | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const isForceRefresh = useForceRefreshFromKey();
-  
+
   useEffect(() => {
     setLoading(true);
     setData(undefined);
@@ -32,11 +32,7 @@ function useGdxEtfTileData(tileId: string): ReturnType<GenericTileDataHook<GdxEt
 }
 
 export const GDXETFTile = React.memo(
-  ({ tile, meta, ...rest }: {
-    tile: DragboardTileData;
-    meta: TileMeta;
-    refreshKey?: number;
-  }) => {
+  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta; refreshKey?: number }) => {
     const tileData = useGdxEtfTileData(tile.id);
     return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
   },

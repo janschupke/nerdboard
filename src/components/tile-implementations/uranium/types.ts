@@ -32,7 +32,7 @@ export interface UraniumTileProps {
 
 export type UraniumTimeRange = '1M' | '3M' | '6M' | '1Y' | '5Y' | 'Max';
 
-export interface UraniumApiData extends BaseApiResponse {
+export interface UraniumApiResponse extends BaseApiResponse {
   spotPrice: number;
   history: UraniumPriceHistory[];
   change: number;

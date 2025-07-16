@@ -1,9 +1,10 @@
-import type { PreciousMetalsApiDataWithIndex } from './dataMapper';
+import type { PreciousMetalsApiResponseWithIndex } from './dataMapper';
 import type { PreciousMetalsTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { PRECIOUS_METALS_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { PreciousMetalsParams } from '../../../services/apiEndpoints';
+import { TileType, TileApiCallTitle } from '../../../types/tile';
 
 /**
  * Fetches precious metals data (gold, silver).
@@ -21,10 +22,13 @@ export function usePreciousMetalsApi() {
     ): Promise<PreciousMetalsTileData> => {
       const url = buildApiUrl(PRECIOUS_METALS_ENDPOINT, params);
       const result = await DataFetcher.fetchAndMap<
-        'precious-metals',
-        PreciousMetalsApiDataWithIndex,
+        (typeof TileType)['PRECIOUS_METALS'],
+        PreciousMetalsApiResponseWithIndex,
         PreciousMetalsTileData
-      >(() => fetch(url).then((res) => res.json()), tileId, 'precious-metals', { forceRefresh });
+      >(() => fetch(url).then((res) => res.json()), tileId, TileType.PRECIOUS_METALS, {
+        apiCall: TileApiCallTitle.PRECIOUS_METALS,
+        forceRefresh,
+      });
       if (result.error || !result.data) throw new Error(result.error || 'No data');
       return result.data;
     },

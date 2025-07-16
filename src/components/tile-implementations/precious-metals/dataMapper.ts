@@ -1,15 +1,15 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
-import type { PreciousMetalsTileData, PreciousMetalsApiData } from './types';
+import type { PreciousMetalsTileData, PreciousMetalsApiResponse } from './types';
 
-export interface PreciousMetalsApiDataWithIndex extends PreciousMetalsApiData {
+export interface PreciousMetalsApiResponseWithIndex extends PreciousMetalsApiResponse {
   [key: string]: unknown;
 }
 
 export class PreciousMetalsDataMapper extends BaseDataMapper<
-  PreciousMetalsApiDataWithIndex,
+  PreciousMetalsApiResponseWithIndex,
   PreciousMetalsTileData
 > {
-  map(apiResponse: PreciousMetalsApiDataWithIndex): PreciousMetalsTileData {
+  map(apiResponse: PreciousMetalsApiResponseWithIndex): PreciousMetalsTileData {
     return {
       gold: {
         price: apiResponse.gold.price,
@@ -24,7 +24,7 @@ export class PreciousMetalsDataMapper extends BaseDataMapper<
     };
   }
 
-  validate(apiResponse: unknown): apiResponse is PreciousMetalsApiDataWithIndex {
+  validate(apiResponse: unknown): apiResponse is PreciousMetalsApiResponseWithIndex {
     if (!apiResponse || typeof apiResponse !== 'object') {
       return false;
     }

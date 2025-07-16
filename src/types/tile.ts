@@ -13,13 +13,27 @@ export const TileType = {
   URANIUM: 'uranium',
 } as const;
 
+export type TileType = (typeof TileType)[keyof typeof TileType];
+
+export const TileApiCallTitle = {
+  CRYPTOCURRENCY: 'CoinGecko Markets API',
+  PRECIOUS_METALS: 'Metals-API',
+  FEDERAL_FUNDS_RATE: 'FRED Series Observations API',
+  EURIBOR_RATE: 'EMMI Euribor Rate API',
+  WEATHER: 'Weather API',
+  GDX_ETF: 'Yahoo Finance Chart API',
+  TIME: 'WorldTimeAPI',
+  URANIUM: 'TradingEconomics Uranium API',
+} as const;
+
+export type TileApiCallTitle = (typeof TileApiCallTitle)[keyof typeof TileApiCallTitle];
+
 export const TileSize = {
   SMALL: 'small',
   MEDIUM: 'medium',
   LARGE: 'large',
 } as const;
 
-export type TileType = (typeof TileType)[keyof typeof TileType];
 export type TileSize = (typeof TileSize)[keyof typeof TileSize];
 
 // Type aliases for backward compatibility

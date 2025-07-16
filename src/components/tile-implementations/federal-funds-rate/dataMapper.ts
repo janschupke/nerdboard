@@ -1,15 +1,15 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
-import type { FederalFundsRateTileData, FederalFundsRateApiData } from './types';
+import type { FederalFundsRateTileData, FederalFundsRateApiResponse } from './types';
 
-export interface FederalFundsRateApiDataWithIndex extends FederalFundsRateApiData {
+export interface FederalFundsRateApiResponseWithIndex extends FederalFundsRateApiResponse {
   [key: string]: unknown;
 }
 
 export class FederalFundsRateDataMapper extends BaseDataMapper<
-  FederalFundsRateApiDataWithIndex,
+  FederalFundsRateApiResponseWithIndex,
   FederalFundsRateTileData
 > {
-  map(apiResponse: FederalFundsRateApiDataWithIndex): FederalFundsRateTileData {
+  map(apiResponse: FederalFundsRateApiResponseWithIndex): FederalFundsRateTileData {
     const observations = apiResponse.observations;
     const latestObservation = observations[observations.length - 1];
 
@@ -23,7 +23,7 @@ export class FederalFundsRateDataMapper extends BaseDataMapper<
     };
   }
 
-  validate(apiResponse: unknown): apiResponse is FederalFundsRateApiDataWithIndex {
+  validate(apiResponse: unknown): apiResponse is FederalFundsRateApiResponseWithIndex {
     if (!apiResponse || typeof apiResponse !== 'object') {
       return false;
     }

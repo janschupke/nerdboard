@@ -1,9 +1,10 @@
-import type { WeatherApiData } from '../weather/types';
+import type { WeatherApiResponse } from '../weather/types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { OPENWEATHERMAP_ONECALL_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { WeatherTileData } from './types';
 import type { WeatherParams } from '../../../services/apiEndpoints';
+import { TileType, TileApiCallTitle } from '../../../types/tile';
 
 /**
  * Fetches weather data for a location from OpenWeatherMap.
@@ -20,15 +21,14 @@ export function useWeatherApi() {
       forceRefresh = false,
     ): Promise<WeatherTileData> => {
       const url = buildApiUrl(OPENWEATHERMAP_ONECALL_ENDPOINT, params);
-      const result = await DataFetcher.fetchAndMap<'weather', WeatherApiData, WeatherTileData>(
-        () => fetch(url).then((res) => res.json()),
-        tileId,
-        'weather',
-        {
-          apiCall: 'Weather API',
-          forceRefresh,
-        },
-      );
+      const result = await DataFetcher.fetchAndMap<
+        (typeof TileType)['WEATHER_HELSINKI'],
+        WeatherApiResponse,
+        WeatherTileData
+      >(() => fetch(url).then((res) => res.json()), tileId, TileType.WEATHER_HELSINKI, {
+        apiCall: TileApiCallTitle.WEATHER,
+        forceRefresh,
+      });
       if (result.error) throw new Error(result.error);
       return result.data as WeatherTileData;
     },

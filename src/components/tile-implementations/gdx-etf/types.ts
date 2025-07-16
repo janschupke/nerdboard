@@ -45,7 +45,7 @@ export interface MarketHours {
   currentTime: string;
 }
 
-export interface GdxEtfApiData extends BaseApiResponse {
+export interface GdxEtfApiResponse extends BaseApiResponse {
   symbol: string;
   name: string;
   currentPrice: number;

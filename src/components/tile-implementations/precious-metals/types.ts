@@ -33,7 +33,7 @@ export interface PreciousMetalsTileProps {
 export type ChartPeriod = '7d' | '30d' | '1y';
 export type MetalType = 'gold' | 'silver';
 
-export interface PreciousMetalsApiData extends BaseApiResponse {
+export interface PreciousMetalsApiResponse extends BaseApiResponse {
   gold: {
     price: number;
     change_24h: number;

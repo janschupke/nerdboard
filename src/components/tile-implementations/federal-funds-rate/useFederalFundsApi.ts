@@ -1,4 +1,4 @@
-import type { FederalFundsRateApiDataWithIndex } from './dataMapper';
+import type { FederalFundsRateApiResponseWithIndex } from './dataMapper';
 import type { FederalFundsRateTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
@@ -22,7 +22,7 @@ export function useFederalFundsApi() {
       const url = buildApiUrl(FRED_SERIES_OBSERVATIONS_ENDPOINT, params);
       const result = await DataFetcher.fetchAndMap<
         'federal-funds-rate',
-        FederalFundsRateApiDataWithIndex,
+        FederalFundsRateApiResponseWithIndex,
         FederalFundsRateTileData
       >(() => fetch(url).then((res) => res.json()), tileId, 'federal-funds-rate', { forceRefresh });
       if (result.error || !result.data) throw new Error(result.error || 'No data');

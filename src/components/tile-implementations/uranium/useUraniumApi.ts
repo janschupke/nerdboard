@@ -1,8 +1,9 @@
-import type { UraniumApiDataWithIndex, UraniumTileData } from './dataMapper';
+import type { UraniumApiResponseWithIndex, UraniumTileData } from './dataMapper';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { TRADINGECONOMICS_URANIUM_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { UraniumParams } from '../../../services/apiEndpoints';
+import { TileType, TileApiCallTitle } from '../../../types/tile';
 
 /**
  * Fetches uranium price data from TradingEconomics.
@@ -20,10 +21,13 @@ export function useUraniumApi() {
     ): Promise<UraniumTileData> => {
       const url = buildApiUrl(TRADINGECONOMICS_URANIUM_ENDPOINT, params);
       const result = await DataFetcher.fetchAndMap<
-        'uranium',
-        UraniumApiDataWithIndex,
+        (typeof TileType)['URANIUM'],
+        UraniumApiResponseWithIndex,
         UraniumTileData
-      >(() => fetch(url).then((res) => res.json()), tileId, 'uranium', { forceRefresh });
+      >(() => fetch(url).then((res) => res.json()), tileId, TileType.URANIUM, {
+        apiCall: TileApiCallTitle.URANIUM,
+        forceRefresh,
+      });
       if (result.error || !result.data) throw new Error(result.error || 'No data');
       return result.data;
     },

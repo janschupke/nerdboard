@@ -3,6 +3,6 @@ export type {
   UraniumTileProps,
   UraniumTileConfig,
   UraniumTileData,
-  UraniumApiData,
+  UraniumApiResponse,
   UraniumTimeRange,
 } from './types';

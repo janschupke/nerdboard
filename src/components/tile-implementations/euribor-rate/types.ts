@@ -14,7 +14,7 @@ export interface EuriborRateHistoryEntry {
 
 export type TimeRange = '1M' | '3M' | '6M' | '1Y' | '5Y' | 'Max';
 
-export interface EuriborRateApiData extends BaseApiResponse {
+export interface EuriborRateApiResponse extends BaseApiResponse {
   rates: Array<{
     date: string;
     value: string;

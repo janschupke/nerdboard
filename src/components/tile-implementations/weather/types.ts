@@ -81,7 +81,7 @@ export interface WeatherTileConfig {
   refreshInterval?: number;
 }
 
-export interface WeatherApiData extends BaseApiResponse {
+export interface WeatherApiResponse extends BaseApiResponse {
   [key: string]: unknown;
   current: {
     temp: number;
@@ -115,7 +115,7 @@ export interface WeatherApiData extends BaseApiResponse {
   timezone: string;
 }
 
-export type WeatherApiResponseType = WeatherApiData;
+export type WeatherApiResponseType = WeatherApiResponse;
 
 export type WeatherError = {
   message: string;
