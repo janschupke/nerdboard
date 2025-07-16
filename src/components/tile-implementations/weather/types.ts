@@ -1,6 +1,6 @@
 import type { TileDataType } from '../../../services/storageManager';
 
-export interface WeatherData extends TileDataType {
+export interface WeatherTileData extends TileDataType {
   city: string;
   country: string;
   temperature: {
@@ -22,6 +22,7 @@ export interface WeatherData extends TileDataType {
   pressure: number;
   visibility: number;
   timestamp: number;
+  daily: WeatherForecast[];
 }
 
 export interface WeatherForecast {
@@ -53,15 +54,15 @@ export interface WeatherTileProps {
 export interface WeatherHeaderProps {
   city: string;
   country: string;
-  conditions: WeatherData['conditions'];
+  conditions: WeatherTileData['conditions'];
   timestamp: number;
 }
 
 export interface WeatherCurrentProps {
-  temperature: WeatherData['temperature'];
-  conditions: WeatherData['conditions'];
+  temperature: WeatherTileData['temperature'];
+  conditions: WeatherTileData['conditions'];
   humidity: number;
-  wind: WeatherData['wind'];
+  wind: WeatherTileData['wind'];
 }
 
 export interface WeatherForecastProps {
@@ -79,7 +80,7 @@ export interface WeatherTileConfig {
   refreshInterval?: number;
 }
 
-export interface WeatherApiResponse {
+export interface WeatherApiData {
   [key: string]: unknown;
   current: {
     temp: number;
@@ -113,14 +114,10 @@ export interface WeatherApiResponse {
   timezone: string;
 }
 
-export type WeatherApiResponseType = WeatherApiResponse;
+export type WeatherApiResponseType = WeatherApiData;
 
 export type WeatherError = {
   message: string;
   code?: string;
   retryable: boolean;
 };
-
-export interface WeatherTileData extends TileDataType {
-  weather: WeatherApiResponse;
-}

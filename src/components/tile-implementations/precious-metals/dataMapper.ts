@@ -1,25 +1,15 @@
-import { BaseDataMapper, type BaseApiResponse } from '../../../services/dataMapper';
-import type { PreciousMetalsData } from './types';
+import { BaseDataMapper } from '../../../services/dataMapper';
+import type { PreciousMetalsTileData, PreciousMetalsApiData } from './types';
 
-// API response type for precious metals
-export interface PreciousMetalsApiResponse extends BaseApiResponse {
-  gold: {
-    price: number;
-    change_24h: number;
-    change_percentage_24h: number;
-  };
-  silver: {
-    price: number;
-    change_24h: number;
-    change_percentage_24h: number;
-  };
+export interface PreciousMetalsApiDataWithIndex extends PreciousMetalsApiData {
+  [key: string]: unknown;
 }
 
 export class PreciousMetalsDataMapper extends BaseDataMapper<
-  PreciousMetalsApiResponse,
-  PreciousMetalsData
+  PreciousMetalsApiDataWithIndex,
+  PreciousMetalsTileData
 > {
-  map(apiResponse: PreciousMetalsApiResponse): PreciousMetalsData {
+  map(apiResponse: PreciousMetalsApiDataWithIndex): PreciousMetalsTileData {
     return {
       gold: {
         price: apiResponse.gold.price,
@@ -34,14 +24,13 @@ export class PreciousMetalsDataMapper extends BaseDataMapper<
     };
   }
 
-  validate(apiResponse: unknown): apiResponse is PreciousMetalsApiResponse {
+  validate(apiResponse: unknown): apiResponse is PreciousMetalsApiDataWithIndex {
     if (!apiResponse || typeof apiResponse !== 'object') {
       return false;
     }
 
     const response = apiResponse as Record<string, unknown>;
 
-    // Check for required fields
     if (
       !response.gold ||
       !response.silver ||
@@ -54,7 +43,6 @@ export class PreciousMetalsDataMapper extends BaseDataMapper<
     const gold = response.gold as Record<string, unknown>;
     const silver = response.silver as Record<string, unknown>;
 
-    // Check required fields for gold and silver
     const requiredFields = ['price', 'change_24h', 'change_percentage_24h'];
 
     for (const field of requiredFields) {
@@ -63,7 +51,6 @@ export class PreciousMetalsDataMapper extends BaseDataMapper<
       }
     }
 
-    // Validate data types
     return (
       typeof gold.price === 'number' &&
       typeof gold.change_24h === 'number' &&
@@ -74,7 +61,7 @@ export class PreciousMetalsDataMapper extends BaseDataMapper<
     );
   }
 
-  createDefault(): PreciousMetalsData {
+  createDefault(): PreciousMetalsTileData {
     return {
       gold: {
         price: 0,
@@ -90,7 +77,5 @@ export class PreciousMetalsDataMapper extends BaseDataMapper<
   }
 }
 
-// Register the mapper
 import { DataMapperRegistry } from '../../../services/dataMapper';
-
 DataMapperRegistry.register('precious-metals', new PreciousMetalsDataMapper());

@@ -1,15 +1,15 @@
 import type { TileSize } from '../../../types/tile';
 import type { TileDataType } from '../../../services/storageManager';
 
-export interface PreciousMetalData extends TileDataType {
+export interface PreciousMetalTileData extends TileDataType {
   price: number;
   change_24h: number;
   change_percentage_24h: number;
 }
 
-export interface PreciousMetalsData extends TileDataType {
-  gold: PreciousMetalData;
-  silver: PreciousMetalData;
+export interface PreciousMetalsTileData extends TileDataType {
+  gold: PreciousMetalTileData;
+  silver: PreciousMetalTileData;
 }
 
 export interface PriceHistory {
@@ -31,3 +31,16 @@ export interface PreciousMetalsTileProps {
 
 export type ChartPeriod = '7d' | '30d' | '1y';
 export type MetalType = 'gold' | 'silver';
+
+export interface PreciousMetalsApiData extends TileDataType {
+  gold: {
+    price: number;
+    change_24h: number;
+    change_percentage_24h: number;
+  };
+  silver: {
+    price: number;
+    change_24h: number;
+    change_percentage_24h: number;
+  };
+}

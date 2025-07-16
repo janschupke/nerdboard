@@ -1,11 +1,29 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
-import type { WeatherData, WeatherApiResponse } from './types';
+import type { WeatherTileData, WeatherApiData, WeatherForecast } from './types';
 
 // Relax the constraint for WeatherApiResponse
-export class WeatherDataMapper extends BaseDataMapper<WeatherApiResponse, WeatherData> {
-  map(apiResponse: WeatherApiResponse): WeatherData {
+export class WeatherDataMapper extends BaseDataMapper<WeatherApiData, WeatherTileData> {
+  map(apiResponse: WeatherApiData): WeatherTileData {
     const current = apiResponse.current;
     const weather = current.weather[0];
+    const daily: WeatherForecast[] = Array.isArray(apiResponse.daily)
+      ? apiResponse.daily.map((day) => ({
+          date: new Date(day.dt * 1000).toISOString(),
+          temperature: {
+            min: day.temp.min,
+            max: day.temp.max,
+          },
+          conditions: {
+            main: day.weather[0]?.main || 'Unknown',
+            description: day.weather[0]?.description || '',
+            icon: day.weather[0]?.icon || '',
+          },
+          humidity: day.humidity,
+          wind: {
+            speed: day.wind_speed,
+          },
+        }))
+      : [];
 
     return {
       city: 'Helsinki', // Default city, could be configurable
@@ -29,10 +47,11 @@ export class WeatherDataMapper extends BaseDataMapper<WeatherApiResponse, Weathe
       pressure: current.pressure,
       visibility: current.visibility,
       timestamp: current.dt * 1000, // Convert to milliseconds
+      daily,
     };
   }
 
-  validate(apiResponse: unknown): apiResponse is WeatherApiResponse {
+  validate(apiResponse: unknown): apiResponse is WeatherApiData {
     if (!apiResponse || typeof apiResponse !== 'object') {
       return false;
     }
@@ -95,7 +114,7 @@ export class WeatherDataMapper extends BaseDataMapper<WeatherApiResponse, Weathe
     );
   }
 
-  createDefault(): WeatherData {
+  createDefault(): WeatherTileData {
     return {
       city: 'Helsinki',
       country: 'Finland',
@@ -118,6 +137,7 @@ export class WeatherDataMapper extends BaseDataMapper<WeatherApiResponse, Weathe
       pressure: 0,
       visibility: 0,
       timestamp: Date.now(),
+      daily: [],
     };
   }
 }

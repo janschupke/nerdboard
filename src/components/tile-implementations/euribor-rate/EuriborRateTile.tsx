@@ -1,43 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
+import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useEuriborApi } from './useEuriborApi';
-import type { EuriborRateData } from './types';
+import type { EuriborRateTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 
-function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<EuriborRateData>> {
+function useEuriborTileData(tileId: string): { loading: boolean; error: string | null; hasData: boolean; data?: EuriborRateTileData } {
   const { getEuriborRate } = useEuriborApi();
   const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<EuriborRateTileData | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
-  const [hasData, setHasData] = useState(false);
-  const [data, setData] = useState<EuriborRateData | undefined>(undefined);
   const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
-    let mounted = true;
     setLoading(true);
-    setError(null);
-    setHasData(false);
     setData(undefined);
-
+    setError(null);
     getEuriborRate(tileId, isForceRefresh)
       .then((result) => {
-        if (!mounted) return;
         setData(result);
-        setHasData(!!result && typeof result.currentRate === 'number');
+        setError(null);
         setLoading(false);
       })
       .catch((err) => {
-        if (!mounted) return;
-        setError(err.message || 'Error');
-        setHasData(false);
+        setData(undefined);
+        setError(err?.message || 'Error');
         setLoading(false);
       });
-    return () => {
-      mounted = false;
-    };
   }, [tileId, getEuriborRate, isForceRefresh]);
-  return { loading, error, hasData, data };
+  return { loading, error, hasData: !!data, data };
 }
 
 export const EuriborRateTile = React.memo(

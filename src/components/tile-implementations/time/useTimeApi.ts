@@ -1,6 +1,5 @@
-import type { TimeData } from '../time/types';
+import type { TimeTileData, TimeApiData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
-
 import { useCallback } from 'react';
 import { TIME_API_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { TimeParams } from '../../../services/apiEndpoints';
@@ -10,22 +9,23 @@ import type { TimeParams } from '../../../services/apiEndpoints';
  * @param tileId - Unique tile identifier for storage
  * @param params - Query params for time endpoint
  * @param forceRefresh - Whether to bypass cache and force a fresh fetch
- * @returns Promise<TimeData>
+ * @returns Promise<TimeTileData>
  */
 export function useTimeApi() {
   const getTime = useCallback(
-    async (tileId: string, params: TimeParams, forceRefresh = false): Promise<TimeData> => {
+    async (tileId: string, params: TimeParams, forceRefresh = false): Promise<TimeTileData> => {
       const url = buildApiUrl(TIME_API_ENDPOINT, params);
-      const result = await DataFetcher.fetchWithRetry<TimeData>(
+      const result = await DataFetcher.fetchAndMap<'time', TimeApiData, TimeTileData>(
         () => fetch(url).then((res) => res.json()),
         tileId,
+        'time',
         {
           apiCall: 'WorldTimeAPI',
           forceRefresh,
         },
       );
       if (result.error) throw new Error(result.error);
-      return result.data as TimeData;
+      return result.data as TimeTileData;
     },
     [],
   );

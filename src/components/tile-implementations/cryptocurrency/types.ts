@@ -1,7 +1,7 @@
 import type { TileSize } from '../../../types/tile';
 import type { TileDataType } from '../../../services/storageManager';
 
-export interface CryptocurrencyData extends TileDataType {
+export interface CryptocurrencyApiData extends TileDataType {
   id: string;
   symbol: string;
   name: string;
@@ -39,7 +39,7 @@ export interface CryptocurrencyTileProps {
 }
 
 export interface CryptocurrencyTileData extends TileDataType {
-  coins: CryptocurrencyData[];
+  coins: CryptocurrencyApiData[];
 }
 
 export type ChartPeriod = '7d' | '30d' | '1y';

@@ -1,6 +1,6 @@
-import type { PreciousMetalsData } from '../precious-metals/types';
+import type { PreciousMetalsApiDataWithIndex } from './dataMapper';
+import type { PreciousMetalsTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
-
 import { useCallback } from 'react';
 import { PRECIOUS_METALS_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { PreciousMetalsParams } from '../../../services/apiEndpoints';
@@ -10,7 +10,7 @@ import type { PreciousMetalsParams } from '../../../services/apiEndpoints';
  * @param tileId - Unique tile identifier for storage
  * @param params - Query params for precious metals endpoint
  * @param forceRefresh - Whether to bypass cache and force a fresh fetch
- * @returns Promise<PreciousMetalsData>
+ * @returns Promise<PreciousMetalsTileData>
  */
 export function usePreciousMetalsApi() {
   const getPreciousMetals = useCallback(
@@ -18,18 +18,16 @@ export function usePreciousMetalsApi() {
       tileId: string,
       params: PreciousMetalsParams,
       forceRefresh = false,
-    ): Promise<PreciousMetalsData> => {
+    ): Promise<PreciousMetalsTileData> => {
       const url = buildApiUrl(PRECIOUS_METALS_ENDPOINT, params);
-      const result = await DataFetcher.fetchWithRetry<PreciousMetalsData>(
+      const result = await DataFetcher.fetchAndMap<'precious-metals', PreciousMetalsApiDataWithIndex, PreciousMetalsTileData>(
         () => fetch(url).then((res) => res.json()),
         tileId,
-        {
-          apiCall: 'Precious Metals API',
-          forceRefresh,
-        },
+        'precious-metals',
+        { forceRefresh },
       );
-      if (result.error) throw new Error(result.error);
-      return result.data as PreciousMetalsData;
+      if (result.error || !result.data) throw new Error(result.error || 'No data');
+      return result.data;
     },
     [],
   );

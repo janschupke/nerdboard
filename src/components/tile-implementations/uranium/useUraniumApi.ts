@@ -1,6 +1,5 @@
-import type { UraniumApiResponse } from '../uranium/types';
+import type { UraniumApiDataWithIndex, UraniumTileData } from './dataMapper';
 import { DataFetcher } from '../../../services/dataFetcher';
-
 import { useCallback } from 'react';
 import { TRADINGECONOMICS_URANIUM_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { UraniumParams } from '../../../services/apiEndpoints';
@@ -10,7 +9,7 @@ import type { UraniumParams } from '../../../services/apiEndpoints';
  * @param tileId - Unique tile identifier for storage
  * @param params - Query params for uranium endpoint
  * @param forceRefresh - Whether to bypass cache and force a fresh fetch
- * @returns Promise<UraniumApiResponse>
+ * @returns Promise<UraniumTileData>
  */
 export function useUraniumApi() {
   const getUraniumPrice = useCallback(
@@ -18,18 +17,16 @@ export function useUraniumApi() {
       tileId: string,
       params: UraniumParams,
       forceRefresh = false,
-    ): Promise<UraniumApiResponse> => {
+    ): Promise<UraniumTileData> => {
       const url = buildApiUrl(TRADINGECONOMICS_URANIUM_ENDPOINT, params);
-      const result = await DataFetcher.fetchWithRetry<UraniumApiResponse>(
+      const result = await DataFetcher.fetchAndMap<'uranium', UraniumApiDataWithIndex, UraniumTileData>(
         () => fetch(url).then((res) => res.json()),
         tileId,
-        {
-          apiCall: 'TradingEconomics Uranium API',
-          forceRefresh,
-        },
+        'uranium',
+        { forceRefresh },
       );
-      if (result.error) throw new Error(result.error);
-      return result.data as UraniumApiResponse;
+      if (result.error || !result.data) throw new Error(result.error || 'No data');
+      return result.data;
     },
     [],
   );
