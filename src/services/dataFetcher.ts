@@ -37,7 +37,7 @@ export class DataFetcher {
           const now = Date.now();
           const dataAge = now - cached.lastDataRequest;
           const isDataFresh = dataAge < DATA_FRESHNESS_INTERVAL;
-          
+
           if (isDataFresh) {
             return {
               data: cached.data as T,
@@ -71,6 +71,14 @@ export class DataFetcher {
           reason: errorMessage,
           details: logDetails,
         });
+
+        // Update lastDataRequest even on error to prevent infinite retry loops
+        storageManager.setTileState<T>(storageKey, {
+          data: null,
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: false,
+        });
+
         return {
           data: null,
           isCached: false,
@@ -97,6 +105,14 @@ export class DataFetcher {
           reason: errorMessage,
           details: logDetails,
         });
+
+        // Update lastDataRequest even on API error to prevent infinite retry loops
+        storageManager.setTileState<T>(storageKey, {
+          data: null,
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: false,
+        });
+
         return {
           data: null,
           isCached: false,
@@ -136,6 +152,14 @@ export class DataFetcher {
         reason: errorMessage,
         details: logDetails,
       });
+
+      // Update lastDataRequest even on general error to prevent infinite retry loops
+      storageManager.setTileState<T>(storageKey, {
+        data: null,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: false,
+      });
+
       return {
         data: null,
         isCached: false,

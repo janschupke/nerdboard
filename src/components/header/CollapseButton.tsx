@@ -6,10 +6,7 @@ export interface CollapseButtonProps {
   disabled?: boolean;
 }
 
-export const CollapseButton: React.FC<CollapseButtonProps> = ({
-  onToggle,
-  disabled = false,
-}) => (
+export const CollapseButton: React.FC<CollapseButtonProps> = ({ onToggle, disabled = false }) => (
   <button
     onClick={onToggle}
     disabled={disabled}
@@ -19,4 +16,4 @@ export const CollapseButton: React.FC<CollapseButtonProps> = ({
   >
     <Icon name="menu" size="md" />
   </button>
-); 
+);

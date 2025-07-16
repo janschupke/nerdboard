@@ -21,11 +21,11 @@ function useWeatherTileData(
     setError(null);
     setHasData(false);
     setData(undefined);
-    
+
     // Determine if this is a force refresh (refreshKey changed)
     const isForceRefresh = refreshKey !== undefined && refreshKey !== prevRefreshKeyRef.current;
     prevRefreshKeyRef.current = refreshKey;
-    
+
     getWeather(tileId, { lat: 60.1699, lon: 24.9384 }, isForceRefresh)
       .then((result) => {
         if (!mounted) return;

@@ -16,16 +16,16 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
     onClick={onRefresh}
     disabled={disabled || isRefreshing}
     className={`p-2 text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary rounded-lg transition-colors ${
-      (disabled || isRefreshing) ? 'opacity-50 cursor-not-allowed' : ''
+      disabled || isRefreshing ? 'opacity-50 cursor-not-allowed' : ''
     }`}
     aria-label="Refresh all tiles"
     title="Refresh all tiles (R)"
     data-testid="refresh-button"
   >
-    <Icon 
-      name={isRefreshing ? "loading" : "refresh"} 
-      size="md" 
-      className={isRefreshing ? "animate-spin" : ""}
+    <Icon
+      name={isRefreshing ? 'loading' : 'refresh'}
+      size="md"
+      className={isRefreshing ? 'animate-spin' : ''}
     />
   </button>
-); 
+);

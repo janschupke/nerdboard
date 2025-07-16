@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta, type GenericTileDataHook } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useEuriborApi } from './useEuriborApi';
@@ -13,7 +13,6 @@ function useEuriborTileData(
   const [error, setError] = useState<string | null>(null);
   const [hasData, setHasData] = useState(false);
   const [data, setData] = useState<EuriborRateData | undefined>(undefined);
-  const prevRefreshKeyRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     let mounted = true;
@@ -21,12 +20,8 @@ function useEuriborTileData(
     setError(null);
     setHasData(false);
     setData(undefined);
-    
-    // Determine if this is a force refresh (refreshKey changed)
-    const isForceRefresh = refreshKey !== undefined && refreshKey !== prevRefreshKeyRef.current;
-    prevRefreshKeyRef.current = refreshKey;
-    
-    getEuriborRate(tileId, {}, isForceRefresh)
+
+    getEuriborRate(tileId)
       .then((result) => {
         if (!mounted) return;
         setData(result);

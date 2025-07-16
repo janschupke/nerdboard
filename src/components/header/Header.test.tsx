@@ -32,7 +32,7 @@ describe('Header', () => {
         tilesCount={5}
         refreshAllTiles={mockRefreshAllTiles}
         isRefreshing={false}
-      />
+      />,
     );
 
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe('Header', () => {
         tilesCount={3}
         refreshAllTiles={mockRefreshAllTiles}
         isRefreshing={false}
-      />
+      />,
     );
 
     const refreshButton = screen.getByTestId('refresh-button');
@@ -73,7 +73,7 @@ describe('Header', () => {
         tilesCount={3}
         refreshAllTiles={mockRefreshAllTiles}
         isRefreshing={false}
-      />
+      />,
     );
 
     const refreshButton = screen.getByTestId('refresh-button');
@@ -93,7 +93,7 @@ describe('Header', () => {
         tilesCount={3}
         refreshAllTiles={mockRefreshAllTiles}
         isRefreshing={true}
-      />
+      />,
     );
 
     const refreshButton = screen.getByTestId('refresh-button');
@@ -112,7 +112,7 @@ describe('Header', () => {
         tilesCount={3}
         refreshAllTiles={mockRefreshAllTiles}
         isRefreshing={false}
-      />
+      />,
     );
 
     const collapseButton = screen.getByTestId('collapse-button');
@@ -132,7 +132,7 @@ describe('Header', () => {
         tilesCount={3}
         refreshAllTiles={mockRefreshAllTiles}
         isRefreshing={false}
-      />
+      />,
     );
 
     const themeButton = screen.getByTestId('theme-button');
@@ -152,7 +152,7 @@ describe('Header', () => {
         tilesCount={3}
         refreshAllTiles={mockRefreshAllTiles}
         isRefreshing={false}
-      />
+      />,
     );
 
     // Light theme should show moon icon
@@ -172,7 +172,7 @@ describe('Header', () => {
           refreshAllTiles={mockRefreshAllTiles}
           isRefreshing={false}
         />
-      </LogProvider>
+      </LogProvider>,
     );
 
     // Dark theme should show sun icon
@@ -189,13 +189,13 @@ describe('Header', () => {
         toggleCollapse={mockToggleCollapse}
         tilesCount={3}
         isRefreshing={false}
-      />
+      />,
     );
 
     const refreshButton = screen.getByTestId('refresh-button');
     expect(refreshButton).toBeInTheDocument();
-    
+
     // Should not throw when clicked without refreshAllTiles
     fireEvent.click(refreshButton);
   });
-}); 
+});

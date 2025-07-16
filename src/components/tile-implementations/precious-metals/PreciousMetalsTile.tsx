@@ -21,11 +21,11 @@ function usePreciousMetalsTileData(
     setError(null);
     setHasData(false);
     setData(undefined);
-    
+
     // Determine if this is a force refresh (refreshKey changed)
     const isForceRefresh = refreshKey !== undefined && refreshKey !== prevRefreshKeyRef.current;
     prevRefreshKeyRef.current = refreshKey;
-    
+
     getPreciousMetals(tileId, {}, isForceRefresh)
       .then((result) => {
         if (!mounted) return;

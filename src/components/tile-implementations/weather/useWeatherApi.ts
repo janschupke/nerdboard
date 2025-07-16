@@ -1,6 +1,5 @@
 import type { WeatherApiResponse } from '../weather/types';
 import { DataFetcher } from '../../../services/dataFetcher';
-import { storageManager } from '../../../services/storageManager';
 import { useCallback } from 'react';
 import { OPENWEATHERMAP_ONECALL_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { WeatherTileData } from './types';
@@ -15,36 +14,26 @@ import type { WeatherParams } from '../../../services/apiEndpoints';
  */
 export function useWeatherApi() {
   const getWeather = useCallback(
-    async (tileId: string, params: WeatherParams, forceRefresh = false): Promise<WeatherTileData> => {
+    async (
+      tileId: string,
+      params: WeatherParams,
+      forceRefresh = false,
+    ): Promise<WeatherTileData> => {
       const url = buildApiUrl(OPENWEATHERMAP_ONECALL_ENDPOINT, params);
-      try {
-        const result = await DataFetcher.fetchWithRetry<WeatherApiResponse>(
-          () => fetch(url).then((res) => res.json()),
-          tileId,
-          { 
-            apiCall: 'Weather API',
-            forceRefresh,
-          },
-        );
-        const tileData: WeatherTileData = {
-          weather: result.data as WeatherApiResponse,
-          lastUpdated: new Date().toISOString(),
-        };
-        storageManager.setTileState<WeatherTileData>(tileId, {
-          data: tileData,
-          lastDataRequest: Date.now(),
-          lastDataRequestSuccessful: !result.error,
-        });
-        if (result.error) throw new Error(result.error);
-        return tileData;
-      } catch (error) {
-        storageManager.setTileState<WeatherTileData>(tileId, {
-          data: null,
-          lastDataRequest: Date.now(),
-          lastDataRequestSuccessful: false,
-        });
-        throw error;
-      }
+      const result = await DataFetcher.fetchWithRetry<WeatherApiResponse>(
+        () => fetch(url).then((res) => res.json()),
+        tileId,
+        {
+          apiCall: 'Weather API',
+          forceRefresh,
+        },
+      );
+      const tileData: WeatherTileData = {
+        weather: result.data as WeatherApiResponse,
+        lastUpdated: new Date().toISOString(),
+      };
+      if (result.error) throw new Error(result.error);
+      return tileData;
     },
     [],
   );

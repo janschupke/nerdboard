@@ -21,11 +21,11 @@ function useCryptoTileData(
     setError(null);
     setHasData(false);
     setData(undefined);
-    
+
     // Determine if this is a force refresh (refreshKey changed)
     const isForceRefresh = refreshKey !== undefined && refreshKey !== prevRefreshKeyRef.current;
     prevRefreshKeyRef.current = refreshKey;
-    
+
     getCryptocurrencyMarkets(tileId, { vs_currency: 'usd' }, isForceRefresh)
       .then((result) => {
         if (!mounted) return;

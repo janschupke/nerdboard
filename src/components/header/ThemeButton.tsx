@@ -7,11 +7,7 @@ export interface ThemeButtonProps {
   disabled?: boolean;
 }
 
-export const ThemeButton: React.FC<ThemeButtonProps> = ({
-  theme,
-  onToggle,
-  disabled = false,
-}) => (
+export const ThemeButton: React.FC<ThemeButtonProps> = ({ theme, onToggle, disabled = false }) => (
   <button
     onClick={onToggle}
     disabled={disabled}
@@ -21,4 +17,4 @@ export const ThemeButton: React.FC<ThemeButtonProps> = ({
   >
     {theme === 'dark' ? <Icon name="sun" size="md" /> : <Icon name="moon" size="md" />}
   </button>
-); 
+);

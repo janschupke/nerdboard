@@ -210,7 +210,7 @@ describe('DataFetcher', () => {
       const apiCall = 'Test API';
 
       // Mock storage with recent data (5 minutes old)
-      const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+      const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
       storageManager.setTileState(storageKey, {
         data: { cached: 'data' },
         lastDataRequest: fiveMinutesAgo,
@@ -234,7 +234,7 @@ describe('DataFetcher', () => {
       const apiCall = 'Test API';
 
       // Mock storage with old data (15 minutes old)
-      const fifteenMinutesAgo = Date.now() - (15 * 60 * 1000);
+      const fifteenMinutesAgo = Date.now() - 15 * 60 * 1000;
       storageManager.setTileState(storageKey, {
         data: { cached: 'data' },
         lastDataRequest: fifteenMinutesAgo,
@@ -242,9 +242,13 @@ describe('DataFetcher', () => {
       });
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(() => Promise.resolve({ data: 'fresh' }), storageKey, {
-        apiCall,
-      });
+      const result = await DataFetcher.fetchWithRetry(
+        () => Promise.resolve({ data: 'fresh' }),
+        storageKey,
+        {
+          apiCall,
+        },
+      );
 
       // Assert
       expect(result.data).toEqual({ data: 'fresh' });
@@ -257,7 +261,7 @@ describe('DataFetcher', () => {
       const apiCall = 'Test API';
 
       // Mock storage with recent data (5 minutes old)
-      const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+      const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
       storageManager.setTileState(storageKey, {
         data: { cached: 'data' },
         lastDataRequest: fiveMinutesAgo,
@@ -265,14 +269,180 @@ describe('DataFetcher', () => {
       });
 
       // Act
-      const result = await DataFetcher.fetchWithRetry(() => Promise.resolve({ data: 'fresh' }), storageKey, {
+      const result = await DataFetcher.fetchWithRetry(
+        () => Promise.resolve({ data: 'fresh' }),
+        storageKey,
+        {
+          apiCall,
+          forceRefresh: true,
+        },
+      );
+
+      // Assert
+      expect(result.data).toEqual({ data: 'fresh' });
+      expect(result.isCached).toBe(false);
+    });
+
+    it('should fetch fresh data when no cached data exists', async () => {
+      // Arrange
+      const storageKey = 'test-storage-key';
+      const apiCall = 'Test API';
+
+      // Ensure no cached data exists
+      storageManager.clearTileState();
+
+      // Act
+      const result = await DataFetcher.fetchWithRetry(
+        () => Promise.resolve({ data: 'fresh' }),
+        storageKey,
+        {
+          apiCall,
+        },
+      );
+
+      // Assert
+      expect(result.data).toEqual({ data: 'fresh' });
+      expect(result.isCached).toBe(false);
+    });
+
+    it('should fetch fresh data when cached data is null', async () => {
+      // Arrange
+      const storageKey = 'test-storage-key';
+      const apiCall = 'Test API';
+
+      // Mock storage with null data
+      storageManager.setTileState(storageKey, {
+        data: null,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      });
+
+      // Act
+      const result = await DataFetcher.fetchWithRetry(
+        () => Promise.resolve({ data: 'fresh' }),
+        storageKey,
+        {
+          apiCall,
+        },
+      );
+
+      // Assert
+      expect(result.data).toEqual({ data: 'fresh' });
+      expect(result.isCached).toBe(false);
+    });
+
+    it('should handle force refresh with network error', async () => {
+      // Arrange
+      const mockFetch = vi.mocked(fetch);
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      const storageKey = 'test-storage-key';
+      const apiCall = 'Test API';
+
+      // Mock storage with recent data
+      const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+      storageManager.setTileState(storageKey, {
+        data: { cached: 'data' },
+        lastDataRequest: fiveMinutesAgo,
+        lastDataRequestSuccessful: true,
+      });
+
+      // Act
+      const result = await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey, {
         apiCall,
         forceRefresh: true,
       });
 
       // Assert
-      expect(result.data).toEqual({ data: 'fresh' });
-      expect(result.isCached).toBe(false);
+      expect(result.error).toBe('Network error');
+      expect(result.data).toBeNull();
+
+      // Check that error was logged
+      const logs = storageManager.getLogs();
+      expect(logs).toHaveLength(1);
+      expect(logs[0]).toMatchObject({
+        level: 'error',
+        apiCall,
+        reason: 'Network error',
+        details: {
+          storageKey,
+          retryCount: 0,
+          forceRefresh: 1, // Should indicate force refresh
+          errorName: 'Error',
+          errorMessage: 'Network error',
+        },
+      });
+    });
+
+    it('should handle API error responses (400/500)', async () => {
+      // Arrange
+      const storageKey = 'test-storage-key';
+      const apiCall = 'Test API';
+
+      // Ensure no cached data exists
+      storageManager.clearTileState();
+
+      // Act
+      const result = await DataFetcher.fetchWithRetry(
+        () => Promise.resolve({ error: 'API error: 500 Internal Server Error' }),
+        storageKey,
+        {
+          apiCall,
+        },
+      );
+
+      // Assert
+      expect(result.error).toBe('API error: 500 Internal Server Error');
+      expect(result.data).toBeNull();
+
+      // Check that error was logged
+      const logs = storageManager.getLogs();
+      expect(logs).toHaveLength(1);
+      expect(logs[0]).toMatchObject({
+        level: 'error',
+        apiCall,
+        reason: 'API error: 500 Internal Server Error',
+        details: {
+          storageKey,
+          retryCount: 0,
+          forceRefresh: 0,
+          errorName: 'APIError',
+          errorMessage: 'API error: 500 Internal Server Error',
+        },
+      });
+
+      // Check that lastDataRequest was updated
+      const tileState = storageManager.getTileState(storageKey);
+      expect(tileState).not.toBeNull();
+      expect(tileState?.lastDataRequest).toBeGreaterThan(Date.now() - 1000); // Should be recent
+      expect(tileState?.lastDataRequestSuccessful).toBe(false);
+    });
+
+    it('should update lastDataRequest on network error', async () => {
+      // Arrange
+      const mockFetch = vi.mocked(fetch);
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      const storageKey = 'test-storage-key';
+      const apiCall = 'Test API';
+
+      // Ensure no cached data exists
+      storageManager.clearTileState();
+
+      // Act
+      const result = await DataFetcher.fetchWithRetry(() => fetch('/api/test'), storageKey, {
+        apiCall,
+      });
+
+      // Assert
+      expect(result.error).toBe('Network error');
+      expect(result.data).toBeNull();
+
+      // Check that lastDataRequest was updated
+      const tileState = storageManager.getTileState(storageKey);
+      expect(tileState).not.toBeNull();
+      expect(tileState?.lastDataRequest).toBeGreaterThan(Date.now() - 1000); // Should be recent
+      expect(tileState?.lastDataRequestSuccessful).toBe(false);
     });
   });
 });
