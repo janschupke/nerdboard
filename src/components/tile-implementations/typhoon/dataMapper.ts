@@ -58,4 +58,5 @@ class TyphoonDataMapper extends BaseDataMapper<TyphoonApiResponse, TyphoonTileDa
   }
 }
 
-DataMapperRegistry.register(CWB_TYPHOON_ENDPOINT.url, new TyphoonDataMapper()); 
+DataMapperRegistry.register(CWB_TYPHOON_ENDPOINT.url, new TyphoonDataMapper());
+DataMapperRegistry.register('typhoon', new TyphoonDataMapper()); 

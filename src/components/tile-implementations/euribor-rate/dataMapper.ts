@@ -43,4 +43,6 @@ export const ecbEuriborDataMapper: DataMapper<EuriborRateApiResponse, EuriborRat
  */
 export function registerEcbEuriborDataMapper() {
   DataMapperRegistry.register('ecb-euribor', ecbEuriborDataMapper);
+  DataMapperRegistry.register('/api/emmi/euribor-rates', ecbEuriborDataMapper);
+  DataMapperRegistry.register('euribor_rate', ecbEuriborDataMapper);
 } 

@@ -1,6 +1,8 @@
 import type { EarthquakeTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
+import { USGS_EARTHQUAKE_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
+import { TileType } from '../../../types/tile';
 
 /**
  * Fetches recent earthquake data from the USGS API using the unified dataFetcher and dataMapper.
@@ -16,21 +18,11 @@ export function useEarthquakeApi() {
       params: Record<string, string | number>,
       forceRefresh = false,
     ): Promise<EarthquakeTileData[]> => {
-      const query = new URLSearchParams({ format: 'geojson', ...params }).toString();
-      const url = `/api/usgs/fdsnws/event/1/query?${query}`;
-      let response;
-      try {
-        response = await fetch(url);
-      } catch (err) {
-        throw new Error((err as Error).message || 'Network error');
-      }
-      if (!response.ok) {
-        throw new Error('USGS API error');
-      }
+      const url = buildApiUrl(USGS_EARTHQUAKE_ENDPOINT, { ...params, format: 'geojson' });
       const result = await DataFetcher.fetchAndMap(
-        async () => response.json(),
+        () => fetch(url).then(res => res.json()),
         tileId,
-        'earthquake',
+        TileType.EARTHQUAKE,
         { forceRefresh }
       );
       if (result.error || !result.data || !Array.isArray(result.data)) throw new Error(result.error || 'No data');
@@ -39,4 +31,4 @@ export function useEarthquakeApi() {
     [],
   );
   return { getEarthquakes };
-} 
+}

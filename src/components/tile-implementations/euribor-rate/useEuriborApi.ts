@@ -1,6 +1,8 @@
 import type { EuriborRateTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
+import { EMMI_EURIBOR_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
+import { TileType } from '../../../types/tile';
 
 /**
  * Fetches Euribor rate data from the ECB API using the unified dataFetcher and dataMapper.
@@ -11,19 +13,11 @@ import { useCallback } from 'react';
 export function useEuriborApi() {
   const getEuriborRate = useCallback(
     async (tileId: string, forceRefresh = false): Promise<EuriborRateTileData> => {
-      let response;
-      try {
-        response = await fetch('/api/ecb/data/euribor?format=json');
-      } catch (err) {
-        throw new Error((err as Error).message || 'Network error');
-      }
-      if (!response.ok) {
-        throw new Error('ECB API error');
-      }
+      const url = buildApiUrl(EMMI_EURIBOR_ENDPOINT, {});
       const result = await DataFetcher.fetchAndMap(
-        async () => response.json(),
+        () => fetch(url).then(res => res.json()),
         tileId,
-        'ecb-euribor',
+        TileType.EURIBOR_RATE,
         { forceRefresh }
       );
       if (result.error) throw new Error(result.error);

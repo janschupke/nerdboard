@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTyphoonApi } from './useTyphoonApi';
 import './dataMapper'; // Ensure the dataMapper is registered
+import type { TyphoonTileData } from './types';
 
 const mockApiResponse = {
   success: 'true',
@@ -53,7 +54,7 @@ describe('useTyphoonApi', () => {
       json: async () => mockApiResponse,
     });
     const { result } = renderHook(() => useTyphoonApi());
-    let data;
+    let data: TyphoonTileData = { typhoons: [], lastUpdated: '' };
     await act(async () => {
       data = await result.current.getTyphoonData('test-tile', 'test-key');
     });
@@ -69,15 +70,23 @@ describe('useTyphoonApi', () => {
     }
   });
 
-  it('throws error if API returns not ok', async () => {
+  it('returns empty data and error if API returns not ok', async () => {
     (fetch as vi.Mock).mockResolvedValueOnce({ ok: false });
     const { result } = renderHook(() => useTyphoonApi());
-    await expect(result.current.getTyphoonData('test-tile', 'test-key')).rejects.toThrow('CWB API error');
+    let data: TyphoonTileData = { typhoons: [], lastUpdated: '' };
+    await act(async () => {
+      data = await result.current.getTyphoonData('test-tile', 'test-key');
+    });
+    expect(data).toEqual({ typhoons: [], lastUpdated: '' });
   });
 
-  it('throws error if fetch fails', async () => {
+  it('returns empty data and error if fetch fails', async () => {
     (fetch as vi.Mock).mockRejectedValueOnce(new Error('Network error'));
     const { result } = renderHook(() => useTyphoonApi());
-    await expect(result.current.getTyphoonData('test-tile', 'test-key')).rejects.toThrow('Network error');
+    let data: TyphoonTileData = { typhoons: [], lastUpdated: '' };
+    await act(async () => {
+      data = await result.current.getTyphoonData('test-tile', 'test-key');
+    });
+    expect(data).toEqual({ typhoons: [], lastUpdated: '' });
   });
 }); 

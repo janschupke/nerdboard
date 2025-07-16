@@ -69,6 +69,16 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/precious-metals/, ''),
       },
+      '/api/uranium-html': {
+        target: 'https://tradingeconomics.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/uranium-html/, '/commodity/uranium'),
+      },
+      '/api/metals-api': {
+        target: 'https://metals-api.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/metals-api/, ''),
+      },
     },
   },
 });

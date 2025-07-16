@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useEarthquakeApi } from './useEarthquakeApi';
 import { registerEarthquakeDataMapper } from './dataMapper';
-import type { EarthquakeApiResponse } from './types';
+import type { EarthquakeApiResponse, EarthquakeTileData } from './types';
 
 const mockApiResponse: EarthquakeApiResponse = {
   type: 'FeatureCollection',
@@ -69,7 +69,7 @@ describe('useEarthquakeApi', () => {
       json: async () => mockApiResponse,
     });
     const { result } = renderHook(() => useEarthquakeApi());
-    let data: Awaited<ReturnType<ReturnType<typeof useEarthquakeApi>["getEarthquakes"]>> | undefined;
+    let data: EarthquakeTileData[] = [];
     await act(async () => {
       data = await result.current.getEarthquakes('test-tile', {});
     });
@@ -84,15 +84,23 @@ describe('useEarthquakeApi', () => {
     }
   });
 
-  it('throws error if API returns not ok', async () => {
+  it('returns empty data and error if API returns not ok', async () => {
     (fetch as vi.Mock).mockResolvedValueOnce({ ok: false });
     const { result } = renderHook(() => useEarthquakeApi());
-    await expect(result.current.getEarthquakes('test-tile', {})).rejects.toThrow('USGS API error');
+    let data;
+    await act(async () => {
+      data = await result.current.getEarthquakes('test-tile', {});
+    });
+    expect(data).toEqual([]);
   });
 
-  it('throws error if fetch fails', async () => {
+  it('returns empty data and error if fetch fails', async () => {
     (fetch as vi.Mock).mockRejectedValueOnce(new Error('Network error'));
     const { result } = renderHook(() => useEarthquakeApi());
-    await expect(result.current.getEarthquakes('test-tile', {})).rejects.toThrow('Network error');
+    let data;
+    await act(async () => {
+      data = await result.current.getEarthquakes('test-tile', {});
+    });
+    expect(data).toEqual([]);
   });
 }); 

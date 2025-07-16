@@ -58,5 +58,6 @@ export class UraniumDataMapper extends BaseDataMapper<
 
 // Register the mapper
 import { DataMapperRegistry } from '../../../services/dataMapper';
+import { TileType } from '../../../types/tile';
 
-DataMapperRegistry.register('uranium', new UraniumDataMapper());
+DataMapperRegistry.register(TileType.URANIUM, new UraniumDataMapper());

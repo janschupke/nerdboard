@@ -39,4 +39,5 @@ export const earthquakeDataMapper: DataMapper<EarthquakeApiResponse, EarthquakeT
  */
 export function registerEarthquakeDataMapper() {
   DataMapperRegistry.register('earthquake', earthquakeDataMapper);
+  DataMapperRegistry.register('/api/usgs/fdsnws/event/1/query', earthquakeDataMapper);
 } 

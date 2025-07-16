@@ -3,14 +3,22 @@ import { renderHook } from '@testing-library/react';
 import { useUraniumApi } from './useUraniumApi';
 import { registerUraniumDataParser } from './dataParser';
 import { EndpointTestUtils } from '../../../test/utils/endpointTestUtils';
-import type { UraniumParams } from '../../../services/apiEndpoints';
+import type { UraniumHtmlParams } from '../../../services/apiEndpoints';
+import type { UraniumTileData } from './types';
 
 describe('useUraniumApi', () => {
   const mockTileId = 'test-uranium-tile';
-  const mockParams: UraniumParams = {
+  const mockParams: UraniumHtmlParams = {
     range: '1Y',
   };
   const mockHtml = '<span id="spot-price">85.5</span>';
+  const expectedData: UraniumTileData = {
+    spotPrice: 85.5,
+    change: 0,
+    changePercent: 0,
+    lastUpdated: expect.any(String),
+    history: [],
+  };
 
   beforeEach(() => {
     registerUraniumDataParser();
@@ -22,7 +30,7 @@ describe('useUraniumApi', () => {
     const { result } = renderHook(() => useUraniumApi());
     const data = await result.current.getUraniumPrice(mockTileId, mockParams);
     expect(data).toBeDefined();
-    expect(data.spotPrice).toBe(85.5);
-    expect(data.history).toEqual([]);
+    expect(data.spotPrice).toBe(expectedData.spotPrice);
+    expect(data.history).toEqual(expectedData.history);
   });
 });

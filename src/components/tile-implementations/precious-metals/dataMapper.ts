@@ -1,5 +1,6 @@
 import { BaseDataMapper } from '../../../services/dataMapper';
 import type { PreciousMetalsTileData, PreciousMetalsApiResponse } from './types';
+import { TileType } from '../../../types/tile';
 
 export interface PreciousMetalsApiResponseWithIndex extends PreciousMetalsApiResponse {
   [key: string]: unknown;
@@ -78,4 +79,4 @@ export class PreciousMetalsDataMapper extends BaseDataMapper<
 }
 
 import { DataMapperRegistry } from '../../../services/dataMapper';
-DataMapperRegistry.register('precious-metals', new PreciousMetalsDataMapper());
+DataMapperRegistry.register(TileType.PRECIOUS_METALS, new PreciousMetalsDataMapper());
