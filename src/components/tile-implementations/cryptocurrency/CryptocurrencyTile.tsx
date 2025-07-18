@@ -26,8 +26,15 @@ const CryptocurrencyTileContent = ({ data }: { data: CryptocurrencyTileData | nu
 export const CryptocurrencyTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
   const isForceRefresh = useForceRefreshFromKey();
   const { getCryptocurrencyMarkets } = useCryptoApi();
+  
+  // Memoize the API function to prevent infinite re-renders
+  const memoizedApiFn = useMemo(() => getCryptocurrencyMarkets, [getCryptocurrencyMarkets]);
   const params = useMemo(() => ({ vs_currency: 'usd' }), []);
-  const { data, status, lastUpdated } = useTileData(getCryptocurrencyMarkets, tile.id, params, isForceRefresh);
+  
+  const { data, status, lastUpdated } = useTileData(memoizedApiFn, tile.id, params, isForceRefresh);
+  
+  console.log('CryptocurrencyTile', { data, status, lastUpdated });
+
   return (
     <GenericTile
       tile={tile}

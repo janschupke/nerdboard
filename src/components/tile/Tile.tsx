@@ -2,6 +2,7 @@ import React, { Suspense, memo } from 'react';
 import type { DragboardTileData } from '../dragboard';
 import { getLazyTileComponent, getTileMeta } from './TileFactoryRegistry';
 import { GenericTile } from './GenericTile';
+import { LoadingComponent } from './LoadingComponent';
 
 export interface TileProps {
   tile: DragboardTileData;
@@ -41,9 +42,7 @@ const TileComponent = ({ tile, dragHandleProps, onRemove, refreshKey }: TileProp
           dragHandleProps={dragHandleProps}
           onRemove={onRemove}
         >
-          <div className="flex items-center justify-center h-full p-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-theme-accent-primary"></div>
-          </div>
+          <LoadingComponent />
         </GenericTile>
       }
     >

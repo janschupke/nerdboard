@@ -2,12 +2,14 @@ import React, { useCallback, forwardRef, useMemo } from 'react';
 import type { DragboardTileData, DraggableTileProps } from '../dragboard';
 import { Icon } from '../ui/Icon';
 import { TileErrorBoundary } from './TileErrorBoundary';
-import type { RequestStatus } from '../../services/dataFetcher';
+import { RequestStatus } from '../../services/dataFetcher';
+import { LoadingComponent } from './LoadingComponent';
+import type { TileCategory } from '../../types/tileCategories';
 
 export interface TileMeta {
   title: string;
   icon: string;
-  category?: import('../../types/tileCategories').TileCategory;
+  category: TileCategory;
 }
 
 export interface GenericTileProps extends DraggableTileProps {
@@ -26,16 +28,14 @@ const StatusBar = ({ status, lastUpdate }: {
   // Determine status icon and color
   const getStatusIcon = () => {
     switch (status) {
-      case 'loading':
-        return { name: 'loading', className: 'text-theme-status-info animate-spin' };
-      case 'stale':
+      case RequestStatus.Stale:
         return { name: 'warning', className: 'text-theme-status-warning' };
-      case 'error':
-        return { name: 'close', className: 'text-theme-status-error' };
-      case 'success':
+      case RequestStatus.Success:
         return { name: 'check', className: 'text-theme-status-success' };
+        case RequestStatus.Error:
+          return { name: 'close', className: 'text-theme-status-error' };
       default:
-        return { name: 'close', className: 'text-theme-status-error' };
+        return null;
     }
   };
 
@@ -61,18 +61,12 @@ const StatusBar = ({ status, lastUpdate }: {
   return (
     <div className="flex items-center justify-between px-2 py-1 text-xs border-t border-theme-border-primary bg-theme-surface-secondary">
       <span className="text-theme-text-secondary">
-        {formatLastUpdate(lastUpdate)}
+        Last request: {formatLastUpdate(lastUpdate)}
       </span>
-      <Icon name={statusIcon.name} size="sm" className={statusIcon.className} />
+      {statusIcon && <Icon name={statusIcon.name} size="sm" className={statusIcon.className} />}
     </div>
   );
 };
-
-const LoadingContent = React.memo(() => (
-  <div className="flex flex-col items-center justify-center h-full space-y-2">
-    <Icon name="loading" size="lg" className="text-theme-status-info animate-spin" />
-  </div>
-));
 
 const ErrorContent = React.memo(() => (
   <div className="flex flex-col items-center justify-center h-full space-y-2">
@@ -88,7 +82,7 @@ export const GenericTile = React.memo(
         try {
           onRemove?.(tile.id);
         } catch {
-          // Optionally show a toast or error message
+          // TODO: Optionally show a toast or error message
         }
       }, [tile.id, onRemove]);
 
@@ -96,9 +90,9 @@ export const GenericTile = React.memo(
         let borderClasses = 'border-theme-border-primary';
         
         // Apply status-specific border colors
-        if (status === 'error') {
+        if (status === RequestStatus.Error) {
           borderClasses = 'border-theme-status-error';
-        } else if (status === 'stale') {
+        } else if (status === RequestStatus.Stale) {
           borderClasses = 'border-theme-status-warning';
         }
         
@@ -108,10 +102,10 @@ export const GenericTile = React.memo(
 
       // Memoize the content based on status
       const content = useMemo(() => {
-        if (status === 'loading') {
-          return <LoadingContent />;
+        if (status === RequestStatus.Loading) {
+          return <LoadingComponent />;
         }
-        if (status === 'error') {
+        if (status === RequestStatus.Error) {
           return <ErrorContent />;
         }
         // For stale and success states, render the children (tile-specific content)
@@ -128,6 +122,8 @@ export const GenericTile = React.memo(
         }),
         [dragHandleProps],
       );
+
+      console.log('GenericTile', { status, lastUpdate });
 
       return (
         <TileErrorBoundary>
