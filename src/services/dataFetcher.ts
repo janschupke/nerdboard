@@ -7,6 +7,14 @@ import {
 import { type BaseApiResponse } from './dataMapper';
 import { tileDataMappers, tileDataParsers } from './tileTypeRegistry';
 
+export const RequestStatus = {
+  Success: 'success',
+  Error: 'error',
+  Stale: 'stale',
+  Loading: 'loading',
+} as const;
+export type RequestStatus = typeof RequestStatus[keyof typeof RequestStatus];
+
 // 10-minute interval constant for data freshness
 export const DATA_FRESHNESS_INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
 
@@ -24,6 +32,7 @@ export interface FetchResult<T> {
   error: string | null;
   lastUpdated: Date | null;
   retryCount: number;
+  status: RequestStatus;
 }
 
 export class DataFetcher {
@@ -65,6 +74,7 @@ export class DataFetcher {
               error: cached.data ? null : 'No data (cached error or previous failure)',
               lastUpdated: new Date(cached.lastDataRequest),
               retryCount: 0,
+              status: RequestStatus.Stale,
             };
           }
           // Data is stale, continue to fetch fresh data
@@ -101,6 +111,7 @@ export class DataFetcher {
           error: errorMessage,
           lastUpdated: new Date(),
           retryCount: retryCount + 1,
+          status: RequestStatus.Error,
         };
       }
 
@@ -131,6 +142,7 @@ export class DataFetcher {
           error: errorMessage,
           lastUpdated: new Date(),
           retryCount: retryCount + 1,
+          status: RequestStatus.Error,
         };
       }
 
@@ -144,6 +156,7 @@ export class DataFetcher {
         error: null,
         lastUpdated: new Date(),
         retryCount: 0,
+        status: RequestStatus.Success,
       };
     } catch (error) {
       // Log error to api-log system with improved typing
@@ -171,6 +184,7 @@ export class DataFetcher {
         error: errorMessage,
         lastUpdated: new Date(),
         retryCount: retryCount + 1,
+        status: RequestStatus.Error,
       };
     }
   }
@@ -237,6 +251,7 @@ export class DataFetcher {
         error: null,
         lastUpdated: new Date(cached.lastDataRequest),
         retryCount: 0,
+        status: RequestStatus.Stale,
       };
     }
 
@@ -302,6 +317,7 @@ export class DataFetcher {
           error: null,
           lastUpdated: result.lastUpdated,
           retryCount: result.retryCount,
+          status: RequestStatus.Success,
         };
       } else {
         // Return default data if no API data
@@ -315,6 +331,7 @@ export class DataFetcher {
           error: result.error,
           lastUpdated: result.lastUpdated,
           retryCount: result.retryCount,
+          status: RequestStatus.Error,
         };
       }
     } catch (error) {
@@ -329,6 +346,7 @@ export class DataFetcher {
         error: error instanceof Error ? error.message : String(error),
         lastUpdated: new Date(),
         retryCount: 0,
+        status: RequestStatus.Error,
       };
     }
   }
@@ -363,6 +381,7 @@ export class DataFetcher {
               error: null,
               lastUpdated: new Date(cached.lastDataRequest),
               retryCount: 0,
+              status: RequestStatus.Stale,
             };
           }
           // If cached data is null, proceed to fetch fresh data
@@ -394,6 +413,7 @@ export class DataFetcher {
           error: String(errorMessage),
           lastUpdated: new Date(),
           retryCount: retryCount + 1,
+          status: RequestStatus.Error,
         };
       }
       // Get parser for tileType
@@ -420,6 +440,7 @@ export class DataFetcher {
           error: String(errorMessage),
           lastUpdated: new Date(),
           retryCount: retryCount + 1,
+          status: RequestStatus.Error,
         };
       }
       // Parse the raw data
@@ -447,6 +468,7 @@ export class DataFetcher {
           error: String(errorMessage),
           lastUpdated: new Date(),
           retryCount: retryCount + 1,
+          status: RequestStatus.Error,
         };
       }
       // Cache the parsed data
@@ -457,6 +479,7 @@ export class DataFetcher {
         error: null,
         lastUpdated: new Date(),
         retryCount: 0,
+        status: RequestStatus.Success,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -480,6 +503,7 @@ export class DataFetcher {
         error: String(errorMessage),
         lastUpdated: new Date(),
         retryCount: retryCount + 1,
+        status: RequestStatus.Error,
       };
     }
   }

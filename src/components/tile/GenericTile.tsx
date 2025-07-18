@@ -2,6 +2,7 @@ import React, { useCallback, forwardRef, useMemo } from 'react';
 import type { DragboardTileData, DraggableTileProps } from '../dragboard';
 import { Icon } from '../ui/Icon';
 import { TileErrorBoundary } from './TileErrorBoundary';
+import type { RequestStatus } from '../../services/dataFetcher';
 
 export interface TileMeta {
   title: string;
@@ -13,26 +14,29 @@ export interface GenericTileProps extends DraggableTileProps {
   tile: DragboardTileData;
   meta: TileMeta;
   children?: React.ReactNode;
-  loading?: boolean;
-  error?: string | null;
-  hasData?: boolean;
+  status?: RequestStatus;
   lastUpdate?: string;
   style?: React.CSSProperties;
 }
 
-const StatusBar = ({ loading, error, hasData, lastUpdate }: {
-  loading?: boolean;
-  error?: string | null;
-  hasData?: boolean;
+const StatusBar = ({ status, lastUpdate }: {
+  status?: RequestStatus;
   lastUpdate?: string;
 }) => {
   // Determine status icon and color
   const getStatusIcon = () => {
-    if (loading) return { name: 'loading', className: 'text-theme-status-info animate-spin' };
-    if (error && hasData) return { name: 'warning', className: 'text-theme-status-warning' };
-    if (error) return { name: 'close', className: 'text-theme-status-error' };
-    if (hasData) return { name: 'check', className: 'text-theme-status-success' };
-    return { name: 'close', className: 'text-theme-status-error' };
+    switch (status) {
+      case 'loading':
+        return { name: 'loading', className: 'text-theme-status-info animate-spin' };
+      case 'stale':
+        return { name: 'warning', className: 'text-theme-status-warning' };
+      case 'error':
+        return { name: 'close', className: 'text-theme-status-error' };
+      case 'success':
+        return { name: 'check', className: 'text-theme-status-success' };
+      default:
+        return { name: 'close', className: 'text-theme-status-error' };
+    }
   };
 
   // Format last update time
@@ -66,7 +70,7 @@ const StatusBar = ({ loading, error, hasData, lastUpdate }: {
 
 export const GenericTile = React.memo(
   forwardRef<HTMLDivElement, GenericTileProps>(
-    ({ tile, meta, onRemove, dragHandleProps, className, style, children, loading, error, hasData, lastUpdate }, ref) => {
+    ({ tile, meta, onRemove, dragHandleProps, className, style, children, status, lastUpdate }, ref) => {
       const handleRemove = useCallback(async () => {
         try {
           onRemove?.(tile.id);
@@ -137,7 +141,7 @@ export const GenericTile = React.memo(
             </div>
 
             {/* Status Bar */}
-            <StatusBar loading={loading} error={error} hasData={hasData} lastUpdate={lastUpdate} />
+            <StatusBar status={status} lastUpdate={lastUpdate} />
           </div>
         </TileErrorBoundary>
       );

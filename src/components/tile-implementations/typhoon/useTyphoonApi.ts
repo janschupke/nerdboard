@@ -2,42 +2,21 @@ import type { TyphoonTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { CWB_TYPHOON_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import { TileApiCallTitle, TileType } from '../../../types/tile';
+import { useCallback } from 'react';
 
-/**
- * Fetches Typhoon data from the CWB API using the unified dataFetcher and dataMapper.
- * @param tileId - Unique tile identifier for storage
- * @param apiKey - CWB API key
- * @param forceRefresh - Whether to bypass cache and force a fresh fetch
- * @returns Promise<TyphoonTileData>
- */
 export function useTyphoonApi() {
-  const getTyphoonData = async (
-    tileId: string,
-    apiKey: string,
-    forceRefresh = false,
-  ): Promise<TyphoonTileData> => {
-    console.log('[TyphoonApi] getTyphoonData called for tileId:', tileId, 'apiKey:', apiKey, 'forceRefresh:', forceRefresh);
-    const params = { Authorization: apiKey, format: 'JSON' as const };
-    const url = buildApiUrl(CWB_TYPHOON_ENDPOINT, params);
-    let result;
-    try {
-      console.log('[TyphoonApi] About to call DataFetcher.fetchAndMap for tileId:', tileId);
-      result = await DataFetcher.fetchAndMap(
-        () => {
-          console.log('[TyphoonApi] fetch function invoked for tileId:', tileId, 'url:', url);
-          return fetch(url).then((res) => res.json());
-        },
+  const getTyphoonData = useCallback(
+    async (tileId: string, apiKey: string, forceRefresh = false) => {
+      const params = { Authorization: apiKey, format: 'JSON' as const };
+      const url = buildApiUrl(CWB_TYPHOON_ENDPOINT, params);
+      return DataFetcher.fetchAndMap(
+        () => fetch(url).then((res) => res.json()),
         tileId,
         TileType.TYPHOON,
         { apiCall: TileApiCallTitle.TYPHOON, forceRefresh },
       );
-      console.log('[TyphoonApi] DataFetcher.fetchAndMap result for tileId:', tileId, result);
-    } catch (err) {
-      console.error('[TyphoonApi] DataFetcher.fetchAndMap threw for tileId:', tileId, err);
-      throw err;
-    }
-    if (result.error) throw new Error(result.error);
-    return result.data as TyphoonTileData;
-  };
+    },
+    [],
+  );
   return { getTyphoonData };
 }

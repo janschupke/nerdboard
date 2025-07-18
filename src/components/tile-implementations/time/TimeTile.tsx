@@ -1,50 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useTimeApi } from './useTimeApi';
 import type { TimeTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
-import type { TileStatus } from '../../tile/tileStatus';
+import type { RequestStatus } from '../../../services/dataFetcher';
 
-function useTimeTileData(tileId: string): TileStatus & { data?: TimeTileData } {
+function useTimeTileData(tileId: string) {
   const { getTime } = useTimeApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<TimeTileData | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{
+    data: TimeTileData | null;
+    status: RequestStatus;
+    lastUpdated: Date | null;
+    error: string | null;
+    isCached: boolean;
+    retryCount: number;
+  }>({
+    data: null,
+    status: 'loading',
+    lastUpdated: null,
+    error: null,
+    isCached: false,
+    retryCount: 0,
+  });
   const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
+    let cancelled = false;
+    setResult((r) => ({ ...r, status: 'loading' }));
     getTime(tileId, { city: 'Helsinki' }, isForceRefresh)
-      .then((result) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
+      .then((fetchResult) => {
+        if (!cancelled) setResult(fetchResult);
       })
       .catch((err) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
+        if (!cancelled)
+          setResult((r) => ({ ...r, status: 'error', error: err?.message || 'Error' }));
       });
+    return () => {
+      cancelled = true;
+    };
   }, [tileId, getTime, isForceRefresh]);
-  return { loading, error, hasData: !!data && !!data.currentTime, data };
+  return result;
 }
 
-const TimeTileContent = ({ tileData }: { tileData: TileStatus & { data?: TimeTileData } }) => {
-  const { loading, error, hasData, data } = tileData;
-
-  if (loading) {
+const TimeTileContent = ({ data, status }: { data: TimeTileData | null; status: RequestStatus }) => {
+  if (status === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="loading" size="lg" className="text-theme-status-info" />
       </div>
     );
   }
-
-  if (error && !hasData) {
+  if (status === 'error') {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="close" size="lg" className="text-theme-status-error" />
@@ -52,8 +60,7 @@ const TimeTileContent = ({ tileData }: { tileData: TileStatus & { data?: TimeTil
       </div>
     );
   }
-
-  if (error && hasData) {
+  if (status === 'stale') {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="warning" size="lg" className="text-theme-status-warning" />
@@ -61,8 +68,7 @@ const TimeTileContent = ({ tileData }: { tileData: TileStatus & { data?: TimeTil
       </div>
     );
   }
-
-  if (hasData && data) {
+  if (status === 'success' && data) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <div className="text-2xl font-bold text-theme-text-primary">
@@ -74,29 +80,22 @@ const TimeTileContent = ({ tileData }: { tileData: TileStatus & { data?: TimeTil
       </div>
     );
   }
-
   return null;
 };
 
-export const TimeTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-    const tileData = useTimeTileData(tile.id);
-    
-    return (
-      <GenericTile
-        tile={tile}
-        meta={meta}
-        loading={tileData.loading}
-        error={tileData.error}
-        hasData={tileData.hasData}
-        lastUpdate={tileData.data?.lastUpdate}
-        {...rest}
-      >
-        <TimeTileContent tileData={tileData} />
-      </GenericTile>
-    );
-  },
-  (prev, next) => prev.tile.id === next.tile.id,
-);
+export const TimeTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+  const { data, status, lastUpdated } = useTimeTileData(tile.id);
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      {...rest}
+    >
+      <TimeTileContent data={data} status={status} />
+    </GenericTile>
+  );
+};
 
 TimeTile.displayName = 'TimeTile';

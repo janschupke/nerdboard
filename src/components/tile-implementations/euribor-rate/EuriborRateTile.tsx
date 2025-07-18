@@ -1,50 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useEuriborApi } from './useEuriborApi';
 import type { EuriborRateTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
-import type { TileStatus } from '../../tile/tileStatus';
+import { RequestStatus } from '../../../services/dataFetcher';
+import type { FetchResult } from '../../../services/dataFetcher';
 
-function useEuriborTileData(tileId: string): TileStatus & { data?: EuriborRateTileData } {
+function useEuriborTileData(tileId: string) {
   const { getEuriborRate } = useEuriborApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<EuriborRateTileData | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<FetchResult<EuriborRateTileData>>({
+    data: null,
+    status: RequestStatus.Loading,
+    lastUpdated: null,
+    error: null,
+    isCached: false,
+    retryCount: 0,
+  });
   const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
-    getEuriborRate(tileId, isForceRefresh)
-      .then((result) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
+    let cancelled = false;
+    setResult((r) => ({ ...r, status: RequestStatus.Loading }));
+    getEuriborRate(tileId, {}, isForceRefresh)
+      .then((fetchResult) => {
+        if (!cancelled) setResult(fetchResult as FetchResult<EuriborRateTileData>);
       })
       .catch((err) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
+        if (!cancelled)
+          setResult((r) => ({ ...r, status: RequestStatus.Error, error: err?.message || 'Error' }));
       });
+    return () => {
+      cancelled = true;
+    };
   }, [tileId, getEuriborRate, isForceRefresh]);
-  return { loading, error, hasData: !!data, data };
+  return result;
 }
 
-const EuriborRateTileContent = ({ tileData }: { tileData: TileStatus & { data?: EuriborRateTileData } }) => {
-  const { loading, error, hasData, data } = tileData;
-
-  if (loading) {
+const EuriborRateTileContent = ({ data, status }: { data: EuriborRateTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
+  if (status === RequestStatus.Loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="loading" size="lg" className="text-theme-status-info" />
       </div>
     );
   }
-
-  if (error && !hasData) {
+  if (status === RequestStatus.Error) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="close" size="lg" className="text-theme-status-error" />
@@ -52,8 +54,7 @@ const EuriborRateTileContent = ({ tileData }: { tileData: TileStatus & { data?: 
       </div>
     );
   }
-
-  if (error && hasData) {
+  if (status === RequestStatus.Stale) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="warning" size="lg" className="text-theme-status-warning" />
@@ -61,8 +62,7 @@ const EuriborRateTileContent = ({ tileData }: { tileData: TileStatus & { data?: 
       </div>
     );
   }
-
-  if (hasData && data) {
+  if (status === RequestStatus.Success && data) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <div className="text-2xl font-bold text-theme-text-primary">
@@ -74,32 +74,28 @@ const EuriborRateTileContent = ({ tileData }: { tileData: TileStatus & { data?: 
       </div>
     );
   }
-
   return null;
 };
 
-export const EuriborRateTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-    const tileData = useEuriborTileData(tile.id);
-    let lastUpdate: string | undefined = undefined;
-    if (tileData.data?.lastUpdate) {
-      lastUpdate = typeof tileData.data.lastUpdate === 'string' ? tileData.data.lastUpdate : tileData.data.lastUpdate.toISOString();
-    }
-    return (
-      <GenericTile
-        tile={tile}
-        meta={meta}
-        loading={tileData.loading}
-        error={tileData.error}
-        hasData={tileData.hasData}
-        lastUpdate={lastUpdate}
-        {...rest}
-      >
-        <EuriborRateTileContent tileData={tileData} />
-      </GenericTile>
-    );
-  },
-  (prev, next) => prev.tile.id === next.tile.id,
-);
+export const EuriborRateTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+  const { data, status, lastUpdated } = useEuriborTileData(tile.id);
+  let lastUpdate: string | undefined = undefined;
+  if (data?.lastUpdate) {
+    lastUpdate = typeof data.lastUpdate === 'string' ? data.lastUpdate : data.lastUpdate.toISOString();
+  } else if (lastUpdated) {
+    lastUpdate = lastUpdated.toISOString();
+  }
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdate}
+      {...rest}
+    >
+      <EuriborRateTileContent data={data} status={status} />
+    </GenericTile>
+  );
+};
 
 EuriborRateTile.displayName = 'EuriborRateTile';

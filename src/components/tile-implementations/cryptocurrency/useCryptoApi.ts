@@ -1,35 +1,19 @@
-import type { CryptocurrencyApiResponse, CryptocurrencyTileData } from './types';
 import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { COINGECKO_MARKETS_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { CryptoMarketsParams } from '../../../services/apiEndpoints';
 import { TileType, TileApiCallTitle } from '../../../types/tile';
 
-/**
- * Fetches cryptocurrency market data from CoinGecko.
- * @param tileId - Unique tile identifier for storage
- * @param params - Query params for CoinGecko markets endpoint
- * @param forceRefresh - Whether to bypass cache and force a fresh fetch
- * @returns Promise<CryptocurrencyTileData>
- */
 export function useCryptoApi() {
   const getCryptocurrencyMarkets = useCallback(
-    async (
-      tileId: string,
-      params: CryptoMarketsParams,
-      forceRefresh = false,
-    ): Promise<CryptocurrencyTileData> => {
+    async (tileId: string, params: CryptoMarketsParams, forceRefresh = false) => {
       const url = buildApiUrl(COINGECKO_MARKETS_ENDPOINT, params);
-      const result = await DataFetcher.fetchAndMap<
-        (typeof TileType)['CRYPTOCURRENCY'],
-        CryptocurrencyApiResponse[],
-        CryptocurrencyTileData
-      >(() => fetch(url).then((res) => res.json()), tileId, TileType.CRYPTOCURRENCY, {
-        apiCall: TileApiCallTitle.CRYPTOCURRENCY,
-        forceRefresh,
-      });
-      if (result.error) throw new Error(result.error);
-      return result.data as CryptocurrencyTileData;
+      return DataFetcher.fetchAndMap(
+        () => fetch(url).then((res) => res.json()),
+        tileId,
+        TileType.CRYPTOCURRENCY,
+        { apiCall: TileApiCallTitle.CRYPTOCURRENCY, forceRefresh },
+      );
     },
     [],
   );

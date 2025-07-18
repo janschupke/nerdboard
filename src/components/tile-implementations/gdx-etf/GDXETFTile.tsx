@@ -1,50 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useGdxEtfApi } from './useGdxEtfApi';
 import type { GdxEtfTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
-import type { TileStatus } from '../../tile/tileStatus';
+import { RequestStatus } from '../../../services/dataFetcher';
+import type { FetchResult } from '../../../services/dataFetcher';
 
-function useGdxEtfTileData(tileId: string): TileStatus & { data?: GdxEtfTileData } {
+function useGdxEtfTileData(tileId: string) {
   const { getGDXETF } = useGdxEtfApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<GdxEtfTileData | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<FetchResult<GdxEtfTileData>>({
+    data: null,
+    status: RequestStatus.Loading,
+    lastUpdated: null,
+    error: null,
+    isCached: false,
+    retryCount: 0,
+  });
   const isForceRefresh = useForceRefreshFromKey();
 
   useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
+    let cancelled = false;
+    setResult((r) => ({ ...r, status: RequestStatus.Loading }));
     getGDXETF(tileId, { function: 'GLOBAL_QUOTE', symbol: 'GDX', apikey: 'demo' }, isForceRefresh)
-      .then((result: GdxEtfTileData) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
+      .then((fetchResult) => {
+        if (!cancelled) setResult(fetchResult as FetchResult<GdxEtfTileData>);
       })
-      .catch((err: Error) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
+      .catch((err) => {
+        if (!cancelled)
+          setResult((r) => ({ ...r, status: RequestStatus.Error, error: err?.message || 'Error' }));
       });
+    return () => {
+      cancelled = true;
+    };
   }, [tileId, getGDXETF, isForceRefresh]);
-  return { loading, error, hasData: !!data, data };
+  return result;
 }
 
-const GDXETFTileContent = ({ tileData }: { tileData: TileStatus & { data?: GdxEtfTileData } }) => {
-  const { loading, error, hasData, data } = tileData;
-
-  if (loading) {
+const GDXETFTileContent = ({ data, status }: { data: GdxEtfTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
+  if (status === RequestStatus.Loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="loading" size="lg" className="text-theme-status-info" />
       </div>
     );
   }
-
-  if (error && !hasData) {
+  if (status === RequestStatus.Error) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="close" size="lg" className="text-theme-status-error" />
@@ -52,8 +54,7 @@ const GDXETFTileContent = ({ tileData }: { tileData: TileStatus & { data?: GdxEt
       </div>
     );
   }
-
-  if (error && hasData) {
+  if (status === RequestStatus.Stale) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="warning" size="lg" className="text-theme-status-warning" />
@@ -61,8 +62,7 @@ const GDXETFTileContent = ({ tileData }: { tileData: TileStatus & { data?: GdxEt
       </div>
     );
   }
-
-  if (hasData && data) {
+  if (status === RequestStatus.Success && data) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <div className="text-2xl font-bold text-theme-text-primary">
@@ -74,28 +74,22 @@ const GDXETFTileContent = ({ tileData }: { tileData: TileStatus & { data?: GdxEt
       </div>
     );
   }
-
   return null;
 };
 
-export const GDXETFTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-    const tileData = useGdxEtfTileData(tile.id);
-    return (
-      <GenericTile
-        tile={tile}
-        meta={meta}
-        loading={tileData.loading}
-        error={tileData.error}
-        hasData={tileData.hasData}
-        lastUpdate={tileData.data?.lastUpdated}
-        {...rest}
-      >
-        <GDXETFTileContent tileData={tileData} />
-      </GenericTile>
-    );
-  },
-  (prev, next) => prev.tile.id === next.tile.id,
-);
+export const GDXETFTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+  const { data, status, lastUpdated } = useGdxEtfTileData(tile.id);
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      {...rest}
+    >
+      <GDXETFTileContent data={data} status={status} />
+    </GenericTile>
+  );
+};
 
 GDXETFTile.displayName = 'GDXETFTile';
