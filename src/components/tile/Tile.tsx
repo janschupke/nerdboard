@@ -1,7 +1,7 @@
 import React, { Suspense, memo } from 'react';
 import type { DragboardTileData } from '../dragboard';
 import { getLazyTileComponent, getTileMeta } from './TileFactoryRegistry';
-import { TileErrorBoundary } from './TileErrorBoundary';
+import { GenericTile } from './GenericTile';
 
 export interface TileProps {
   tile: DragboardTileData;
@@ -16,30 +16,45 @@ const TileComponent = ({ tile, dragHandleProps, onRemove, refreshKey }: TileProp
 
   if (!LazyTileComponent || !meta) {
     return (
-      <div className="flex items-center justify-center h-full p-4 text-theme-text-tertiary">
-        <p>Unknown tile type: {tile.type}</p>
-      </div>
+      <GenericTile
+        tile={tile}
+        meta={{
+          title: 'Unknown Tile',
+          icon: 'warning',
+        }}
+        dragHandleProps={dragHandleProps}
+        onRemove={onRemove}
+      >
+        <div className="flex items-center justify-center h-full p-4 text-theme-text-tertiary">
+          <p>Unknown tile type: {tile.type}</p>
+        </div>
+      </GenericTile>
     );
   }
 
   return (
-    <TileErrorBoundary>
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-full p-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-theme-accent-primary"></div>
-          </div>
-        }
-      >
-        <LazyTileComponent
+    <Suspense
+      fallback={
+        <GenericTile
           tile={tile}
           meta={meta}
           dragHandleProps={dragHandleProps}
           onRemove={onRemove}
-          refreshKey={refreshKey}
-        />
-      </Suspense>
-    </TileErrorBoundary>
+        >
+          <div className="flex items-center justify-center h-full p-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-theme-accent-primary"></div>
+          </div>
+        </GenericTile>
+      }
+    >
+      <LazyTileComponent
+        tile={tile}
+        meta={meta}
+        dragHandleProps={dragHandleProps}
+        onRemove={onRemove}
+        refreshKey={refreshKey}
+      />
+    </Suspense>
   );
 };
 

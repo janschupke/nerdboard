@@ -1,9 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useEarthquakeApi } from './useEarthquakeApi';
-import { registerEarthquakeDataMapper } from './dataMapper';
+import './dataMapper';
 import type { EarthquakeApiResponse, EarthquakeTileData } from './types';
-import { vi } from 'vitest';
 
 const mockApiResponse: EarthquakeApiResponse = {
   type: 'FeatureCollection',
@@ -61,7 +60,6 @@ global.fetch = vi.fn();
 describe('useEarthquakeApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    registerEarthquakeDataMapper();
   });
 
   it('fetches and maps USGS earthquake data successfully', async () => {

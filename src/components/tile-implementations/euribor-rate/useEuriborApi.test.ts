@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useEuriborApi } from './useEuriborApi';
-import { registerEcbEuriborDataMapper } from './dataMapper';
+import './dataMapper';
 import { setupEuriborRateSuccessMock } from '../../../test/utils/endpointTestUtils';
 import { EndpointTestUtils, API_ENDPOINTS } from '../../../test/utils/endpointTestUtils';
 
 describe('useEuriborApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    registerEcbEuriborDataMapper();
+    // registerEcbEuriborDataMapper(); // This line is removed as per the new_code
     setupEuriborRateSuccessMock();
   });
 

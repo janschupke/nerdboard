@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGdxEtfApi } from './useGdxEtfApi';
-import { registerGdxEtfDataMapper } from './dataMapper';
-import type { AlphaVantageParams } from '../../../services/apiEndpoints';
+import './dataMapper';
 import type { GdxEtfTileData } from './types';
 import { EndpointTestUtils } from '../../../test/utils/endpointTestUtils';
 import { ALPHA_VANTAGE_GDX_ENDPOINT } from '../../../services/apiEndpoints';
+import type { AlphaVantageParams } from '../../../services/apiEndpoints';
 
 global.fetch = vi.fn();
 
@@ -19,7 +19,7 @@ describe('useGdxEtfApi', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    registerGdxEtfDataMapper();
+    // registerGdxEtfDataMapper(); // This line is removed as per the new_code
     EndpointTestUtils.configureMock(ALPHA_VANTAGE_GDX_ENDPOINT.url, {
       shouldFail: false,
       status: 200,
