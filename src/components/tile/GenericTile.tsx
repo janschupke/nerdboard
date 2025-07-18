@@ -22,7 +22,15 @@ export interface GenericTileProps extends DraggableTileProps {
   data: TileDataType | null;
 }
 
-const StatusBar = ({ data, status, lastUpdate }: { data: TileDataType | null; status?: TileStatus; lastUpdate?: string }) => {
+const StatusBar = ({
+  data,
+  status,
+  lastUpdate,
+}: {
+  data: TileDataType | null;
+  status?: TileStatus;
+  lastUpdate?: string;
+}) => {
   // Determine status icon and color
   const getStatusIcon = () => {
     switch (status) {
@@ -81,7 +89,10 @@ const ErrorContent = React.memo(() => (
 
 export const GenericTile = React.memo(
   forwardRef<HTMLDivElement, GenericTileProps>(
-    ({ tile, meta, onRemove, dragHandleProps, className, children, status, lastUpdate, data }, ref) => {
+    (
+      { tile, meta, onRemove, dragHandleProps, className, children, status, lastUpdate, data },
+      ref,
+    ) => {
       const handleRemove = useCallback(async () => {
         try {
           onRemove?.(tile.id);

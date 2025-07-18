@@ -46,7 +46,14 @@ export const FederalFundsRateTile = ({
     lastUpdate = lastUpdated.toISOString();
   }
   return (
-    <GenericTile tile={tile} meta={meta} status={status} lastUpdate={lastUpdate} data={data} {...rest}>
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdate}
+      data={data}
+      {...rest}
+    >
       <FederalFundsRateTileContent data={data} />
     </GenericTile>
   );

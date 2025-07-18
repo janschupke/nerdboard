@@ -41,6 +41,7 @@ export const EuriborRateTile = ({
       meta={meta}
       status={status}
       lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
       {...rest}
     >
       <EuriborRateTileContent data={data} />

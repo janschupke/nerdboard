@@ -35,6 +35,7 @@ function OverlayContent({
     setIsRefreshing(true);
     try {
       setRefreshKey((prev) => prev + 1);
+      // TODO: hook this to loading states
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } finally {
       setIsRefreshing(false);

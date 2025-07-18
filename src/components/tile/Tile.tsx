@@ -25,6 +25,7 @@ const TileComponent = ({ tile, dragHandleProps, onRemove, refreshKey }: TileProp
         }}
         dragHandleProps={dragHandleProps}
         onRemove={onRemove}
+        data={null}
       >
         <div className="flex items-center justify-center h-full p-4 text-theme-text-tertiary">
           <p>Unknown tile type: {tile.type}</p>
@@ -36,7 +37,13 @@ const TileComponent = ({ tile, dragHandleProps, onRemove, refreshKey }: TileProp
   return (
     <Suspense
       fallback={
-        <GenericTile tile={tile} meta={meta} dragHandleProps={dragHandleProps} onRemove={onRemove}>
+        <GenericTile
+          tile={tile}
+          meta={meta}
+          dragHandleProps={dragHandleProps}
+          onRemove={onRemove}
+          data={null}
+        >
           <LoadingComponent />
         </GenericTile>
       }
