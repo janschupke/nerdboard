@@ -39,17 +39,11 @@ function useCryptoTileData(tileId: string): TileStatus & { data?: Cryptocurrency
 }
 
 const CryptocurrencyTileContent = ({ tileData }: { tileData: TileStatus & { data?: CryptocurrencyTileData } }) => {
-  const { loading, error, hasData, data } = tileData;
+  const { error, data } = tileData;
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <Icon name="loading" size="lg" className="text-theme-status-info" />
-      </div>
-    );
-  }
+  console.log('CryptocurrencyTileContent tileData', tileData);
 
-  if (error && !hasData) {
+  if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="close" size="lg" className="text-theme-status-error" />
@@ -58,35 +52,23 @@ const CryptocurrencyTileContent = ({ tileData }: { tileData: TileStatus & { data
     );
   }
 
-  if (error && hasData) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <Icon name="warning" size="lg" className="text-theme-status-warning" />
-        <p className="text-theme-status-warning text-sm text-center">Data may be outdated</p>
+  const topCoin = data?.coins[0];
+  return (
+    <div className="flex flex-col items-center justify-center h-full space-y-2">
+      <div className="text-2xl font-bold">
+        ${topCoin?.current_price.toFixed(2)}
       </div>
-    );
-  }
-
-  if (hasData && data && data.coins.length > 0) {
-    const topCoin = data.coins[0];
-    return (
-      <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <div className="text-2xl font-bold text-theme-text-primary">
-          ${topCoin.current_price.toFixed(2)}
-        </div>
-        <div className="text-sm text-theme-text-secondary">
-          {topCoin.name}
-        </div>
+      <div className="text-sm">
+        {topCoin?.name}
       </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 };
 
 export const CryptocurrencyTile = React.memo(
   ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
     const tileData = useCryptoTileData(tile.id);
+    console.log('CryptocurrencyTile tileData', tileData);
     return (
       <GenericTile
         tile={tile}
