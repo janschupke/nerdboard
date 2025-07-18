@@ -3,12 +3,12 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { useCryptoApi } from './useCryptoApi';
 import './dataMapper';
 import {
+  EndpointTestUtils,
   API_ENDPOINTS,
   setupCryptocurrencySuccessMock,
   setupSuccessMock,
   setupDelayedMock,
   setupFailureMock,
-  EndpointTestUtils,
 } from '../../../test/utils/endpointTestUtils';
 import { MockResponseData } from '../../../test/mocks/endpointMocks';
 import type { CryptoMarketsParams } from '../../../services/apiEndpoints';
@@ -32,9 +32,18 @@ describe('useCryptoApi', () => {
       const { result } = renderHook(() => useCryptoApi());
 
       // Act
-      const data = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
+      const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
 
       // Assert
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('data');
+      expect(fetchResult).toHaveProperty('status');
+      expect(fetchResult).toHaveProperty('lastUpdated');
+      expect(fetchResult).toHaveProperty('error');
+      expect(fetchResult).toHaveProperty('isCached');
+      expect(fetchResult).toHaveProperty('retryCount');
+      
+      const data = fetchResult.data;
       expect(data).toBeDefined();
       expect(data).toEqual(
         expect.objectContaining({
@@ -57,10 +66,11 @@ describe('useCryptoApi', () => {
       const { result } = renderHook(() => useCryptoApi());
 
       // Act
-      const data = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
+      const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
 
       // Assert
-      expect(data.coins).toEqual([]);
+      const data = fetchResult.data;
+      expect(data?.coins).toEqual([]);
     });
 
     it('should handle delayed response', async () => {
@@ -75,8 +85,9 @@ describe('useCryptoApi', () => {
 
       // Act & Assert
       await waitFor(async () => {
-        const data = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
-        expect(data.coins).toEqual(MockResponseData.getCryptocurrencyData());
+        const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
+        const data = fetchResult.data;
+        expect(data?.coins).toEqual(MockResponseData.getCryptocurrencyData());
       });
     });
   });
@@ -89,9 +100,9 @@ describe('useCryptoApi', () => {
       const { result } = renderHook(() => useCryptoApi());
 
       // Act & Assert
-      await expect(result.current.getCryptocurrencyMarkets(mockTileId, mockParams)).rejects.toThrow(
-        'Network error: Failed to fetch',
-      );
+      const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('Network error: Failed to fetch');
     });
 
     it('should handle timeout errors', async () => {
@@ -101,9 +112,9 @@ describe('useCryptoApi', () => {
       const { result } = renderHook(() => useCryptoApi());
 
       // Act & Assert
-      await expect(result.current.getCryptocurrencyMarkets(mockTileId, mockParams)).rejects.toThrow(
-        'Request timeout',
-      );
+      const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('Request timeout');
     });
 
     it('should handle API errors (500)', async () => {
@@ -113,9 +124,9 @@ describe('useCryptoApi', () => {
       const { result } = renderHook(() => useCryptoApi());
 
       // Act & Assert
-      await expect(result.current.getCryptocurrencyMarkets(mockTileId, mockParams)).rejects.toThrow(
-        'API error: 500 Internal Server Error',
-      );
+      const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('API error: 500 Internal Server Error');
     });
 
     it('should handle malformed JSON responses', async () => {
@@ -125,9 +136,9 @@ describe('useCryptoApi', () => {
       const { result } = renderHook(() => useCryptoApi());
 
       // Act & Assert
-      await expect(result.current.getCryptocurrencyMarkets(mockTileId, mockParams)).rejects.toThrow(
-        'Invalid JSON response',
-      );
+      const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('Invalid JSON response');
     });
   });
 
@@ -152,8 +163,9 @@ describe('useCryptoApi', () => {
 
       // Act & Assert
       for (const params of testParams) {
-        const data = await result.current.getCryptocurrencyMarkets(mockTileId, params);
-        expect(data.coins).toEqual(MockResponseData.getCryptocurrencyData());
+        const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, params);
+        const data = fetchResult.data;
+        expect(data?.coins).toEqual(MockResponseData.getCryptocurrencyData());
       }
     });
 
@@ -164,10 +176,11 @@ describe('useCryptoApi', () => {
       const { result } = renderHook(() => useCryptoApi());
 
       // Act
-      const data = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
+      const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
 
       // Assert
-      expect(data.coins).toEqual([]);
+      const data = fetchResult.data;
+      expect(data?.coins).toEqual([]);
     });
   });
 
@@ -179,13 +192,14 @@ describe('useCryptoApi', () => {
       const { result } = renderHook(() => useCryptoApi());
 
       // Act
-      const data = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
+      const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
 
       // Assert
-      expect(data.coins).toBeInstanceOf(Array);
-      expect(data.coins.length).toBeGreaterThan(0);
+      const data = fetchResult.data;
+      expect(data?.coins).toBeInstanceOf(Array);
+      expect(data?.coins?.length).toBeGreaterThan(0);
 
-      const bitcoin = data.coins.find((coin) => coin.id === 'bitcoin');
+      const bitcoin = data?.coins?.find((coin) => coin.id === 'bitcoin');
       expect(bitcoin).toBeDefined();
       expect(bitcoin).toMatchObject({
         id: 'bitcoin',

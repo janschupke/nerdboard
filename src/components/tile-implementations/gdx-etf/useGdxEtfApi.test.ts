@@ -2,10 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGdxEtfApi } from './useGdxEtfApi';
 import './dataMapper';
-import type { GdxEtfTileData } from './types';
 import { EndpointTestUtils } from '../../../test/utils/endpointTestUtils';
 import { ALPHA_VANTAGE_GDX_ENDPOINT } from '../../../services/apiEndpoints';
 import type { AlphaVantageParams } from '../../../services/apiEndpoints';
+import type { GdxEtfTileData } from './types';
+import type { FetchResult } from '../../../services/dataFetcher';
 
 global.fetch = vi.fn();
 
@@ -43,24 +44,19 @@ describe('useGdxEtfApi', () => {
 
   it('fetches and maps Alpha Vantage GDX ETF data successfully', async () => {
     const { result } = renderHook(() => useGdxEtfApi());
-    let data: GdxEtfTileData = {
-      symbol: '',
-      name: '',
-      currentPrice: 0,
-      previousClose: 0,
-      priceChange: 0,
-      priceChangePercent: 0,
-      volume: 0,
-      marketCap: 0,
-      high: 0,
-      low: 0,
-      open: 0,
-      lastUpdated: '',
-      tradingStatus: 'closed',
-    };
+    let fetchResult!: FetchResult<GdxEtfTileData>;
     await act(async () => {
-      data = await result.current.getGDXETF(mockTileId, mockParams);
+      fetchResult = await result.current.getGDXETF(mockTileId, mockParams);
     });
+    expect(fetchResult).toBeDefined();
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('status');
+    expect(fetchResult).toHaveProperty('lastUpdated');
+    expect(fetchResult).toHaveProperty('error');
+    expect(fetchResult).toHaveProperty('isCached');
+    expect(fetchResult).toHaveProperty('retryCount');
+    
+    const data = fetchResult.data;
     expect(data).toBeDefined();
     if (data) {
       expect(data.symbol).toBe('GDX');
@@ -76,7 +72,9 @@ describe('useGdxEtfApi', () => {
       responseData: { error: 'API error' },
     });
     const { result } = renderHook(() => useGdxEtfApi());
-    await expect(result.current.getGDXETF(mockTileId, mockParams)).rejects.toThrow('API error');
+    const fetchResult = await result.current.getGDXETF(mockTileId, mockParams);
+    expect(fetchResult.status).toBe('error');
+    expect(fetchResult.error).toContain('API error');
   });
 
   it('returns empty data and error if fetch fails', async () => {
@@ -85,8 +83,8 @@ describe('useGdxEtfApi', () => {
       errorType: 'network',
     });
     const { result } = renderHook(() => useGdxEtfApi());
-    await expect(result.current.getGDXETF(mockTileId, mockParams)).rejects.toThrow(
-      'Network error: Failed to fetch',
-    );
+    const fetchResult = await result.current.getGDXETF(mockTileId, mockParams);
+    expect(fetchResult.status).toBe('error');
+    expect(fetchResult.error).toContain('Network error: Failed to fetch');
   });
 });

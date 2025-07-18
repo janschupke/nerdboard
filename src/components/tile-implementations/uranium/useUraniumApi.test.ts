@@ -28,9 +28,18 @@ describe('useUraniumApi', () => {
 
   it('should successfully fetch uranium data (HTML scraping)', async () => {
     const { result } = renderHook(() => useUraniumApi());
-    const data = await result.current.getUraniumPrice(mockTileId, mockParams);
+    const fetchResult = await result.current.getUraniumPrice(mockTileId, mockParams);
+    expect(fetchResult).toBeDefined();
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('status');
+    expect(fetchResult).toHaveProperty('lastUpdated');
+    expect(fetchResult).toHaveProperty('error');
+    expect(fetchResult).toHaveProperty('isCached');
+    expect(fetchResult).toHaveProperty('retryCount');
+    
+    const data = fetchResult.data;
     expect(data).toBeDefined();
-    expect(data.spotPrice).toBe(expectedData.spotPrice);
-    expect(data.history).toEqual(expectedData.history);
+    expect(data?.spotPrice).toBe(expectedData.spotPrice);
+    expect(data?.history).toEqual(expectedData.history);
   });
 });

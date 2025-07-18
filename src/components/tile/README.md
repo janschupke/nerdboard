@@ -1,88 +1,86 @@
 # Tile Implementation Pattern
 
-This document describes the new tile implementation pattern after the refactoring of `GenericTile` and `Tile` components.
+This document describes the unified tile implementation pattern that provides consistent data fetching and status handling across all tiles.
 
 ## Overview
 
-The refactoring separates concerns between generic tile functionality and tile-specific content rendering:
+The tile system uses a unified pattern with:
 
-- **GenericTile**: Handles common tile functionality (error boundaries, header, close button, etc.)
-- **Tile**: Handles unknown tile types and lazy loading
-- **Individual Tile Implementations**: Handle their own data fetching and content rendering
+- **GenericTile**: Handles common tile functionality (error boundaries, header, close button, status bar)
+- **useTileData**: Unified hook for data fetching that returns `FetchResult<T>`
+- **Individual Tile Content**: Handle rendering based on status and data
+- **API Hooks**: Return `FetchResult<T>` for consistent error handling
 
-## New Pattern
+## Unified Pattern
 
 ### 1. GenericTile Component
 
-The `GenericTile` component now acts as a wrapper that provides:
+The `GenericTile` component provides:
 
 - Error boundary wrapping
 - Tile header with icon and title
 - Close button
+- Status bar showing last update time and status icon
 - Common styling and layout
 - Drag handle functionality
 
 ```tsx
-<GenericTile tile={tile} meta={meta} onRemove={onRemove} dragHandleProps={dragHandleProps}>
+<GenericTile
+  tile={tile}
+  meta={meta}
+  status={status}
+  lastUpdate={lastUpdated?.toISOString()}
+  onRemove={onRemove}
+  dragHandleProps={dragHandleProps}
+>
   {/* Tile-specific content goes here */}
 </GenericTile>
 ```
 
-### 2. Tile Component
+### 2. useTileData Hook
 
-The `Tile` component handles:
+The unified `useTileData` hook handles all data fetching:
 
-- Unknown tile type error display
-- Lazy loading with Suspense
-- Fallback loading states
+```tsx
+const { data, status, lastUpdated, error, isCached } = useTileData(
+  apiFunction,
+  tileId,
+  params,
+  forceRefresh,
+);
+```
+
+Returns `FetchResult<T>` with:
+
+- `data`: The fetched data or null
+- `status`: 'loading' | 'success' | 'error' | 'stale'
+- `lastUpdated`: Date when data was last updated
+- `error`: Error message if any
+- `isCached`: Whether data is from cache
 
 ### 3. Individual Tile Implementation Pattern
 
 Each tile implementation should follow this pattern:
 
 ```tsx
-import React, { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
-import { Icon } from '../../ui/Icon';
-import type { TileStatus } from '../../tile/tileStatus';
 import { useYourApi } from './useYourApi';
 import type { YourTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
+import { Icon } from '../../ui/Icon';
+import { RequestStatus } from '../../../services/dataFetcher';
+import { useTileData } from '../../tile/useTileData';
 
-// 1. Data hook that returns TileStatus & data
-function useYourTileData(tileId: string): TileStatus & { data?: YourTileData } {
-  const { getYourData } = useYourApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<YourTileData | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
-  const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
-    getYourData(tileId, params, isForceRefresh)
-      .then((result) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
-      });
-  }, [tileId, getYourData, isForceRefresh]);
-
-  return { loading, error, hasData: !!data, data };
-}
-
-// 2. Content component that handles all rendering states
-const YourTileContent = ({ tileData }: { tileData: TileStatus & { data?: YourTileData } }) => {
-  const { loading, error, hasData, data } = tileData;
-
-  if (loading) {
+// 1. Content component that handles all rendering states
+const YourTileContent = ({
+  data,
+  status,
+}: {
+  data: YourTileData | null;
+  status: (typeof RequestStatus)[keyof typeof RequestStatus];
+}) => {
+  if (status === RequestStatus.Loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="loading" size="lg" className="text-theme-status-info" />
@@ -90,7 +88,7 @@ const YourTileContent = ({ tileData }: { tileData: TileStatus & { data?: YourTil
     );
   }
 
-  if (error && !hasData) {
+  if (status === RequestStatus.Error) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="close" size="lg" className="text-theme-status-error" />
@@ -99,7 +97,7 @@ const YourTileContent = ({ tileData }: { tileData: TileStatus & { data?: YourTil
     );
   }
 
-  if (error && hasData) {
+  if (status === RequestStatus.Stale) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="warning" size="lg" className="text-theme-status-warning" />
@@ -108,10 +106,9 @@ const YourTileContent = ({ tileData }: { tileData: TileStatus & { data?: YourTil
     );
   }
 
-  if (hasData && data) {
+  if (status === RequestStatus.Success && data) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
-        {/* Your tile-specific content */}
         <div className="text-2xl font-bold text-theme-text-primary">{data.yourValue}</div>
         <div className="text-sm text-theme-text-secondary">{data.yourDescription}</div>
       </div>
@@ -121,48 +118,91 @@ const YourTileContent = ({ tileData }: { tileData: TileStatus & { data?: YourTil
   return null;
 };
 
-// 3. Main tile component that uses GenericTile as wrapper
-export const YourTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-    const tileData = useYourTileData(tile.id);
+// 2. Main tile component that uses GenericTile as wrapper
+export const YourTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+  const isForceRefresh = useForceRefreshFromKey();
+  const { getYourData } = useYourApi();
+  const { data, status, lastUpdated } = useTileData(
+    getYourData,
+    tile.id,
+    { yourParam: 'value' },
+    isForceRefresh,
+  );
 
-    return (
-      <GenericTile tile={tile} meta={meta} {...rest}>
-        <YourTileContent tileData={tileData} />
-      </GenericTile>
-    );
-  },
-  (prev, next) => prev.tile.id === next.tile.id,
-);
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      {...rest}
+    >
+      <YourTileContent data={data} status={status} />
+    </GenericTile>
+  );
+};
 
 YourTile.displayName = 'YourTile';
 ```
 
-## Benefits of the New Pattern
+### 4. API Hook Pattern
 
-1. **Separation of Concerns**: Generic tile functionality is separate from tile-specific content
-2. **Consistent Error Handling**: All tiles get the same error boundary and error states
-3. **Reusable Components**: The content rendering logic can be reused across different states
-4. **Type Safety**: Strong typing for tile data and status
-5. **Maintainability**: Easier to update common functionality without touching individual tiles
+API hooks should return `FetchResult<T>`:
 
-## Migration Guide
+```tsx
+import { DataFetcher, type FetchResult } from '../../../services/dataFetcher';
+import { useCallback } from 'react';
+import type { YourTileData } from './types';
 
-To migrate existing tiles to the new pattern:
+export function useYourApi() {
+  const getYourData = useCallback(
+    async (
+      tileId: string,
+      params: YourParams,
+      forceRefresh = false,
+    ): Promise<FetchResult<YourTileData>> => {
+      return DataFetcher.fetchAndMap(
+        () => fetch(url).then((res) => res.json()),
+        tileId,
+        'your-tile-type',
+        { apiCall: 'your-api-call', forceRefresh },
+      ) as Promise<FetchResult<YourTileData>>;
+    },
+    [],
+  );
 
-1. Remove the old `GenericTileDataHook` import
-2. Import `TileStatus` from `../../tile/tileStatus`
-3. Update your data hook to return `TileStatus & { data?: YourDataType }`
-4. Create a content component that handles all rendering states
-5. Update your main tile component to use `GenericTile` as a wrapper
-6. Remove the `tileData` prop from `GenericTile` usage
+  return { getYourData };
+}
+```
+
+## Benefits of the Unified Pattern
+
+1. **Consistent Data Fetching**: All tiles use the same `useTileData` hook
+2. **Unified Status Handling**: Consistent loading, error, stale, and success states
+3. **Centralized Error Handling**: All errors are handled through `DataFetcher`
+4. **Type Safety**: Strong typing with `FetchResult<T>` and specific tile data types
+5. **Caching**: Built-in caching and background refresh capabilities
+6. **Status Bar**: Automatic status display with last update time and status icons
+7. **Maintainability**: Easy to update common functionality across all tiles
 
 ## Status States
 
-The `TileStatus` interface includes:
+The unified pattern uses these status states:
 
-- `loading`: boolean - whether data is being fetched
-- `error`: string | null - error message if any
-- `hasData`: boolean - whether valid data is available
+- `loading`: Data is being fetched
+- `success`: Data was successfully fetched and is fresh
+- `error`: An error occurred during fetching
+- `stale`: Data is available but may be outdated (from cache)
 
-These states should be used to determine what to render in your content component.
+The status bar automatically shows appropriate icons and colors for each state.
+
+## Migration Guide
+
+To migrate existing tiles to the unified pattern:
+
+1. Remove old tile data hooks (e.g., `useTimeTileData`)
+2. Update API hooks to return `FetchResult<T>`
+3. Use `useTileData` hook instead of custom data fetching
+4. Create content component that handles all status states
+5. Update main tile component to use `GenericTile` with status props
+6. Remove old `TileStatus` imports and usage

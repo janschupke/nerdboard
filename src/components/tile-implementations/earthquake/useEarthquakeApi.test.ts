@@ -3,6 +3,8 @@ import { renderHook, act } from '@testing-library/react';
 import { useEarthquakeApi } from './useEarthquakeApi';
 import './dataMapper';
 import type { EarthquakeApiResponse, EarthquakeTileData } from './types';
+import type { FetchResult } from '../../../services/dataFetcher';
+import { storageManager } from '../../../services/storageManager';
 
 const mockApiResponse: EarthquakeApiResponse = {
   type: 'FeatureCollection',
@@ -60,6 +62,7 @@ global.fetch = vi.fn();
 describe('useEarthquakeApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    storageManager.clearTileState(); // Clear cache between tests
   });
 
   it('fetches and maps USGS earthquake data successfully', async () => {
@@ -68,10 +71,19 @@ describe('useEarthquakeApi', () => {
       json: async () => mockApiResponse,
     });
     const { result } = renderHook(() => useEarthquakeApi());
-    let data: EarthquakeTileData[] = [];
+    let fetchResult!: FetchResult<EarthquakeTileData[]>;
     await act(async () => {
-      data = await result.current.getEarthquakes('test-tile', {});
+      fetchResult = await result.current.getEarthquakes('test-tile', {});
     });
+    expect(fetchResult).toBeDefined();
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('status');
+    expect(fetchResult).toHaveProperty('lastUpdated');
+    expect(fetchResult).toHaveProperty('error');
+    expect(fetchResult).toHaveProperty('isCached');
+    expect(fetchResult).toHaveProperty('retryCount');
+    
+    const data = fetchResult.data;
     expect(data).toBeDefined();
     if (data) {
       expect(Array.isArray(data)).toBe(true);
@@ -88,11 +100,14 @@ describe('useEarthquakeApi', () => {
       ok: false,
     });
     const { result } = renderHook(() => useEarthquakeApi());
-    let data;
+    let fetchResult!: FetchResult<EarthquakeTileData[]>;
     await act(async () => {
-      data = await result.current.getEarthquakes('test-tile', {});
+      fetchResult = await result.current.getEarthquakes('test-tile', {});
     });
-    expect(data).toEqual([]);
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('status');
+    expect(fetchResult).toHaveProperty('error');
+    expect(fetchResult.status).toBe('error');
   });
 
   it('returns empty data and error if fetch fails', async () => {
@@ -100,10 +115,13 @@ describe('useEarthquakeApi', () => {
       new Error('Network error'),
     );
     const { result } = renderHook(() => useEarthquakeApi());
-    let data;
+    let fetchResult!: FetchResult<EarthquakeTileData[]>;
     await act(async () => {
-      data = await result.current.getEarthquakes('test-tile', {});
+      fetchResult = await result.current.getEarthquakes('test-tile', {});
     });
-    expect(data).toEqual([]);
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('status');
+    expect(fetchResult).toHaveProperty('error');
+    expect(fetchResult.status).toBe('error');
   });
 });

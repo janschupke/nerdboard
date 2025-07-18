@@ -21,9 +21,18 @@ describe('usePreciousMetalsApi', () => {
   it('should successfully fetch precious metals data', async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => mockApiResponse });
     const { result } = renderHook(() => usePreciousMetalsApi());
-    const data = await result.current.getPreciousMetals(mockTileId, mockParams);
+    const fetchResult = await result.current.getPreciousMetals(mockTileId, mockParams);
+    expect(fetchResult).toBeDefined();
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('status');
+    expect(fetchResult).toHaveProperty('lastUpdated');
+    expect(fetchResult).toHaveProperty('error');
+    expect(fetchResult).toHaveProperty('isCached');
+    expect(fetchResult).toHaveProperty('retryCount');
+    
+    const data = fetchResult.data;
     expect(data).toBeDefined();
-    expect(data.gold.price).toBe(2050.75);
-    expect(data.silver.price).toBe(23.45);
+    expect(data?.gold?.price).toBe(2050.75);
+    expect(data?.silver?.price).toBe(23.45);
   });
 });

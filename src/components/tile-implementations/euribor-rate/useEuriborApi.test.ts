@@ -4,8 +4,13 @@ import { useEuriborApi } from './useEuriborApi';
 import './dataMapper';
 import { setupEuriborRateSuccessMock } from '../../../test/utils/endpointTestUtils';
 import { EndpointTestUtils, API_ENDPOINTS } from '../../../test/utils/endpointTestUtils';
+import type { EuriborRateTileData } from './types';
+import type { FetchResult } from '../../../services/dataFetcher';
 
 describe('useEuriborApi', () => {
+  const mockTileId = 'test-euribor-tile';
+  const mockParams = {};
+
   beforeEach(() => {
     vi.clearAllMocks();
     // registerEcbEuriborDataMapper(); // This line is removed as per the new_code
@@ -14,10 +19,19 @@ describe('useEuriborApi', () => {
 
   it('fetches and maps ECB Euribor data successfully', async () => {
     const { result } = renderHook(() => useEuriborApi());
-    let data: Awaited<ReturnType<ReturnType<typeof useEuriborApi>['getEuriborRate']>> | undefined;
+    let fetchResult!: FetchResult<EuriborRateTileData>;
     await act(async () => {
-      data = await result.current.getEuriborRate('test-tile');
+      fetchResult = await result.current.getEuriborRate(mockTileId, mockParams);
     });
+    expect(fetchResult).toBeDefined();
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('status');
+    expect(fetchResult).toHaveProperty('lastUpdated');
+    expect(fetchResult).toHaveProperty('error');
+    expect(fetchResult).toHaveProperty('isCached');
+    expect(fetchResult).toHaveProperty('retryCount');
+    
+    const data = fetchResult.data;
     expect(data).toBeDefined();
     if (data) {
       expect(typeof data.currentRate).toBe('number');
@@ -34,7 +48,9 @@ describe('useEuriborApi', () => {
       responseData: { error: 'API error' },
     });
     const { result } = renderHook(() => useEuriborApi());
-    await expect(result.current.getEuriborRate('test-tile')).rejects.toThrow();
+    const fetchResult = await result.current.getEuriborRate(mockTileId, mockParams);
+    expect(fetchResult.status).toBe('error');
+    expect(fetchResult.error).toContain('API error');
   });
 
   it('throws error if fetch fails', async () => {
@@ -43,6 +59,8 @@ describe('useEuriborApi', () => {
       errorType: 'network',
     });
     const { result } = renderHook(() => useEuriborApi());
-    await expect(result.current.getEuriborRate('test-tile')).rejects.toThrow('Network error');
+    const fetchResult = await result.current.getEuriborRate(mockTileId, mockParams);
+    expect(fetchResult.status).toBe('error');
+    expect(fetchResult.error).toContain('Network error');
   });
 });

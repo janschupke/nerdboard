@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTyphoonApi } from './useTyphoonApi';
 import './dataMapper'; // Ensure the dataMapper is registered
 import type { TyphoonTileData } from './types';
-import { vi } from 'vitest';
+import type { FetchResult } from '../../../services/dataFetcher';
+import { storageManager } from '../../../services/storageManager';
 
 const mockApiResponse = {
   success: 'true',
@@ -68,6 +69,7 @@ global.fetch = vi.fn();
 describe('useTyphoonApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    storageManager.clearTileState(); // Clear cache between tests
   });
 
   it('fetches and maps Typhoon data successfully', async () => {
@@ -76,10 +78,19 @@ describe('useTyphoonApi', () => {
       json: async () => mockApiResponse,
     });
     const { result } = renderHook(() => useTyphoonApi());
-    let data: TyphoonTileData = { typhoons: [], lastUpdated: '' };
+    let fetchResult!: FetchResult<TyphoonTileData>;
     await act(async () => {
-      data = await result.current.getTyphoonData('test-tile', 'test-key');
+      fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
     });
+    expect(fetchResult).toBeDefined();
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('status');
+    expect(fetchResult).toHaveProperty('lastUpdated');
+    expect(fetchResult).toHaveProperty('error');
+    expect(fetchResult).toHaveProperty('isCached');
+    expect(fetchResult).toHaveProperty('retryCount');
+    
+    const data = fetchResult.data;
     expect(data).toBeDefined();
     if (data) {
       expect(data.typhoons.length).toBe(1);
@@ -97,11 +108,14 @@ describe('useTyphoonApi', () => {
       ok: false,
     });
     const { result } = renderHook(() => useTyphoonApi());
-    let data: TyphoonTileData = { typhoons: [], lastUpdated: '' };
+    let fetchResult!: FetchResult<TyphoonTileData>;
     await act(async () => {
-      data = await result.current.getTyphoonData('test-tile', 'test-key');
+      fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
     });
-    expect(data).toEqual({ typhoons: [], lastUpdated: '' });
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('status');
+    expect(fetchResult).toHaveProperty('error');
+    expect(fetchResult.status).toBe('error');
   });
 
   it('returns empty data and error if fetch fails', async () => {
@@ -109,10 +123,13 @@ describe('useTyphoonApi', () => {
       new Error('Network error'),
     );
     const { result } = renderHook(() => useTyphoonApi());
-    let data: TyphoonTileData = { typhoons: [], lastUpdated: '' };
+    let fetchResult!: FetchResult<TyphoonTileData>;
     await act(async () => {
-      data = await result.current.getTyphoonData('test-tile', 'test-key');
+      fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
     });
-    expect(data).toEqual({ typhoons: [], lastUpdated: '' });
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('status');
+    expect(fetchResult).toHaveProperty('error');
+    expect(fetchResult.status).toBe('error');
   });
 });

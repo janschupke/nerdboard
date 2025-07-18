@@ -26,9 +26,18 @@ describe('useTimeApi', () => {
       const { result } = renderHook(() => useTimeApi());
 
       // Act
-      const data = await result.current.getTime(mockTileId, mockParams);
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
 
       // Assert
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('data');
+      expect(fetchResult).toHaveProperty('status');
+      expect(fetchResult).toHaveProperty('lastUpdated');
+      expect(fetchResult).toHaveProperty('error');
+      expect(fetchResult).toHaveProperty('isCached');
+      expect(fetchResult).toHaveProperty('retryCount');
+      
+      const data = fetchResult.data;
       expect(data).toBeDefined();
       expect(data).toEqual(
         expect.objectContaining({
@@ -63,9 +72,11 @@ describe('useTimeApi', () => {
       const params = { city: 'Europe/Berlin' };
       // Act & Assert
       await waitFor(async () => {
-        const data = await result.current.getTime(mockTileId, params);
+        const fetchResult = await result.current.getTime(mockTileId, params);
+        expect(fetchResult).toBeDefined();
+        const data = fetchResult.data;
         expect(data).toBeDefined();
-        expect(data.currentTime).toBe('14:30:25');
+        expect(data?.currentTime).toBe('14:30:25');
       });
     });
   });
@@ -78,9 +89,9 @@ describe('useTimeApi', () => {
       const { result } = renderHook(() => useTimeApi());
 
       // Act & Assert
-      await expect(result.current.getTime(mockTileId, mockParams)).rejects.toThrow(
-        'Network error: Failed to fetch',
-      );
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('Network error: Failed to fetch');
     });
 
     it('should handle timeout errors', async () => {
@@ -90,9 +101,9 @@ describe('useTimeApi', () => {
       const { result } = renderHook(() => useTimeApi());
 
       // Act & Assert
-      await expect(result.current.getTime(mockTileId, mockParams)).rejects.toThrow(
-        'Request timeout',
-      );
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('Request timeout');
     });
 
     it('should handle API errors (500)', async () => {
@@ -102,9 +113,9 @@ describe('useTimeApi', () => {
       const { result } = renderHook(() => useTimeApi());
 
       // Act & Assert
-      await expect(result.current.getTime(mockTileId, mockParams)).rejects.toThrow(
-        'API error: 500 Internal Server Error',
-      );
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('API error: 500 Internal Server Error');
     });
 
     it('should handle malformed JSON responses', async () => {
@@ -114,9 +125,9 @@ describe('useTimeApi', () => {
       const { result } = renderHook(() => useTimeApi());
 
       // Act & Assert
-      await expect(result.current.getTime(mockTileId, mockParams)).rejects.toThrow(
-        'Invalid JSON response',
-      );
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('Invalid JSON response');
     });
   });
 
@@ -193,13 +204,14 @@ describe('useTimeApi', () => {
       // Act & Assert
       for (const { params, apiData, expected } of testParams) {
         setupSuccessMock(API_ENDPOINTS.TIME_API, apiData);
-        const data = await result.current.getTime(mockTileId, params);
+        const fetchResult = await result.current.getTime(mockTileId, params);
+        const data = fetchResult.data;
         // Debug: log if currentTime is '--:--:--' (invalid)
-        if (data.currentTime === '--:--:--') {
+        if (data?.currentTime === '--:--:--') {
           console.error('Invalid DateTime for params:', params, apiData);
         }
         expect(data).toBeDefined();
-        expect(data.currentTime).toBe(expected);
+        expect(data?.currentTime).toBe(expected);
       }
     });
     it('should handle business hours data', async () => {
@@ -222,10 +234,11 @@ describe('useTimeApi', () => {
       // Use params that match the mock's timezone
       const params = { city: 'America/New_York' };
       // Act
-      const data = await result.current.getTime(mockTileId, params);
+      const fetchResult = await result.current.getTime(mockTileId, params);
+      const data = fetchResult.data;
       // Assert
-      expect(data.isBusinessHours).toBe(true);
-      expect(['open', 'closed', 'opening soon', 'closing soon']).toContain(data.businessStatus);
+      expect(data?.isBusinessHours).toBe(true);
+      expect(['open', 'closed', 'opening soon', 'closing soon']).toContain(data?.businessStatus);
     });
 
     it('should handle time calculations', async () => {
@@ -246,12 +259,13 @@ describe('useTimeApi', () => {
       const { result } = renderHook(() => useTimeApi());
 
       // Act
-      const data = await result.current.getTime(mockTileId, mockParams);
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      const data = fetchResult.data;
 
       // Assert
-      expect(data.currentTime).toBeDefined();
-      expect(data.timezone).toBe('Europe/London');
-      expect(data.dayOfWeek).toBe('Wednesday');
+      expect(data?.currentTime).toBeDefined();
+      expect(data?.timezone).toBe('Europe/London');
+      expect(data?.dayOfWeek).toBe('Wednesday');
       // Optionally, check for timeUntilNextDay if you add this logic to the mapper
     });
 
@@ -273,10 +287,11 @@ describe('useTimeApi', () => {
       const { result } = renderHook(() => useTimeApi());
 
       // Act
-      const data = await result.current.getTime(mockTileId, mockParams);
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      const data = fetchResult.data;
 
       // Assert
-      expect(data.offset).toBe('-05:00');
+      expect(data?.offset).toBe('-05:00');
     });
   });
 });

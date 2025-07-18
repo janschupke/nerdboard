@@ -24,15 +24,24 @@ describe('useFederalFundsApi', () => {
       EndpointTestUtils.clearMocks();
       setupFederalFundsRateSuccessMock();
       const { result } = renderHook(() => useFederalFundsApi());
-      const data = await result.current.getFederalFundsRate(mockTileId, mockParams);
+      const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('data');
+      expect(fetchResult).toHaveProperty('status');
+      expect(fetchResult).toHaveProperty('lastUpdated');
+      expect(fetchResult).toHaveProperty('error');
+      expect(fetchResult).toHaveProperty('isCached');
+      expect(fetchResult).toHaveProperty('retryCount');
+      
+      const data = fetchResult.data;
       expect(data).toBeDefined();
       expect(data).toHaveProperty('currentRate');
       expect(data).toHaveProperty('lastUpdate');
       expect(data).toHaveProperty('historicalData');
-      expect(typeof data.currentRate).toBe('number');
-      expect(Array.isArray(data.historicalData)).toBe(true);
-      expect(data.historicalData.length).toBeGreaterThan(0);
-      expect(data.historicalData[0]).toEqual(
+      expect(typeof data?.currentRate).toBe('number');
+      expect(Array.isArray(data?.historicalData)).toBe(true);
+      expect(data?.historicalData?.length).toBeGreaterThan(0);
+      expect(data?.historicalData?.[0]).toEqual(
         expect.objectContaining({
           date: expect.any(Date),
           rate: expect.any(Number),
@@ -49,11 +58,13 @@ describe('useFederalFundsApi', () => {
       );
       const { result } = renderHook(() => useFederalFundsApi());
       await waitFor(async () => {
-        const data = await result.current.getFederalFundsRate(mockTileId, mockParams);
+        const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
+        expect(fetchResult).toBeDefined();
+        const data = fetchResult.data;
         expect(data).toBeDefined();
-        expect(typeof data.currentRate).toBe('number');
-        expect(Array.isArray(data.historicalData)).toBe(true);
-        expect(data.historicalData.length).toBeGreaterThan(0);
+        expect(typeof data?.currentRate).toBe('number');
+        expect(Array.isArray(data?.historicalData)).toBe(true);
+        expect(data?.historicalData?.length).toBeGreaterThan(0);
       });
     });
   });
@@ -63,36 +74,36 @@ describe('useFederalFundsApi', () => {
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.FRED_SERIES_OBSERVATIONS, 'network');
       const { result } = renderHook(() => useFederalFundsApi());
-      await expect(result.current.getFederalFundsRate(mockTileId, mockParams)).rejects.toThrow(
-        'Network error: Failed to fetch',
-      );
+      const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('Network error: Failed to fetch');
     });
 
     it('should handle timeout errors', async () => {
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.FRED_SERIES_OBSERVATIONS, 'timeout');
       const { result } = renderHook(() => useFederalFundsApi());
-      await expect(result.current.getFederalFundsRate(mockTileId, mockParams)).rejects.toThrow(
-        'Request timeout',
-      );
+      const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('Request timeout');
     });
 
     it('should handle API errors (500)', async () => {
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.FRED_SERIES_OBSERVATIONS, 'api');
       const { result } = renderHook(() => useFederalFundsApi());
-      await expect(result.current.getFederalFundsRate(mockTileId, mockParams)).rejects.toThrow(
-        'API error: 500 Internal Server Error',
-      );
+      const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('API error: 500 Internal Server Error');
     });
 
     it('should handle malformed JSON responses', async () => {
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.FRED_SERIES_OBSERVATIONS, 'malformed');
       const { result } = renderHook(() => useFederalFundsApi());
-      await expect(result.current.getFederalFundsRate(mockTileId, mockParams)).rejects.toThrow(
-        'Invalid JSON response',
-      );
+      const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
+      expect(fetchResult.status).toBe('error');
+      expect(fetchResult.error).toContain('Invalid JSON response');
     });
   });
 
@@ -107,10 +118,12 @@ describe('useFederalFundsApi', () => {
         { series_id: 'EFFR', file_type: 'json' },
       ];
       for (const params of testParams) {
-        const data = await result.current.getFederalFundsRate(mockTileId, params);
+        const fetchResult = await result.current.getFederalFundsRate(mockTileId, params);
+        expect(fetchResult).toBeDefined();
+        const data = fetchResult.data;
         expect(data).toBeDefined();
-        expect(typeof data.currentRate).toBe('number');
-        expect(Array.isArray(data.historicalData)).toBe(true);
+        expect(typeof data?.currentRate).toBe('number');
+        expect(Array.isArray(data?.historicalData)).toBe(true);
         // Do not require historicalData.length > 0 for all series IDs
       }
     });
@@ -121,7 +134,8 @@ describe('useFederalFundsApi', () => {
       EndpointTestUtils.clearMocks();
       setupFederalFundsRateSuccessMock();
       const { result } = renderHook(() => useFederalFundsApi());
-      const data = await result.current.getFederalFundsRate(mockTileId, mockParams);
+      const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
+      const data = fetchResult.data;
       expect(data).toMatchObject({
         currentRate: expect.any(Number),
         lastUpdate: expect.any(Date),
@@ -132,8 +146,8 @@ describe('useFederalFundsApi', () => {
           }),
         ]),
       });
-      expect(data.historicalData.length).toBeGreaterThan(0);
-      data.historicalData.forEach((entry) => {
+      expect(data?.historicalData?.length).toBeGreaterThan(0);
+      data?.historicalData?.forEach((entry) => {
         expect(entry).toHaveProperty('date');
         expect(entry).toHaveProperty('rate');
       });
