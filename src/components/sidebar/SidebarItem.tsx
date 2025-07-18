@@ -77,7 +77,7 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({
       tabIndex={0}
       draggable={true}
       onDragStart={(e) => {
-        e.dataTransfer.setData('application/nerdboard-tile-type', tileType);
+        e.dataTransfer.setData('application/dashboard-tile-type', tileType);
         e.dataTransfer.effectAllowed = 'copy';
       }}
       onDragEnd={() => {}}

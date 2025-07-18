@@ -57,7 +57,7 @@ export const DragboardGrid = memo<DragboardGridProps>(({ children }) => {
   const handleDragOver = useCallback(
     (e: React.DragEvent, x: number, y: number) => {
       e.preventDefault();
-      const sidebarTileType = e.dataTransfer.getData('application/nerdboard-tile-type');
+      const sidebarTileType = e.dataTransfer.getData('application/dashboard-tile-type');
       if (sidebarTileType && !dragState.isSidebarDrag && startSidebarDrag) {
         startSidebarDrag(sidebarTileType);
       }
@@ -73,8 +73,8 @@ export const DragboardGrid = memo<DragboardGridProps>(({ children }) => {
   const handleDrop = useCallback(
     (e: React.DragEvent, x: number, y: number) => {
       e.preventDefault();
-      const sidebarTileType = e.dataTransfer.getData('application/nerdboard-tile-type');
-      const tileId = e.dataTransfer.getData('application/nerdboard-tile-id');
+      const sidebarTileType = e.dataTransfer.getData('application/dashboard-tile-type');
+      const tileId = e.dataTransfer.getData('application/dashboard-tile-id');
       if (sidebarTileType && endSidebarDrag && startSidebarDrag) {
         startSidebarDrag(sidebarTileType);
         endSidebarDrag({ x, y }, sidebarTileType);

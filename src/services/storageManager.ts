@@ -58,11 +58,11 @@ export interface DashboardTileWithConfig extends Omit<DragboardTileData, 'config
 
 // --- Constants ---
 export const STORAGE_KEYS = {
-  APPCONFIG: 'nerdboard-app-config',
-  DASHBOARD_STATE: 'nerdboard-dashboard-state',
-  TILE_STATE: 'nerdboard-tile-state',
-  SIDEBAR: 'nerdboard-sidebar-state',
-  LOGS: 'nerdboard_api_logs',
+  APPCONFIG: 'dashboard-app-config',
+  DASHBOARD_STATE: 'dashboard-dashboard-state',
+  TILE_STATE: 'dashboard-tile-state',
+  SIDEBAR: 'dashboard-sidebar-state',
+  LOGS: 'dashboard_api_logs',
 };
 
 // Log retention time: 1 hour in milliseconds
