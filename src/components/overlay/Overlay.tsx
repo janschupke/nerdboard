@@ -149,6 +149,7 @@ function TilePersistenceListener({ storage }: { storage: ReturnType<typeof useSt
         const currentIds = new Set(tiles.map((t: DragboardTileData) => t.id));
         for (const id of prevIds) {
           if (!currentIds.has(id)) {
+            // TODO: data reset?
             storage.setTileState(id, { data: null, lastDataRequest: 0, lastDataRequestSuccessful: false });
           }
         }

@@ -24,11 +24,9 @@ describe('usePreciousMetalsApi', () => {
     const fetchResult = await result.current.getPreciousMetals(mockTileId, mockParams);
     expect(fetchResult).toBeDefined();
     expect(fetchResult).toHaveProperty('data');
-    expect(fetchResult).toHaveProperty('status');
-    expect(fetchResult).toHaveProperty('lastUpdated');
-    expect(fetchResult).toHaveProperty('error');
-    expect(fetchResult).toHaveProperty('isCached');
-    expect(fetchResult).toHaveProperty('retryCount');
+    expect(fetchResult).toHaveProperty('lastDataRequest');
+    expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+    expect(typeof fetchResult.lastDataRequest).toBe('number');
     
     const data = fetchResult.data;
     expect(data).toBeDefined();

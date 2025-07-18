@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { TileConfig, TileDataType } from '../../services/storageManager';
-import { DATA_FRESHNESS_INTERVAL } from '../../services/dataFetcher';
 
 export const TileStatus = {
   Loading: 'loading',
@@ -50,15 +49,10 @@ export function useTileData<T extends TileDataType, P>(
     data = result.data;
     lastUpdated = result.lastDataRequest ? new Date(result.lastDataRequest) : null;
     if (result.lastDataRequestSuccessful && data) {
-      // Data is present and last request was successful
-      const now = Date.now();
-      const isFresh = result.lastDataRequest && (now - result.lastDataRequest < DATA_FRESHNESS_INTERVAL);
-      status = isFresh ? TileStatus.Success : TileStatus.Stale;
+      status = TileStatus.Success;
     } else if (!result.lastDataRequestSuccessful && data) {
-      // Data is present but last request failed
       status = TileStatus.Stale;
     } else {
-      // No data and last request failed
       status = TileStatus.Error;
     }
   }

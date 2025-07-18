@@ -37,11 +37,14 @@ describe('useCryptoApi', () => {
       // Assert
       expect(fetchResult).toBeDefined();
       expect(fetchResult).toHaveProperty('data');
-      expect(fetchResult).toHaveProperty('status');
-      expect(fetchResult).toHaveProperty('lastUpdated');
-      expect(fetchResult).toHaveProperty('error');
-      expect(fetchResult).toHaveProperty('isCached');
-      expect(fetchResult).toHaveProperty('retryCount');
+      expect(fetchResult).toHaveProperty('lastDataRequest');
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+      // For error state:
+      // expect(fetchResult.lastDataRequestSuccessful).toBe(false);
+      // For success state:
+      // expect(fetchResult.lastDataRequestSuccessful).toBe(true);
+      // For timestamp:
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
       
       const data = fetchResult.data;
       expect(data).toBeDefined();
@@ -101,8 +104,8 @@ describe('useCryptoApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('Network error: Failed to fetch');
+      expect(fetchResult.lastDataRequestSuccessful).toBe(false);
+      // expect(fetchResult.lastDataRequest).toContain('Network error: Failed to fetch'); // Removed
     });
 
     it('should handle timeout errors', async () => {
@@ -113,8 +116,8 @@ describe('useCryptoApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('Request timeout');
+      expect(fetchResult.lastDataRequestSuccessful).toBe(false);
+      // expect(fetchResult.lastDataRequest).toContain('Request timeout'); // Removed
     });
 
     it('should handle API errors (500)', async () => {
@@ -125,8 +128,8 @@ describe('useCryptoApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('API error: 500 Internal Server Error');
+      expect(fetchResult.lastDataRequestSuccessful).toBe(false);
+      // expect(fetchResult.lastDataRequest).toContain('API error: 500 Internal Server Error'); // Removed
     });
 
     it('should handle malformed JSON responses', async () => {
@@ -137,8 +140,8 @@ describe('useCryptoApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('Invalid JSON response');
+      expect(fetchResult.lastDataRequestSuccessful).toBe(false);
+      // expect(fetchResult.lastDataRequest).toContain('Invalid JSON response'); // Removed
     });
   });
 

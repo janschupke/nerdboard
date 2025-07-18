@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useEarthquakeApi } from './useEarthquakeApi';
 import './dataMapper';
-import type { EarthquakeApiResponse, EarthquakeTileData } from './types';
-import type { FetchResult } from '../../../services/dataFetcher';
+import type { EarthquakeApiResponse } from './types';
 import { storageManager } from '../../../services/storageManager';
 
 const mockApiResponse: EarthquakeApiResponse = {
@@ -71,27 +70,27 @@ describe('useEarthquakeApi', () => {
       json: async () => mockApiResponse,
     });
     const { result } = renderHook(() => useEarthquakeApi());
-    let fetchResult!: FetchResult<EarthquakeTileData[]>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let fetchResult: any = null;
     await act(async () => {
       fetchResult = await result.current.getEarthquakes('test-tile', {});
     });
-    expect(fetchResult).toBeDefined();
-    expect(fetchResult).toHaveProperty('data');
-    expect(fetchResult).toHaveProperty('status');
-    expect(fetchResult).toHaveProperty('lastUpdated');
-    expect(fetchResult).toHaveProperty('error');
-    expect(fetchResult).toHaveProperty('isCached');
-    expect(fetchResult).toHaveProperty('retryCount');
-    
-    const data = fetchResult.data;
-    expect(data).toBeDefined();
-    if (data) {
-      expect(Array.isArray(data)).toBe(true);
-      expect(data.length).toBe(1);
-      expect(data[0].id).toBe('abcd1234');
-      expect(data[0].place).toBe('100km S of Randomville');
-      expect(data[0].magnitude).toBe(5.2);
-      expect(data[0].coordinates).toEqual([140.123, 35.678, 10]);
+    expect(fetchResult).not.toBeNull();
+    if (fetchResult) {
+      expect(fetchResult).toHaveProperty('data');
+      expect(fetchResult).toHaveProperty('lastDataRequest');
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
+      const data = fetchResult.data;
+      expect(data).toBeDefined();
+      if (data) {
+        expect(Array.isArray(data)).toBe(true);
+        expect(data.length).toBe(1);
+        expect(data[0].id).toBe('abcd1234');
+        expect(data[0].place).toBe('100km S of Randomville');
+        expect(data[0].magnitude).toBe(5.2);
+        expect(data[0].coordinates).toEqual([140.123, 35.678, 10]);
+      }
     }
   });
 
@@ -100,14 +99,19 @@ describe('useEarthquakeApi', () => {
       ok: false,
     });
     const { result } = renderHook(() => useEarthquakeApi());
-    let fetchResult!: FetchResult<EarthquakeTileData[]>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let fetchResult: any = null;
     await act(async () => {
       fetchResult = await result.current.getEarthquakes('test-tile', {});
     });
-    expect(fetchResult).toHaveProperty('data');
-    expect(fetchResult).toHaveProperty('status');
-    expect(fetchResult).toHaveProperty('error');
-    expect(fetchResult.status).toBe('error');
+    expect(fetchResult).not.toBeNull();
+    if (fetchResult) {
+      expect(fetchResult).toHaveProperty('data');
+      expect(fetchResult).toHaveProperty('lastDataRequest');
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+      expect(fetchResult.lastDataRequestSuccessful).toBe(false);
+      expect(fetchResult.data).toEqual([]);
+    }
   });
 
   it('returns empty data and error if fetch fails', async () => {
@@ -115,13 +119,18 @@ describe('useEarthquakeApi', () => {
       new Error('Network error'),
     );
     const { result } = renderHook(() => useEarthquakeApi());
-    let fetchResult!: FetchResult<EarthquakeTileData[]>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let fetchResult: any = null;
     await act(async () => {
       fetchResult = await result.current.getEarthquakes('test-tile', {});
     });
-    expect(fetchResult).toHaveProperty('data');
-    expect(fetchResult).toHaveProperty('status');
-    expect(fetchResult).toHaveProperty('error');
-    expect(fetchResult.status).toBe('error');
+    expect(fetchResult).not.toBeNull();
+    if (fetchResult) {
+      expect(fetchResult).toHaveProperty('data');
+      expect(fetchResult).toHaveProperty('lastDataRequest');
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+      expect(fetchResult.lastDataRequestSuccessful).toBe(false);
+      expect(fetchResult.data).toEqual([]);
+    }
   });
 });

@@ -31,11 +31,9 @@ describe('useTimeApi', () => {
       // Assert
       expect(fetchResult).toBeDefined();
       expect(fetchResult).toHaveProperty('data');
-      expect(fetchResult).toHaveProperty('status');
-      expect(fetchResult).toHaveProperty('lastUpdated');
-      expect(fetchResult).toHaveProperty('error');
-      expect(fetchResult).toHaveProperty('isCached');
-      expect(fetchResult).toHaveProperty('retryCount');
+      expect(fetchResult).toHaveProperty('lastDataRequest');
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
       
       const data = fetchResult.data;
       expect(data).toBeDefined();
@@ -90,8 +88,10 @@ describe('useTimeApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getTime(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('Network error: Failed to fetch');
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
+      expect(fetchResult.lastDataRequest).toBeDefined();
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
     });
 
     it('should handle timeout errors', async () => {
@@ -102,8 +102,10 @@ describe('useTimeApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getTime(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('Request timeout');
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
+      expect(fetchResult.lastDataRequest).toBeDefined();
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
     });
 
     it('should handle API errors (500)', async () => {
@@ -114,8 +116,10 @@ describe('useTimeApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getTime(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('API error: 500 Internal Server Error');
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
+      expect(fetchResult.lastDataRequest).toBeDefined();
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
     });
 
     it('should handle malformed JSON responses', async () => {
@@ -126,8 +130,10 @@ describe('useTimeApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getTime(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('Invalid JSON response');
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
+      expect(fetchResult.lastDataRequest).toBeDefined();
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
     });
   });
 

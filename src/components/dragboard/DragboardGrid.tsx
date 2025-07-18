@@ -57,6 +57,7 @@ export const DragboardGrid = memo<DragboardGridProps>(({ children }) => {
   const handleDragOver = useCallback(
     (e: React.DragEvent, x: number, y: number) => {
       e.preventDefault();
+      // TODO: remove string literals?
       const sidebarTileType = e.dataTransfer.getData('application/dashboard-tile-type');
       if (sidebarTileType && !dragState.isSidebarDrag && startSidebarDrag) {
         startSidebarDrag(sidebarTileType);

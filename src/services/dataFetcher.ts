@@ -8,7 +8,7 @@ import {
 import { type BaseApiResponse } from './dataMapper';
 import { tileDataMappers, tileDataParsers } from './tileTypeRegistry';
 
-export const DATA_FRESHNESS_INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
+export const DATA_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 export interface FetchOptions {
   forceRefresh?: boolean;
@@ -42,7 +42,7 @@ export class DataFetcher {
     const { forceRefresh = false, apiCall = tileType } = options;
     const cached = storageManager.getTileState<TTileData>(storageKey);
     const now = Date.now();
-    const isFresh = cached && (now - cached.lastDataRequest < DATA_FRESHNESS_INTERVAL);
+    const isFresh = cached && (now - cached.lastDataRequest < DATA_REFRESH_INTERVAL);
 
     if (!forceRefresh && cached && isFresh) {
       return {
@@ -60,6 +60,11 @@ export class DataFetcher {
 
     try {
       const apiResponse = await fetchFunction();
+      // If the API response contains an 'error' property, treat as error
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (apiResponse && typeof apiResponse === 'object' && 'error' in apiResponse) {
+        throw new Error((apiResponse as any).error || 'API error');
+      }
       const mappedData = mapper.safeMap(apiResponse) as unknown as TTileData;
       // On success, update data and status
       DataFetcher.setTileState<TTileData>(storageKey, mappedData, true);
@@ -103,7 +108,7 @@ export class DataFetcher {
     const { forceRefresh = false, apiCall = tileType } = options;
     const cached = storageManager.getTileState<TTileData>(storageKey);
     const now = Date.now();
-    const isFresh = cached && (now - cached.lastDataRequest < DATA_FRESHNESS_INTERVAL);
+    const isFresh = cached && (now - cached.lastDataRequest < DATA_REFRESH_INTERVAL);
 
     if (!forceRefresh && cached && isFresh) {
       return {

@@ -28,11 +28,8 @@ describe('useWeatherApi', () => {
       const fetchResult = await result.current.getWeather(mockTileId, mockParams);
       expect(fetchResult).toBeDefined();
       expect(fetchResult).toHaveProperty('data');
-      expect(fetchResult).toHaveProperty('status');
-      expect(fetchResult).toHaveProperty('lastUpdated');
-      expect(fetchResult).toHaveProperty('error');
-      expect(fetchResult).toHaveProperty('isCached');
-      expect(fetchResult).toHaveProperty('retryCount');
+      expect(fetchResult).toHaveProperty('lastDataRequest');
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
       
       const data = fetchResult.data;
       expect(data).toBeDefined();
@@ -102,8 +99,19 @@ describe('useWeatherApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getWeather(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('Network error: Failed to fetch');
+      expect(fetchResult.lastDataRequestSuccessful).toBe(false);
+      expect(fetchResult.data).toEqual({
+        city: 'Helsinki',
+        country: 'Finland',
+        temperature: { current: 0, feels_like: 0, min: 0, max: 0 },
+        conditions: { main: 'Unknown', description: 'No data available', icon: '01d' },
+        humidity: 0,
+        wind: { speed: 0, direction: 0 },
+        pressure: 0,
+        visibility: 0,
+        timestamp: expect.any(Number),
+        daily: [],
+      });
     });
 
     it('should handle timeout errors', async () => {
@@ -114,8 +122,19 @@ describe('useWeatherApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getWeather(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('Request timeout');
+      expect(fetchResult.lastDataRequestSuccessful).toBe(false);
+      expect(fetchResult.data).toEqual({
+        city: 'Helsinki',
+        country: 'Finland',
+        temperature: { current: 0, feels_like: 0, min: 0, max: 0 },
+        conditions: { main: 'Unknown', description: 'No data available', icon: '01d' },
+        humidity: 0,
+        wind: { speed: 0, direction: 0 },
+        pressure: 0,
+        visibility: 0,
+        timestamp: expect.any(Number),
+        daily: [],
+      });
     });
 
     it('should handle API errors (500)', async () => {
@@ -126,8 +145,19 @@ describe('useWeatherApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getWeather(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('API error: 500 Internal Server Error');
+      expect(fetchResult.lastDataRequestSuccessful).toBe(false);
+      expect(fetchResult.data).toEqual({
+        city: 'Helsinki',
+        country: 'Finland',
+        temperature: { current: 0, feels_like: 0, min: 0, max: 0 },
+        conditions: { main: 'Unknown', description: 'No data available', icon: '01d' },
+        humidity: 0,
+        wind: { speed: 0, direction: 0 },
+        pressure: 0,
+        visibility: 0,
+        timestamp: expect.any(Number),
+        daily: [],
+      });
     });
 
     it('should handle malformed JSON responses', async () => {
@@ -138,8 +168,19 @@ describe('useWeatherApi', () => {
 
       // Act & Assert
       const fetchResult = await result.current.getWeather(mockTileId, mockParams);
-      expect(fetchResult.status).toBe('error');
-      expect(fetchResult.error).toContain('Invalid JSON response');
+      expect(fetchResult.lastDataRequestSuccessful).toBe(false);
+      expect(fetchResult.data).toEqual({
+        city: 'Helsinki',
+        country: 'Finland',
+        temperature: { current: 0, feels_like: 0, min: 0, max: 0 },
+        conditions: { main: 'Unknown', description: 'No data available', icon: '01d' },
+        humidity: 0,
+        wind: { speed: 0, direction: 0 },
+        pressure: 0,
+        visibility: 0,
+        timestamp: expect.any(Number),
+        daily: [],
+      });
     });
   });
 

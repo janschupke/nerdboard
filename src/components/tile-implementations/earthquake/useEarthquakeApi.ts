@@ -17,7 +17,7 @@ export function useEarthquakeApi() {
       const url = buildApiUrl(USGS_EARTHQUAKE_ENDPOINT, params);
       // Map the array response to the wrapper type
       return DataFetcher.fetchAndMap(
-        () => fetch(url).then((res) => res.json()).then((data) => ({ items: Array.isArray(data) ? data : [] })),
+        () => fetch(url).then((res) => res.json()),
         tileId,
         TileType.EARTHQUAKE,
         { apiCall: TileApiCallTitle.EARTHQUAKE, forceRefresh },

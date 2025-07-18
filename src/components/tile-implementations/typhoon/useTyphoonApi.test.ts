@@ -84,11 +84,8 @@ describe('useTyphoonApi', () => {
     });
     expect(fetchResult).toBeDefined();
     expect(fetchResult).toHaveProperty('data');
-    expect(fetchResult).toHaveProperty('status');
-    expect(fetchResult).toHaveProperty('lastUpdated');
-    expect(fetchResult).toHaveProperty('error');
-    expect(fetchResult).toHaveProperty('isCached');
-    expect(fetchResult).toHaveProperty('retryCount');
+    expect(fetchResult).toHaveProperty('lastDataRequest');
+    expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
     
     const data = fetchResult.data;
     expect(data).toBeDefined();
@@ -113,9 +110,9 @@ describe('useTyphoonApi', () => {
       fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
     });
     expect(fetchResult).toHaveProperty('data');
-    expect(fetchResult).toHaveProperty('status');
-    expect(fetchResult).toHaveProperty('error');
-    expect(fetchResult.status).toBe('error');
+    expect(fetchResult).toHaveProperty('lastDataRequest');
+    expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+    expect(fetchResult.lastDataRequestSuccessful).toBe(false);
   });
 
   it('returns empty data and error if fetch fails', async () => {
@@ -128,8 +125,8 @@ describe('useTyphoonApi', () => {
       fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
     });
     expect(fetchResult).toHaveProperty('data');
-    expect(fetchResult).toHaveProperty('status');
-    expect(fetchResult).toHaveProperty('error');
-    expect(fetchResult.status).toBe('error');
+    expect(fetchResult).toHaveProperty('lastDataRequest');
+    expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+    expect(fetchResult.lastDataRequestSuccessful).toBe(false);
   });
 });

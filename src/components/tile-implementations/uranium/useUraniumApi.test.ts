@@ -31,11 +31,8 @@ describe('useUraniumApi', () => {
     const fetchResult = await result.current.getUraniumPrice(mockTileId, mockParams);
     expect(fetchResult).toBeDefined();
     expect(fetchResult).toHaveProperty('data');
-    expect(fetchResult).toHaveProperty('status');
-    expect(fetchResult).toHaveProperty('lastUpdated');
-    expect(fetchResult).toHaveProperty('error');
-    expect(fetchResult).toHaveProperty('isCached');
-    expect(fetchResult).toHaveProperty('retryCount');
+    expect(fetchResult).toHaveProperty('lastDataRequest');
+    expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
     
     const data = fetchResult.data;
     expect(data).toBeDefined();
