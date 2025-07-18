@@ -1,6 +1,28 @@
 import React from 'react';
+import type { ReactNode } from 'react';
 import { vi } from 'vitest';
 import { AppTheme } from '../../services/storageManager';
+import { DataServicesContext } from '../../contexts/DataServicesContext';
+import { DataParserRegistry } from '../../services/dataParser';
+import { DataMapperRegistry } from '../../services/dataMapper';
+import { DataFetcher } from '../../services/dataFetcher';
+
+export function createMockDataServices() {
+  const parserRegistry = new DataParserRegistry();
+  const mapperRegistry = new DataMapperRegistry();
+  const dataFetcher = new DataFetcher(mapperRegistry, parserRegistry);
+  return { parserRegistry, mapperRegistry, dataFetcher };
+}
+
+type MockDataServicesProviderProps = { children: ReactNode };
+export const MockDataServicesProvider: React.FC<MockDataServicesProviderProps> = ({ children }) => {
+  const services = createMockDataServices();
+  return (
+    <DataServicesContext.Provider value={services}>
+      {children}
+    </DataServicesContext.Provider>
+  );
+};
 
 // Mock data arrays to capture props for testing
 export const dragboardProviderProps: Array<Record<string, unknown>> = [];

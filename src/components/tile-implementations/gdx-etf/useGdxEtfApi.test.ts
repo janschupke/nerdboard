@@ -5,8 +5,13 @@ import './dataMapper';
 import { EndpointTestUtils } from '../../../test/utils/endpointTestUtils';
 import { ALPHA_VANTAGE_GDX_ENDPOINT } from '../../../services/apiEndpoints';
 import type { AlphaVantageParams } from '../../../services/apiEndpoints';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
 
 global.fetch = vi.fn();
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+);
 
 describe('useGdxEtfApi', () => {
   const mockTileId = 'test-gdx-tile';
@@ -41,7 +46,7 @@ describe('useGdxEtfApi', () => {
   });
 
   it('fetches and maps Alpha Vantage GDX ETF data successfully', async () => {
-    const { result } = renderHook(() => useGdxEtfApi());
+    const { result } = renderHook(() => useGdxEtfApi(), { wrapper });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let fetchResult: any = null;
     await act(async () => {
@@ -69,7 +74,7 @@ describe('useGdxEtfApi', () => {
       status: 500,
       responseData: { error: 'API error' },
     });
-    const { result } = renderHook(() => useGdxEtfApi());
+    const { result } = renderHook(() => useGdxEtfApi(), { wrapper });
     const fetchResult = await result.current.getGDXETF(mockTileId, mockParams);
     expect(fetchResult.lastDataRequestSuccessful).toBe(false);
     expect(fetchResult.data).toEqual({
@@ -94,7 +99,7 @@ describe('useGdxEtfApi', () => {
       shouldFail: true,
       errorType: 'network',
     });
-    const { result } = renderHook(() => useGdxEtfApi());
+    const { result } = renderHook(() => useGdxEtfApi(), { wrapper });
     const fetchResult = await result.current.getGDXETF(mockTileId, mockParams);
     expect(fetchResult.lastDataRequestSuccessful).toBe(false);
     expect(fetchResult.data).toEqual({

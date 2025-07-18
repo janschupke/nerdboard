@@ -1,5 +1,5 @@
 import type { FederalFundsRateTileData } from './types';
-import { DataFetcher } from '../../../services/dataFetcher';
+import { useDataServices } from '../../../contexts/DataServicesContext';
 import { useCallback } from 'react';
 import { FRED_SERIES_OBSERVATIONS_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { FredSeriesObservationsParams } from '../../../services/apiEndpoints';
@@ -14,17 +14,18 @@ import type { TileConfig } from '../../../services/storageManager';
  * @returns Promise<TileConfig<FederalFundsRateTileData>>
  */
 export function useFederalFundsApi() {
+  const { dataFetcher } = useDataServices();
   const getFederalFundsRate = useCallback(
     async (tileId: string, params: FredSeriesObservationsParams, forceRefresh = false): Promise<TileConfig<FederalFundsRateTileData>> => {
       const url = buildApiUrl(FRED_SERIES_OBSERVATIONS_ENDPOINT, params);
-      return DataFetcher.fetchAndMap(
+      return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),
         tileId,
         TileType.FEDERAL_FUNDS_RATE,
         { apiCall: TileApiCallTitle.FEDERAL_FUNDS_RATE, forceRefresh },
       );
     },
-    [],
+    [dataFetcher],
   );
   return { getFederalFundsRate };
 }

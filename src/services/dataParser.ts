@@ -62,45 +62,26 @@ export abstract class BaseDataParser<TRawData, TTileData>
  * Registry for data parsers by tile type.
  */
 export class DataParserRegistry {
-  private static parsers = new Map<string, DataParser<unknown, unknown>>();
+  private parsers = new Map<string, DataParser<unknown, unknown>>();
 
-  /**
-   * Register a data parser for a specific tile type
-   * @param tileType - Unique identifier for the tile type
-   * @param parser - Data parser instance
-   */
-  static register<TTileType extends string, TRawData, TTileData>(
+  register<TTileType extends string, TRawData, TTileData>(
     tileType: TTileType,
     parser: DataParser<TRawData, TTileData>,
   ): void {
     this.parsers.set(tileType, parser as DataParser<unknown, unknown>);
   }
 
-  /**
-   * Get a data parser for a specific tile type
-   * @param tileType - Unique identifier for the tile type
-   * @returns Data parser instance or undefined if not found
-   */
-  static get<TTileType extends string, TRawData, TTileData>(
+  get<TTileType extends string, TRawData, TTileData>(
     tileType: TTileType,
   ): DataParser<TRawData, TTileData> | undefined {
     return this.parsers.get(tileType) as DataParser<TRawData, TTileData> | undefined;
   }
 
-  /**
-   * Check if a data parser exists for a tile type
-   * @param tileType - Unique identifier for the tile type
-   * @returns True if parser exists
-   */
-  static has(tileType: string): boolean {
+  has(tileType: string): boolean {
     return this.parsers.has(tileType);
   }
 
-  /**
-   * Get all registered tile types
-   * @returns Array of registered tile types
-   */
-  static getRegisteredTypes(): string[] {
+  getRegisteredTypes(): string[] {
     return Array.from(this.parsers.keys());
   }
 }

@@ -1,23 +1,24 @@
 import type { TyphoonTileData } from './types';
-import { DataFetcher } from '../../../services/dataFetcher';
+import { useDataServices } from '../../../contexts/DataServicesContext';
 import { CWB_TYPHOON_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import { TileApiCallTitle, TileType } from '../../../types/tile';
 import { useCallback } from 'react';
 import type { TileConfig } from '../../../services/storageManager';
 
 export function useTyphoonApi() {
+  const { dataFetcher } = useDataServices();
   const getTyphoonData = useCallback(
     async (tileId: string, apiKey: string, forceRefresh = false): Promise<TileConfig<TyphoonTileData>> => {
       const params = { Authorization: apiKey, format: 'JSON' as const };
       const url = buildApiUrl(CWB_TYPHOON_ENDPOINT, params);
-      return DataFetcher.fetchAndMap(
+      return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),
         tileId,
         TileType.TYPHOON,
         { apiCall: TileApiCallTitle.TYPHOON, forceRefresh },
       );
     },
-    [],
+    [dataFetcher],
   );
   return { getTyphoonData };
 }

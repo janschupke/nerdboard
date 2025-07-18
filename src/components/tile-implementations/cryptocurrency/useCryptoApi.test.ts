@@ -12,6 +12,7 @@ import {
 } from '../../../test/utils/endpointTestUtils';
 import { MockResponseData } from '../../../test/mocks/endpointMocks';
 import type { CryptoMarketsParams } from '../../../services/apiEndpoints';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
 
 describe('useCryptoApi', () => {
   const mockTileId = 'test-crypto-tile';
@@ -24,12 +25,16 @@ describe('useCryptoApi', () => {
     sparkline: false,
   };
 
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <MockDataServicesProvider>{children}</MockDataServicesProvider>
+  );
+
   describe('getCryptocurrencyMarkets - Success Scenarios', () => {
     it('should successfully fetch cryptocurrency data', async () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupCryptocurrencySuccessMock();
-      const { result } = renderHook(() => useCryptoApi());
+      const { result } = renderHook(() => useCryptoApi(), { wrapper });
 
       // Act
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
@@ -66,7 +71,7 @@ describe('useCryptoApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupSuccessMock(API_ENDPOINTS.COINGECKO_MARKETS, []);
-      const { result } = renderHook(() => useCryptoApi());
+      const { result } = renderHook(() => useCryptoApi(), { wrapper });
 
       // Act
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
@@ -84,7 +89,7 @@ describe('useCryptoApi', () => {
         MockResponseData.getCryptocurrencyData(),
         50,
       );
-      const { result } = renderHook(() => useCryptoApi());
+      const { result } = renderHook(() => useCryptoApi(), { wrapper });
 
       // Act & Assert
       await waitFor(async () => {
@@ -100,7 +105,7 @@ describe('useCryptoApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.COINGECKO_MARKETS, 'network');
-      const { result } = renderHook(() => useCryptoApi());
+      const { result } = renderHook(() => useCryptoApi(), { wrapper });
 
       // Act & Assert
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
@@ -112,7 +117,7 @@ describe('useCryptoApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.COINGECKO_MARKETS, 'timeout');
-      const { result } = renderHook(() => useCryptoApi());
+      const { result } = renderHook(() => useCryptoApi(), { wrapper });
 
       // Act & Assert
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
@@ -124,7 +129,7 @@ describe('useCryptoApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.COINGECKO_MARKETS, 'api');
-      const { result } = renderHook(() => useCryptoApi());
+      const { result } = renderHook(() => useCryptoApi(), { wrapper });
 
       // Act & Assert
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
@@ -136,7 +141,7 @@ describe('useCryptoApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.COINGECKO_MARKETS, 'malformed');
-      const { result } = renderHook(() => useCryptoApi());
+      const { result } = renderHook(() => useCryptoApi(), { wrapper });
 
       // Act & Assert
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
@@ -150,7 +155,7 @@ describe('useCryptoApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupCryptocurrencySuccessMock();
-      const { result } = renderHook(() => useCryptoApi());
+      const { result } = renderHook(() => useCryptoApi(), { wrapper });
 
       // Only test the default params that are actually mocked
       const testParams: CryptoMarketsParams[] = [
@@ -176,7 +181,7 @@ describe('useCryptoApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupSuccessMock(API_ENDPOINTS.COINGECKO_MARKETS, null);
-      const { result } = renderHook(() => useCryptoApi());
+      const { result } = renderHook(() => useCryptoApi(), { wrapper });
 
       // Act
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);
@@ -192,7 +197,7 @@ describe('useCryptoApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupCryptocurrencySuccessMock();
-      const { result } = renderHook(() => useCryptoApi());
+      const { result } = renderHook(() => useCryptoApi(), { wrapper });
 
       // Act
       const fetchResult = await result.current.getCryptocurrencyMarkets(mockTileId, mockParams);

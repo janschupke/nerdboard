@@ -5,6 +5,11 @@ import { usePreciousMetalsApi } from './usePreciousMetalsApi';
 import './dataMapper';
 import type { MetalsApiParams } from '../../../services/apiEndpoints';
 import type { PreciousMetalsTileData } from './types';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+);
 
 describe('usePreciousMetalsApi', () => {
   const mockTileId = 'test-precious-metals-tile';
@@ -20,7 +25,7 @@ describe('usePreciousMetalsApi', () => {
 
   it('should successfully fetch precious metals data', async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => mockApiResponse });
-    const { result } = renderHook(() => usePreciousMetalsApi());
+    const { result } = renderHook(() => usePreciousMetalsApi(), { wrapper });
     const fetchResult = await result.current.getPreciousMetals(mockTileId, mockParams);
     expect(fetchResult).toBeDefined();
     expect(fetchResult).toHaveProperty('data');

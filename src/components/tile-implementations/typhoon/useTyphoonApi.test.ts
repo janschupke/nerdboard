@@ -5,6 +5,7 @@ import './dataMapper'; // Ensure the dataMapper is registered
 import type { TyphoonTileData } from './types';
 import type { FetchResult } from '../../../services/dataFetcher';
 import { storageManager } from '../../../services/storageManager';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
 
 const mockApiResponse = {
   success: 'true',
@@ -66,6 +67,10 @@ const mockApiResponse = {
 
 global.fetch = vi.fn();
 
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+);
+
 describe('useTyphoonApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -77,7 +82,7 @@ describe('useTyphoonApi', () => {
       ok: true,
       json: async () => mockApiResponse,
     });
-    const { result } = renderHook(() => useTyphoonApi());
+    const { result } = renderHook(() => useTyphoonApi(), { wrapper });
     let fetchResult!: FetchResult<TyphoonTileData>;
     await act(async () => {
       fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
@@ -104,7 +109,7 @@ describe('useTyphoonApi', () => {
     (globalThis.fetch as unknown as { mockResolvedValueOnce: Function }).mockResolvedValueOnce({
       ok: false,
     });
-    const { result } = renderHook(() => useTyphoonApi());
+    const { result } = renderHook(() => useTyphoonApi(), { wrapper });
     let fetchResult!: FetchResult<TyphoonTileData>;
     await act(async () => {
       fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
@@ -119,7 +124,7 @@ describe('useTyphoonApi', () => {
     (globalThis.fetch as unknown as { mockRejectedValueOnce: Function }).mockRejectedValueOnce(
       new Error('Network error'),
     );
-    const { result } = renderHook(() => useTyphoonApi());
+    const { result } = renderHook(() => useTyphoonApi(), { wrapper });
     let fetchResult!: FetchResult<TyphoonTileData>;
     await act(async () => {
       fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');

@@ -5,6 +5,11 @@ import { registerUraniumDataParser } from './dataParser';
 import { EndpointTestUtils } from '../../../test/utils/endpointTestUtils';
 import type { UraniumHtmlParams } from '../../../services/apiEndpoints';
 import type { UraniumTileData } from './types';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+);
 
 describe('useUraniumApi', () => {
   const mockTileId = 'test-uranium-tile';
@@ -27,7 +32,7 @@ describe('useUraniumApi', () => {
   });
 
   it('should successfully fetch uranium data (HTML scraping)', async () => {
-    const { result } = renderHook(() => useUraniumApi());
+    const { result } = renderHook(() => useUraniumApi(), { wrapper });
     const fetchResult = await result.current.getUraniumPrice(mockTileId, mockParams);
     expect(fetchResult).toBeDefined();
     expect(fetchResult).toHaveProperty('data');

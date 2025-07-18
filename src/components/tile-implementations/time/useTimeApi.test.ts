@@ -11,6 +11,11 @@ import {
   setupFailureMock,
 } from '../../../test/utils/endpointTestUtils';
 import type { TimeParams } from '../../../services/apiEndpoints';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+);
 
 describe('useTimeApi', () => {
   const mockTileId = 'test-time-tile';
@@ -23,7 +28,7 @@ describe('useTimeApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupTimeSuccessMock();
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act
       const fetchResult = await result.current.getTime(mockTileId, mockParams);
@@ -65,7 +70,7 @@ describe('useTimeApi', () => {
         client_ip: '127.0.0.1',
       };
       setupDelayedMock(API_ENDPOINTS.TIME_API, delayedApiData, 50);
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
       // Use params that match the mock's timezone
       const params = { city: 'Europe/Berlin' };
       // Act & Assert
@@ -84,7 +89,7 @@ describe('useTimeApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.TIME_API, 'network');
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act & Assert
       const fetchResult = await result.current.getTime(mockTileId, mockParams);
@@ -98,7 +103,7 @@ describe('useTimeApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.TIME_API, 'timeout');
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act & Assert
       const fetchResult = await result.current.getTime(mockTileId, mockParams);
@@ -112,7 +117,7 @@ describe('useTimeApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.TIME_API, 'api');
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act & Assert
       const fetchResult = await result.current.getTime(mockTileId, mockParams);
@@ -126,7 +131,7 @@ describe('useTimeApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.TIME_API, 'malformed');
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act & Assert
       const fetchResult = await result.current.getTime(mockTileId, mockParams);
@@ -205,7 +210,7 @@ describe('useTimeApi', () => {
         },
       ];
 
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act & Assert
       for (const { params, apiData, expected } of testParams) {
@@ -236,7 +241,7 @@ describe('useTimeApi', () => {
       };
       EndpointTestUtils.clearMocks();
       setupSuccessMock(API_ENDPOINTS.TIME_API, businessHoursApiData);
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
       // Use params that match the mock's timezone
       const params = { city: 'America/New_York' };
       // Act
@@ -262,7 +267,7 @@ describe('useTimeApi', () => {
       };
       EndpointTestUtils.clearMocks();
       setupSuccessMock(API_ENDPOINTS.TIME_API, timeApiData);
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act
       const fetchResult = await result.current.getTime(mockTileId, mockParams);
@@ -290,7 +295,7 @@ describe('useTimeApi', () => {
       };
       EndpointTestUtils.clearMocks();
       setupSuccessMock(API_ENDPOINTS.TIME_API, timezoneApiData);
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act
       const fetchResult = await result.current.getTime(mockTileId, mockParams);

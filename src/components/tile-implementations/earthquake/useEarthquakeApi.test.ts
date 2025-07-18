@@ -4,6 +4,7 @@ import { useEarthquakeApi } from './useEarthquakeApi';
 import './dataMapper';
 import type { EarthquakeApiResponse } from './types';
 import { storageManager } from '../../../services/storageManager';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
 
 const mockApiResponse: EarthquakeApiResponse = {
   type: 'FeatureCollection',
@@ -58,6 +59,10 @@ const mockApiResponse: EarthquakeApiResponse = {
 
 global.fetch = vi.fn();
 
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+);
+
 describe('useEarthquakeApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -69,7 +74,7 @@ describe('useEarthquakeApi', () => {
       ok: true,
       json: async () => mockApiResponse,
     });
-    const { result } = renderHook(() => useEarthquakeApi());
+    const { result } = renderHook(() => useEarthquakeApi(), { wrapper });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let fetchResult: any = null;
     await act(async () => {
@@ -98,7 +103,7 @@ describe('useEarthquakeApi', () => {
     (globalThis.fetch as unknown as { mockResolvedValueOnce: Function }).mockResolvedValueOnce({
       ok: false,
     });
-    const { result } = renderHook(() => useEarthquakeApi());
+    const { result } = renderHook(() => useEarthquakeApi(), { wrapper });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let fetchResult: any = null;
     await act(async () => {
@@ -118,7 +123,7 @@ describe('useEarthquakeApi', () => {
     (globalThis.fetch as unknown as { mockRejectedValueOnce: Function }).mockRejectedValueOnce(
       new Error('Network error'),
     );
-    const { result } = renderHook(() => useEarthquakeApi());
+    const { result } = renderHook(() => useEarthquakeApi(), { wrapper });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let fetchResult: any = null;
     await act(async () => {

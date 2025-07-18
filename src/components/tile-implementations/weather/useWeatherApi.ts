@@ -1,4 +1,4 @@
-import { DataFetcher } from '../../../services/dataFetcher';
+import { useDataServices } from '../../../contexts/DataServicesContext';
 import { useCallback } from 'react';
 import { OPENWEATHERMAP_ONECALL_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { WeatherParams } from '../../../services/apiEndpoints';
@@ -7,17 +7,18 @@ import type { WeatherTileData } from './types';
 import type { TileConfig } from '../../../services/storageManager';
 
 export function useWeatherApi() {
+  const { dataFetcher } = useDataServices();
   const getWeather = useCallback(
     async (tileId: string, params: WeatherParams, forceRefresh = false): Promise<TileConfig<WeatherTileData>> => {
       const url = buildApiUrl(OPENWEATHERMAP_ONECALL_ENDPOINT, params);
-      return DataFetcher.fetchAndMap(
+      return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),
         tileId,
         TileType.WEATHER_HELSINKI,
         { apiCall: TileApiCallTitle.WEATHER, forceRefresh },
       );
     },
-    [],
+    [dataFetcher],
   );
   return { getWeather };
 }

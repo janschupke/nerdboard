@@ -11,6 +11,11 @@ import {
 } from '../../../test/utils/endpointTestUtils';
 import { MockResponseData } from '../../../test/mocks/endpointMocks';
 import type { FredSeriesObservationsParams } from '../../../services/apiEndpoints';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+);
 
 describe('useFederalFundsApi', () => {
   const mockTileId = 'test-federal-funds-tile';
@@ -23,7 +28,7 @@ describe('useFederalFundsApi', () => {
     it('should successfully fetch mapped federal funds rate tile data', async () => {
       EndpointTestUtils.clearMocks();
       setupFederalFundsRateSuccessMock();
-      const { result } = renderHook(() => useFederalFundsApi());
+      const { result } = renderHook(() => useFederalFundsApi(), { wrapper });
       const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
       expect(fetchResult).toBeDefined();
       expect(fetchResult).toHaveProperty('data');
@@ -54,7 +59,7 @@ describe('useFederalFundsApi', () => {
         MockResponseData.getFederalFundsRateData(),
         50,
       );
-      const { result } = renderHook(() => useFederalFundsApi());
+      const { result } = renderHook(() => useFederalFundsApi(), { wrapper });
       await waitFor(async () => {
         const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
         expect(fetchResult).toBeDefined();
@@ -71,7 +76,7 @@ describe('useFederalFundsApi', () => {
     it('should handle network errors', async () => {
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.FRED_SERIES_OBSERVATIONS, 'network');
-      const { result } = renderHook(() => useFederalFundsApi());
+      const { result } = renderHook(() => useFederalFundsApi(), { wrapper });
       const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
       expect(fetchResult).toBeDefined();
       expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
@@ -82,7 +87,7 @@ describe('useFederalFundsApi', () => {
     it('should handle timeout errors', async () => {
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.FRED_SERIES_OBSERVATIONS, 'timeout');
-      const { result } = renderHook(() => useFederalFundsApi());
+      const { result } = renderHook(() => useFederalFundsApi(), { wrapper });
       const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
       expect(fetchResult).toBeDefined();
       expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
@@ -93,7 +98,7 @@ describe('useFederalFundsApi', () => {
     it('should handle API errors (500)', async () => {
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.FRED_SERIES_OBSERVATIONS, 'api');
-      const { result } = renderHook(() => useFederalFundsApi());
+      const { result } = renderHook(() => useFederalFundsApi(), { wrapper });
       const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
       expect(fetchResult).toBeDefined();
       expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
@@ -104,7 +109,7 @@ describe('useFederalFundsApi', () => {
     it('should handle malformed JSON responses', async () => {
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.FRED_SERIES_OBSERVATIONS, 'malformed');
-      const { result } = renderHook(() => useFederalFundsApi());
+      const { result } = renderHook(() => useFederalFundsApi(), { wrapper });
       const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
       expect(fetchResult).toBeDefined();
       expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
@@ -117,7 +122,7 @@ describe('useFederalFundsApi', () => {
     it('should handle different series IDs', async () => {
       EndpointTestUtils.clearMocks();
       setupFederalFundsRateSuccessMock();
-      const { result } = renderHook(() => useFederalFundsApi());
+      const { result } = renderHook(() => useFederalFundsApi(), { wrapper });
       const testParams: FredSeriesObservationsParams[] = [
         { series_id: 'FEDFUNDS', file_type: 'json' },
         { series_id: 'DFF', file_type: 'json' },
@@ -139,7 +144,7 @@ describe('useFederalFundsApi', () => {
     it('should return properly structured mapped federal funds rate tile data', async () => {
       EndpointTestUtils.clearMocks();
       setupFederalFundsRateSuccessMock();
-      const { result } = renderHook(() => useFederalFundsApi());
+      const { result } = renderHook(() => useFederalFundsApi(), { wrapper });
       const fetchResult = await result.current.getFederalFundsRate(mockTileId, mockParams);
       const data = fetchResult.data;
       expect(data).toMatchObject({

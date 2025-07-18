@@ -5,8 +5,9 @@ import {
   type TileDataType,
   type TileConfig,
 } from './storageManager';
-import { type BaseApiResponse } from './dataMapper';
-import { tileDataMappers, tileDataParsers } from './tileTypeRegistry';
+import { type BaseApiResponse, DataMapperRegistry } from './dataMapper';
+import { DataParserRegistry } from './dataParser';
+// tileDataMappers and tileDataParsers will be replaced by injected registries
 
 export const DATA_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
 
@@ -16,8 +17,16 @@ export interface FetchOptions {
 }
 
 export class DataFetcher {
+  private mapperRegistry: DataMapperRegistry;
+  private parserRegistry: DataParserRegistry;
+
+  constructor(mapperRegistry: DataMapperRegistry, parserRegistry: DataParserRegistry) {
+    this.mapperRegistry = mapperRegistry;
+    this.parserRegistry = parserRegistry;
+  }
+
   // Centralized helper for setting tile state
-  private static setTileState<T extends TileDataType>(
+  private setTileState<T extends TileDataType>(
     storageKey: string,
     data: T | null,
     lastDataRequestSuccessful: boolean,
@@ -29,7 +38,7 @@ export class DataFetcher {
     });
   }
 
-  static async fetchAndMap<
+  async fetchAndMap<
     TTileType extends string,
     TApiResponse extends BaseApiResponse | BaseApiResponse[],
     TTileData extends TileDataType,
@@ -52,8 +61,7 @@ export class DataFetcher {
       };
     }
 
-    const mapperFactory = tileDataMappers[tileType as keyof typeof tileDataMappers];
-    const mapper = mapperFactory ? mapperFactory() : undefined;
+    const mapper = this.mapperRegistry.get<TTileType, TApiResponse, TTileData>(tileType);
     if (!mapper) {
       throw new Error(`No data mapper found for tile type: ${tileType}`);
     }
@@ -61,13 +69,13 @@ export class DataFetcher {
     try {
       const apiResponse = await fetchFunction();
       // If the API response contains an 'error' property, treat as error
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- apiResponse is unknown, safe cast for error handling
       if (apiResponse && typeof apiResponse === 'object' && 'error' in apiResponse) {
         throw new Error((apiResponse as any).error || 'API error');
       }
       const mappedData = mapper.safeMap(apiResponse) as unknown as TTileData;
       // On success, update data and status
-      DataFetcher.setTileState<TTileData>(storageKey, mappedData, true);
+      this.setTileState<TTileData>(storageKey, mappedData, true);
       return {
         data: mappedData,
         lastDataRequest: Date.now(),
@@ -90,7 +98,7 @@ export class DataFetcher {
       // On error, update only lastDataRequest and lastDataRequestSuccessful, do not update data
       const cached = storageManager.getTileState<TTileData>(storageKey);
       const prevData = cached && cached.data ? cached.data : mapper.createDefault() as unknown as TTileData;
-      DataFetcher.setTileState<TTileData>(storageKey, prevData, false);
+      this.setTileState<TTileData>(storageKey, prevData, false);
       return {
         data: prevData,
         lastDataRequest: Date.now(),
@@ -99,7 +107,7 @@ export class DataFetcher {
     }
   }
 
-  static async fetchAndParse<TTileType extends string, TRawData, TTileData extends TileDataType>(
+  async fetchAndParse<TTileType extends string, TRawData, TTileData extends TileDataType>(
     fetchFunction: () => Promise<TRawData>,
     storageKey: string,
     tileType: TTileType,
@@ -118,8 +126,7 @@ export class DataFetcher {
       };
     }
 
-    const parserFactory = tileDataParsers[tileType as keyof typeof tileDataParsers];
-    const parser = parserFactory ? parserFactory() : undefined;
+    const parser = this.parserRegistry.get<TTileType, TRawData, TTileData>(tileType);
     if (!parser) {
       throw new Error(`No parser registered for tile type: ${tileType}`);
     }
@@ -128,7 +135,7 @@ export class DataFetcher {
       const rawData = await fetchFunction();
       const tileData = parser.safeParse(rawData) as unknown as TTileData;
       // On success, update data and status
-      DataFetcher.setTileState<TTileData>(storageKey, tileData, true);
+      this.setTileState<TTileData>(storageKey, tileData, true);
       return {
         data: tileData,
         lastDataRequest: Date.now(),
@@ -151,7 +158,7 @@ export class DataFetcher {
       // On error, update only lastDataRequest and lastDataRequestSuccessful, do not update data
       const cached = storageManager.getTileState<TTileData>(storageKey);
       const prevData = cached && cached.data ? cached.data : parser.createDefault() as unknown as TTileData;
-      DataFetcher.setTileState<TTileData>(storageKey, prevData, false);
+      this.setTileState<TTileData>(storageKey, prevData, false);
       return {
         data: prevData,
         lastDataRequest: Date.now(),
