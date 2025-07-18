@@ -41,6 +41,7 @@ export const UraniumTile = ({
       meta={meta}
       status={status}
       lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
       {...rest}
     >
       <UraniumTileContent data={data} />

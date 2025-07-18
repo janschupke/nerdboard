@@ -38,6 +38,7 @@ export const WeatherTile = ({
       meta={meta}
       status={status}
       lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
       {...rest}
     >
       <WeatherTileContent data={data} />

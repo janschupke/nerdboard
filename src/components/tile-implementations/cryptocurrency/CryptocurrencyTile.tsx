@@ -43,6 +43,7 @@ export const CryptocurrencyTile = ({
       meta={meta}
       status={status}
       lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
       {...rest}
     >
       <CryptocurrencyTileContent data={data} />

@@ -41,6 +41,7 @@ export const TyphoonTile = ({
       meta={meta}
       status={status}
       lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
       {...rest}
     >
       <TyphoonTileContent data={data} />

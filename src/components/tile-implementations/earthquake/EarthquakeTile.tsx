@@ -43,7 +43,7 @@ export const EarthquakeTile = ({
         ? lastUpdated.toISOString()
         : undefined;
   return (
-    <GenericTile tile={tile} meta={meta} status={status} lastUpdate={lastUpdate} {...rest}>
+    <GenericTile tile={tile} meta={meta} status={status} lastUpdate={lastUpdate} data={data} {...rest}>
       <EarthquakeTileContent data={data} />
     </GenericTile>
   );

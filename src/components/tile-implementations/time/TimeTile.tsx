@@ -29,6 +29,7 @@ export const TimeTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; met
       meta={meta}
       status={status}
       lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
       {...rest}
     >
       <TimeTileContent data={data} />

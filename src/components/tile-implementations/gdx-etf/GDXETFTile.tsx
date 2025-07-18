@@ -36,6 +36,7 @@ export const GDXETFTile = ({
       meta={meta}
       status={status}
       lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
       {...rest}
     >
       <GDXETFTileContent data={data} />

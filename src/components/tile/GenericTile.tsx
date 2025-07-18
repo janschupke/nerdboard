@@ -5,6 +5,7 @@ import { TileErrorBoundary } from './TileErrorBoundary';
 import { LoadingComponent } from './LoadingComponent';
 import type { TileCategory } from '../../types/tileCategories';
 import { TileStatus } from './useTileData';
+import type { TileDataType } from '../../services/storageManager';
 
 export interface TileMeta {
   title: string;
@@ -18,9 +19,10 @@ export interface GenericTileProps extends DraggableTileProps {
   children?: React.ReactNode;
   status?: TileStatus;
   lastUpdate?: string;
+  data: TileDataType | null;
 }
 
-const StatusBar = ({ status, lastUpdate }: { status?: TileStatus; lastUpdate?: string }) => {
+const StatusBar = ({ data, status, lastUpdate }: { data: TileDataType | null; status?: TileStatus; lastUpdate?: string }) => {
   // Determine status icon and color
   const getStatusIcon = () => {
     switch (status) {
@@ -52,12 +54,20 @@ const StatusBar = ({ status, lastUpdate }: { status?: TileStatus; lastUpdate?: s
     }
   };
 
+  const logTileState = () => {
+    console.log('Tile state:', { data, status, lastUpdate });
+  };
+
   const statusIcon = getStatusIcon();
 
   return (
     <div className="flex items-center justify-between px-2 py-1 text-xs border-t border-surface-primary bg-surface-secondary text-secondary">
       <span>Last request: {formatLastUpdate(lastUpdate)}</span>
-      {statusIcon && <Icon name={statusIcon.name} size="sm" className={statusIcon.className} />}
+      {statusIcon && (
+        <span onClick={logTileState} className="cursor-pointer">
+          <Icon name={statusIcon.name} size="sm" className={statusIcon.className} />
+        </span>
+      )}
     </div>
   );
 };
@@ -71,7 +81,7 @@ const ErrorContent = React.memo(() => (
 
 export const GenericTile = React.memo(
   forwardRef<HTMLDivElement, GenericTileProps>(
-    ({ tile, meta, onRemove, dragHandleProps, className, children, status, lastUpdate }, ref) => {
+    ({ tile, meta, onRemove, dragHandleProps, className, children, status, lastUpdate, data }, ref) => {
       const handleRemove = useCallback(async () => {
         try {
           onRemove?.(tile.id);
@@ -127,8 +137,6 @@ export const GenericTile = React.memo(
         [dragHandleProps],
       );
 
-      console.log('GenericTile', { status, lastUpdate });
-
       return (
         <TileErrorBoundary>
           <div
@@ -171,7 +179,7 @@ export const GenericTile = React.memo(
             </div>
 
             {/* Status Bar */}
-            <StatusBar status={status} lastUpdate={lastUpdate} />
+            <StatusBar data={data} status={status} lastUpdate={lastUpdate} />
           </div>
         </TileErrorBoundary>
       );
