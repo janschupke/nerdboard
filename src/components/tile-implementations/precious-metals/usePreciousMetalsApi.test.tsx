@@ -1,15 +1,26 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { usePreciousMetalsApi } from './usePreciousMetalsApi';
-import './dataMapper';
+import { PreciousMetalsDataMapper } from './dataMapper';
+import { TileType } from '../../../types/tile';
 import type { MetalsApiParams } from '../../../services/apiEndpoints';
 import type { PreciousMetalsTileData } from './types';
-import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+  <MockDataServicesProvider
+    setup={({ mapperRegistry }) => {
+      mapperRegistry.register(TileType.PRECIOUS_METALS, new PreciousMetalsDataMapper());
+    }}
+  >
+    {children}
+  </MockDataServicesProvider>
 );
+
+beforeAll(() => {
+  // registerPreciousMetalsDataMapper(); // This line is removed as per the edit hint
+});
 
 describe('usePreciousMetalsApi', () => {
   const mockTileId = 'test-precious-metals-tile';

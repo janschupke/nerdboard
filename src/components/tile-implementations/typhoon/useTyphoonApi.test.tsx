@@ -1,11 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTyphoonApi } from './useTyphoonApi';
-import './dataMapper'; // Ensure the dataMapper is registered
+import { TyphoonDataMapper } from './dataMapper';
 import type { TyphoonTileData } from './types';
-import type { FetchResult } from '../../../services/dataFetcher';
 import { storageManager } from '../../../services/storageManager';
-import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
+import { TileType } from '../../../types/tile';
+import type { TileConfig } from '../../../services/storageManager';
 
 const mockApiResponse = {
   success: 'true',
@@ -68,8 +69,18 @@ const mockApiResponse = {
 global.fetch = vi.fn();
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+  <MockDataServicesProvider
+    setup={({ mapperRegistry }) => {
+      mapperRegistry.register(TileType.TYPHOON, new TyphoonDataMapper());
+    }}
+  >
+    {children}
+  </MockDataServicesProvider>
 );
+
+beforeAll(() => {
+  // registerTyphoonDataMapper(); // This line is removed as per the new_code
+});
 
 describe('useTyphoonApi', () => {
   beforeEach(() => {
@@ -83,7 +94,7 @@ describe('useTyphoonApi', () => {
       json: async () => mockApiResponse,
     });
     const { result } = renderHook(() => useTyphoonApi(), { wrapper });
-    let fetchResult!: FetchResult<TyphoonTileData>;
+    let fetchResult!: TileConfig<TyphoonTileData>;
     await act(async () => {
       fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
     });
@@ -110,7 +121,7 @@ describe('useTyphoonApi', () => {
       ok: false,
     });
     const { result } = renderHook(() => useTyphoonApi(), { wrapper });
-    let fetchResult!: FetchResult<TyphoonTileData>;
+    let fetchResult!: TileConfig<TyphoonTileData>;
     await act(async () => {
       fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
     });
@@ -125,7 +136,7 @@ describe('useTyphoonApi', () => {
       new Error('Network error'),
     );
     const { result } = renderHook(() => useTyphoonApi(), { wrapper });
-    let fetchResult!: FetchResult<TyphoonTileData>;
+    let fetchResult!: TileConfig<TyphoonTileData>;
     await act(async () => {
       fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
     });

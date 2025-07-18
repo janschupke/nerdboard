@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useCryptoApi } from './useCryptoApi';
 import './dataMapper';
+import { CryptocurrencyDataMapper } from './dataMapper';
+import { TileType } from '../../../types/tile';
 import {
   EndpointTestUtils,
   API_ENDPOINTS,
@@ -12,7 +14,11 @@ import {
 } from '../../../test/utils/endpointTestUtils';
 import { MockResponseData } from '../../../test/mocks/endpointMocks';
 import type { CryptoMarketsParams } from '../../../services/apiEndpoints';
-import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
+
+beforeAll(() => {
+  // Removed: registerCryptocurrencyDataMapper();
+});
 
 describe('useCryptoApi', () => {
   const mockTileId = 'test-crypto-tile';
@@ -26,7 +32,13 @@ describe('useCryptoApi', () => {
   };
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <MockDataServicesProvider>{children}</MockDataServicesProvider>
+    <MockDataServicesProvider
+      setup={({ mapperRegistry }) => {
+        mapperRegistry.register(TileType.CRYPTOCURRENCY, new CryptocurrencyDataMapper());
+      }}
+    >
+      {children}
+    </MockDataServicesProvider>
   );
 
   describe('getCryptocurrencyMarkets - Success Scenarios', () => {

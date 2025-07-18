@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useFederalFundsApi } from './useFederalFundsApi';
 import './dataMapper';
+import { FederalFundsRateDataMapper } from './dataMapper';
+import { TileType } from '../../../types/tile';
 import {
   EndpointTestUtils,
   API_ENDPOINTS,
@@ -11,11 +13,21 @@ import {
 } from '../../../test/utils/endpointTestUtils';
 import { MockResponseData } from '../../../test/mocks/endpointMocks';
 import type { FredSeriesObservationsParams } from '../../../services/apiEndpoints';
-import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+  <MockDataServicesProvider
+    setup={({ mapperRegistry }) => {
+      mapperRegistry.register(TileType.FEDERAL_FUNDS_RATE, new FederalFundsRateDataMapper());
+    }}
+  >
+    {children}
+  </MockDataServicesProvider>
 );
+
+beforeAll(() => {
+  // registerFederalFundsRateDataMapper(); // This line is removed as per the edit hint
+});
 
 describe('useFederalFundsApi', () => {
   const mockTileId = 'test-federal-funds-tile';

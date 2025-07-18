@@ -14,9 +14,10 @@ export function createMockDataServices() {
   return { parserRegistry, mapperRegistry, dataFetcher };
 }
 
-type MockDataServicesProviderProps = { children: ReactNode };
-export const MockDataServicesProvider: React.FC<MockDataServicesProviderProps> = ({ children }) => {
+type MockDataServicesProviderProps = { children: ReactNode; setup?: (services: { parserRegistry: DataParserRegistry; mapperRegistry: DataMapperRegistry; dataFetcher: DataFetcher }) => void };
+export const MockDataServicesProvider: React.FC<MockDataServicesProviderProps> = ({ children, setup }) => {
   const services = createMockDataServices();
+  if (setup) setup(services);
   return (
     <DataServicesContext.Provider value={services}>
       {children}

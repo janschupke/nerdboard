@@ -1,22 +1,33 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useEuriborApi } from './useEuriborApi';
 import './dataMapper';
+import { ecbEuriborDataMapper } from './dataMapper';
+import { TileType } from '../../../types/tile';
 import { setupEuriborRateSuccessMock } from '../../../test/utils/endpointTestUtils';
 import { EndpointTestUtils, API_ENDPOINTS } from '../../../test/utils/endpointTestUtils';
-import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+  <MockDataServicesProvider
+    setup={({ mapperRegistry }) => {
+      mapperRegistry.register(TileType.EURIBOR_RATE, ecbEuriborDataMapper);
+    }}
+  >
+    {children}
+  </MockDataServicesProvider>
 );
 
 describe('useEuriborApi', () => {
   const mockTileId = 'test-euribor-tile';
   const mockParams = {};
 
+  beforeAll(() => {
+    // registerEcbEuriborDataMapper(); // This line is removed as per the new_code
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
-    // registerEcbEuriborDataMapper(); // This line is removed as per the new_code
     setupEuriborRateSuccessMock();
   });
 

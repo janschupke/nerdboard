@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useTimeApi } from './useTimeApi';
 import './dataMapper';
@@ -11,11 +11,23 @@ import {
   setupFailureMock,
 } from '../../../test/utils/endpointTestUtils';
 import type { TimeParams } from '../../../services/apiEndpoints';
-import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
+import { TimeDataMapper } from './dataMapper';
+import { TileType } from '../../../types/tile';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+  <MockDataServicesProvider
+    setup={({ mapperRegistry }) => {
+      mapperRegistry.register(TileType.TIME_HELSINKI, new TimeDataMapper());
+    }}
+  >
+    {children}
+  </MockDataServicesProvider>
 );
+
+beforeAll(() => {
+  // registerTimeDataMapper(); // This line is removed as per the new_code
+});
 
 describe('useTimeApi', () => {
   const mockTileId = 'test-time-tile';

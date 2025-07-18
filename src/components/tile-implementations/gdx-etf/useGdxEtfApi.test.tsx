@@ -1,17 +1,29 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useGdxEtfApi } from './useGdxEtfApi';
 import './dataMapper';
 import { EndpointTestUtils } from '../../../test/utils/endpointTestUtils';
 import { ALPHA_VANTAGE_GDX_ENDPOINT } from '../../../services/apiEndpoints';
 import type { AlphaVantageParams } from '../../../services/apiEndpoints';
-import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
+import { gdxEtfDataMapper } from './dataMapper';
+import { TileType } from '../../../types/tile';
 
 global.fetch = vi.fn();
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+  <MockDataServicesProvider
+    setup={({ mapperRegistry }) => {
+      mapperRegistry.register(TileType.GDX_ETF, gdxEtfDataMapper);
+    }}
+  >
+    {children}
+  </MockDataServicesProvider>
 );
+
+beforeAll(() => {
+  // registerGdxEtfDataMapper(); // This line is removed as per the new_code
+});
 
 describe('useGdxEtfApi', () => {
   const mockTileId = 'test-gdx-tile';

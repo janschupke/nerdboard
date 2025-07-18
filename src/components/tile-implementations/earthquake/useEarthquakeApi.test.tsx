@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useEarthquakeApi } from './useEarthquakeApi';
-import './dataMapper';
+import { earthquakeDataMapper } from './dataMapper';
 import type { EarthquakeApiResponse } from './types';
 import { storageManager } from '../../../services/storageManager';
-import { MockDataServicesProvider } from '../../../test/mocks/componentMocks';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
+import { TileType } from '../../../types/tile';
 
 const mockApiResponse: EarthquakeApiResponse = {
   type: 'FeatureCollection',
@@ -59,8 +60,18 @@ const mockApiResponse: EarthquakeApiResponse = {
 
 global.fetch = vi.fn();
 
+beforeAll(() => {
+  // registerEarthquakeDataMapper(); // This line is removed as per the new_code
+});
+
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <MockDataServicesProvider>{children}</MockDataServicesProvider>
+  <MockDataServicesProvider
+    setup={({ mapperRegistry }) => {
+      mapperRegistry.register(TileType.EARTHQUAKE, earthquakeDataMapper);
+    }}
+  >
+    {children}
+  </MockDataServicesProvider>
 );
 
 describe('useEarthquakeApi', () => {
