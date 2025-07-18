@@ -14,7 +14,7 @@ interface LogViewProps {
 
 export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
   const { logs, removeLog } = useLogContext();
-  const [detailsId, setDetailsId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   // Prevent background scroll when log is open
   useEffect(() => {
@@ -118,6 +118,9 @@ export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
                     API Call
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    HTTP Code
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Reason
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -137,8 +140,18 @@ export const LogView: React.FC<LogViewProps> = ({ isOpen, onClose }) => {
                     formatTimestamp={formatTimestamp}
                     getLevelColor={getLevelColor}
                     getLevelIcon={getLevelIcon}
-                    showDetails={detailsId === log.id}
-                    onToggleDetails={() => setDetailsId(detailsId === log.id ? null : log.id)}
+                    showDetails={expandedIds.has(log.id)}
+                    onToggleDetails={() =>
+                      setExpandedIds((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(log.id)) {
+                          next.delete(log.id);
+                        } else {
+                          next.add(log.id);
+                        }
+                        return next;
+                      })
+                    }
                   />
                 ))}
               </tbody>
@@ -171,9 +184,30 @@ const LogRow: React.FC<LogRowProps> = ({
   showDetails,
   onToggleDetails,
 }) => {
+  // Extract HTTP status code from details if present
+  const httpStatus = log.details?.status || log.details?.httpStatus || '';
+
+  // Prevent row click from firing when clicking remove button
+  const handleRowClick = (e: React.MouseEvent) => {
+    // If the click is on the remove button or inside it, do nothing
+    if ((e.target as HTMLElement).closest('[data-log-remove]')) return;
+    onToggleDetails();
+  };
+
   return (
     <>
-      <tr className="hover:bg-gray-50/60 dark:hover:bg-gray-800/60 transition-colors duration-150">
+      <tr
+        className={`hover:bg-gray-50/60 dark:hover:bg-gray-800/60 transition-colors duration-150 cursor-pointer ${showDetails ? 'bg-gray-50 dark:bg-gray-800' : ''}`}
+        onClick={handleRowClick}
+        aria-expanded={showDetails}
+        tabIndex={0}
+        onKeyDown={(e: React.KeyboardEvent<HTMLTableRowElement>) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleRowClick(e as unknown as React.MouseEvent<HTMLTableRowElement, MouseEvent>);
+          }
+        }}
+        style={{ outline: 'none' }}
+      >
         <td className="px-4 py-3">
           <span
             className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded ${getLevelColor(log.level)}`}
@@ -191,11 +225,17 @@ const LogRow: React.FC<LogRowProps> = ({
         >
           {log.apiCall}
         </td>
+        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+          {httpStatus ? httpStatus : <span className="text-gray-400">—</span>}
+        </td>
         <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{log.reason}</td>
         <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
           {log.details ? (
             <button
-              onClick={onToggleDetails}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleDetails();
+              }}
               className="underline text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 text-xs"
               aria-expanded={showDetails}
               aria-controls={`log-details-${log.id}`}
@@ -208,9 +248,13 @@ const LogRow: React.FC<LogRowProps> = ({
         </td>
         <td className="px-4 py-3 text-right">
           <button
-            onClick={onRemove}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
             className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500"
             aria-label={`Remove log entry for ${log.apiCall}`}
+            data-log-remove
           >
             <Icon name="trash" className="w-4 h-4" />
           </button>
@@ -219,7 +263,7 @@ const LogRow: React.FC<LogRowProps> = ({
       {log.details && showDetails && (
         <tr id={`log-details-${log.id}`}>
           <td
-            colSpan={6}
+            colSpan={7}
             className="px-4 pb-4 pt-0 text-xs text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800"
           >
             <pre className="whitespace-pre-wrap break-all">
