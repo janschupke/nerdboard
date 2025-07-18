@@ -176,7 +176,12 @@ export const GenericTile = React.memo(
       );
     },
   ),
-  (prev, next) => prev.tile.id === next.tile.id,
+  // TODO: remove the memo?
+  (prev, next) => (
+    prev.tile.id === next.tile.id &&
+    prev.status === next.status &&
+    prev.lastUpdate === next.lastUpdate
+  ),
 );
 
 GenericTile.displayName = 'GenericTile';
