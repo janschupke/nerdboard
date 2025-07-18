@@ -38,6 +38,95 @@ export class DataFetcher {
     });
   }
 
+  // Helper to handle fetch, status extraction, mapping/parsing, and error logging
+  private async handleFetchAndTransform<TTileData extends TileDataType>(
+    fetchFunction: () => Promise<unknown>,
+    storageKey: string,
+    apiCall: string,
+    transform: (input: unknown) => TTileData,
+    createDefault: () => TTileData,
+    forceRefresh = false,
+  ): Promise<TileConfig<TTileData>> {
+    if (!forceRefresh) {
+      const cached = storageManager.getTileState<TTileData>(storageKey);
+      const now = Date.now();
+      const isFresh = cached && now - cached.lastDataRequest < DATA_REFRESH_INTERVAL;
+      if (cached && isFresh) {
+        return {
+          data: cached.data,
+          lastDataRequest: cached.lastDataRequest,
+          lastDataRequestSuccessful: cached.lastDataRequestSuccessful,
+        };
+      }
+    }
+    let httpStatus: number | undefined;
+    try {
+      let apiResponse: unknown = await fetchFunction();
+      // If fetchFunction returns a Response, extract status and data
+      if (apiResponse instanceof Response) {
+        httpStatus = apiResponse.status;
+        const contentType = apiResponse.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          apiResponse = await apiResponse.json();
+        } else {
+          apiResponse = await apiResponse.text();
+        }
+      } else if (
+        apiResponse &&
+        typeof apiResponse === 'object' &&
+        'data' in apiResponse &&
+        'status' in apiResponse &&
+        typeof (apiResponse as { status?: unknown }).status === 'number'
+      ) {
+        httpStatus = (apiResponse as { status: number }).status;
+        apiResponse = (apiResponse as { data: unknown }).data;
+      }
+      // If the API response contains an 'error' property, treat as error
+      if (apiResponse && typeof apiResponse === 'object' && 'error' in apiResponse) {
+        throw Object.assign(
+          new Error(((apiResponse as Record<string, unknown>).error as string) || 'API error'),
+          { status: httpStatus },
+        );
+      }
+      const transformed = transform(apiResponse);
+      this.setTileState<TTileData>(storageKey, transformed, true);
+      return {
+        data: transformed,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: true,
+      };
+    } catch (error: unknown) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'status' in error &&
+        typeof (error as { status?: unknown }).status === 'number'
+      ) {
+        httpStatus = (error as { status: number }).status;
+      }
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const logDetails: APILogDetails = {
+        storageKey,
+        errorName: error instanceof Error ? error.name : 'Unknown',
+        errorMessage,
+        ...(httpStatus !== undefined ? { status: httpStatus } : {}),
+      };
+      storageManager.addLog({
+        level: APILogLevel.ERROR,
+        apiCall,
+        reason: errorMessage,
+        details: logDetails,
+      });
+      const prevData = storageManager.getTileState<TTileData>(storageKey)?.data || createDefault();
+      this.setTileState<TTileData>(storageKey, prevData, false);
+      return {
+        data: prevData,
+        lastDataRequest: Date.now(),
+        lastDataRequestSuccessful: false,
+      };
+    }
+  }
+
   async fetchAndMap<
     TTileType extends string,
     TApiResponse extends BaseApiResponse | BaseApiResponse[],
@@ -49,63 +138,18 @@ export class DataFetcher {
     options: FetchOptions = { apiCall: tileType },
   ): Promise<TileConfig<TTileData>> {
     const { forceRefresh = false, apiCall = tileType } = options;
-    const cached = storageManager.getTileState<TTileData>(storageKey);
-    const now = Date.now();
-    const isFresh = cached && now - cached.lastDataRequest < DATA_REFRESH_INTERVAL;
-
-    if (!forceRefresh && cached && isFresh) {
-      return {
-        data: cached.data,
-        lastDataRequest: cached.lastDataRequest,
-        lastDataRequestSuccessful: cached.lastDataRequestSuccessful,
-      };
-    }
-
     const mapper = this.mapperRegistry.get<TTileType, TApiResponse, TTileData>(tileType);
     if (!mapper) {
       throw new Error(`No data mapper found for tile type: ${tileType}`);
     }
-
-    try {
-      const apiResponse = await fetchFunction();
-      // If the API response contains an 'error' property, treat as error
-
-      if (apiResponse && typeof apiResponse === 'object' && 'error' in apiResponse) {
-        throw new Error(((apiResponse as Record<string, unknown>).error as string) || 'API error');
-      }
-      const mappedData = mapper.safeMap(apiResponse) as unknown as TTileData;
-      // On success, update data and status
-      this.setTileState<TTileData>(storageKey, mappedData, true);
-      return {
-        data: mappedData,
-        lastDataRequest: Date.now(),
-        lastDataRequestSuccessful: true,
-      };
-    } catch (error) {
-      // Log error
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const logDetails: APILogDetails = {
-        storageKey,
-        errorName: error instanceof Error ? error.name : 'Unknown',
-        errorMessage,
-      };
-      storageManager.addLog({
-        level: APILogLevel.ERROR,
-        apiCall,
-        reason: errorMessage,
-        details: logDetails,
-      });
-      // On error, update only lastDataRequest and lastDataRequestSuccessful, do not update data
-      const cached = storageManager.getTileState<TTileData>(storageKey);
-      const prevData =
-        cached && cached.data ? cached.data : (mapper.createDefault() as unknown as TTileData);
-      this.setTileState<TTileData>(storageKey, prevData, false);
-      return {
-        data: prevData,
-        lastDataRequest: Date.now(),
-        lastDataRequestSuccessful: false,
-      };
-    }
+    return this.handleFetchAndTransform(
+      fetchFunction,
+      storageKey,
+      apiCall,
+      (input) => mapper.safeMap(input) as unknown as TTileData,
+      () => mapper.createDefault() as unknown as TTileData,
+      forceRefresh,
+    );
   }
 
   async fetchAndParse<TTileType extends string, TRawData, TTileData extends TileDataType>(
@@ -115,81 +159,17 @@ export class DataFetcher {
     options: FetchOptions = { apiCall: tileType },
   ): Promise<TileConfig<TTileData>> {
     const { forceRefresh = false, apiCall = tileType } = options;
-    const cached = storageManager.getTileState<TTileData>(storageKey);
-    const now = Date.now();
-    const isFresh = cached && now - cached.lastDataRequest < DATA_REFRESH_INTERVAL;
-
-    if (!forceRefresh && cached && isFresh) {
-      return {
-        data: cached.data,
-        lastDataRequest: cached.lastDataRequest,
-        lastDataRequestSuccessful: cached.lastDataRequestSuccessful,
-      };
-    }
-
     const parser = this.parserRegistry.get<TTileType, TRawData, TTileData>(tileType);
     if (!parser) {
       throw new Error(`No parser registered for tile type: ${tileType}`);
     }
-
-    try {
-      const rawData = await fetchFunction();
-      let tileData: TTileData;
-      try {
-        tileData = parser.safeParse(rawData) as unknown as TTileData;
-      } catch (parseError) {
-        // If parser.safeParse throws, treat as error
-        const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
-        const logDetails: APILogDetails = {
-          storageKey,
-          errorName: parseError instanceof Error ? parseError.name : 'Unknown',
-          errorMessage,
-        };
-        storageManager.addLog({
-          level: APILogLevel.ERROR,
-          apiCall,
-          reason: errorMessage,
-          details: logDetails,
-        });
-        const prevData = parser.createDefault() as unknown as TTileData;
-        this.setTileState<TTileData>(storageKey, prevData, false);
-        return {
-          data: prevData,
-          lastDataRequest: Date.now(),
-          lastDataRequestSuccessful: false,
-        };
-      }
-      // On success, update data and status
-      this.setTileState<TTileData>(storageKey, tileData, true);
-      return {
-        data: tileData,
-        lastDataRequest: Date.now(),
-        lastDataRequestSuccessful: true,
-      };
-    } catch (error) {
-      // Log error
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const logDetails: APILogDetails = {
-        storageKey,
-        errorName: error instanceof Error ? error.name : 'Unknown',
-        errorMessage,
-      };
-      storageManager.addLog({
-        level: APILogLevel.ERROR,
-        apiCall,
-        reason: errorMessage,
-        details: logDetails,
-      });
-      // On error, update only lastDataRequest and lastDataRequestSuccessful, do not update data
-      const cached = storageManager.getTileState<TTileData>(storageKey);
-      const prevData =
-        cached && cached.data ? cached.data : (parser.createDefault() as unknown as TTileData);
-      this.setTileState<TTileData>(storageKey, prevData, false);
-      return {
-        data: prevData,
-        lastDataRequest: Date.now(),
-        lastDataRequestSuccessful: false,
-      };
-    }
+    return this.handleFetchAndTransform(
+      fetchFunction,
+      storageKey,
+      apiCall,
+      (input) => parser.safeParse(input) as unknown as TTileData,
+      () => parser.createDefault() as unknown as TTileData,
+      forceRefresh,
+    );
   }
 }
