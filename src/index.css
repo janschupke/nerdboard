@@ -322,4 +322,10 @@
   .bg-accent-muted {
     background-color: var(--accent-muted);
   }
+  .border-status-error {
+    border-color: var(--status-error);
+  }
+  .border-status-warning {
+    border-color: var(--status-warning);
+  }
 }

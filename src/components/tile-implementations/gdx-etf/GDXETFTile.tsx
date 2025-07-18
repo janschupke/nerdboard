@@ -1,43 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useGdxEtfApi } from './useGdxEtfApi';
 import type { GdxEtfTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
+import { useTileData } from '../../tile/useTileData';
+import { useMemo } from 'react';
 
-function useGdxEtfTileData(tileId: string): ReturnType<GenericTileDataHook<GdxEtfTileData>> {
-  const { getGDXETF } = useGdxEtfApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<GdxEtfTileData | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+const GDXETFTileContent = ({ data }: { data: GdxEtfTileData | null }) => {
+  if (data) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full space-y-2">
+        <div className="text-2xl font-bold text-theme-text-primary">${data.currentPrice}</div>
+        <div className="text-sm text-theme-text-secondary">{data.symbol}</div>
+      </div>
+    );
+  }
+  return null;
+};
+
+export const GDXETFTile = ({
+  tile,
+  meta,
+  ...rest
+}: {
+  tile: DragboardTileData;
+  meta: TileMeta;
+}) => {
   const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
-    // Provide required params for AlphaVantage
-    getGDXETF(tileId, { function: 'GLOBAL_QUOTE', symbol: 'GDX', apikey: 'demo' }, isForceRefresh)
-      .then((result) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
-      });
-  }, [tileId, getGDXETF, isForceRefresh]);
-  return { loading, error, hasData: !!data, data };
-}
-
-export const GDXETFTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta; refreshKey?: number }) => {
-    const tileData = useGdxEtfTileData(tile.id);
-    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
-  },
-  (prev, next) => prev.tile.id === next.tile.id && prev.refreshKey === next.refreshKey,
-);
+  const { getGDXETF } = useGdxEtfApi();
+  const params = useMemo(() => ({ function: 'GLOBAL_QUOTE', symbol: 'GDX', apikey: 'demo' }), []);
+  const { data, status, lastUpdated } = useTileData(getGDXETF, tile.id, params, isForceRefresh);
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
+      {...rest}
+    >
+      <GDXETFTileContent data={data} />
+    </GenericTile>
+  );
+};
 
 GDXETFTile.displayName = 'GDXETFTile';

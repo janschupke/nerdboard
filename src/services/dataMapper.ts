@@ -70,14 +70,14 @@ export abstract class BaseDataMapper<
 
 // Registry for data mappers
 export class DataMapperRegistry {
-  private static mappers = new Map<string, DataMapper<BaseApiResponse, unknown>>();
+  private mappers = new Map<string, DataMapper<BaseApiResponse, unknown>>();
 
   /**
    * Register a data mapper for a specific tile type
    * @param tileType - Unique identifier for the tile type
    * @param mapper - Data mapper instance
    */
-  static register<
+  register<
     TTileType extends string,
     TApiResponse extends BaseApiResponse | BaseApiResponse[],
     TTileData,
@@ -90,7 +90,7 @@ export class DataMapperRegistry {
    * @param tileType - Unique identifier for the tile type
    * @returns Data mapper instance or undefined if not found
    */
-  static get<
+  get<
     TTileType extends string,
     TApiResponse extends BaseApiResponse | BaseApiResponse[],
     TTileData,
@@ -103,7 +103,7 @@ export class DataMapperRegistry {
    * @param tileType - Unique identifier for the tile type
    * @returns True if mapper exists
    */
-  static has(tileType: string): boolean {
+  has(tileType: string): boolean {
     return this.mappers.has(tileType);
   }
 
@@ -111,7 +111,7 @@ export class DataMapperRegistry {
    * Get all registered tile types
    * @returns Array of registered tile types
    */
-  static getRegisteredTypes(): string[] {
+  getRegisteredTypes(): string[] {
     return Array.from(this.mappers.keys());
   }
 }

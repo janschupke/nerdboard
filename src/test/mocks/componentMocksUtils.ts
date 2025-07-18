@@ -1,18 +1,25 @@
-import React from 'react';
 import { vi } from 'vitest';
 import { AppTheme } from '../../services/storageManager';
+import { DataParserRegistry } from '../../services/dataParser';
+import { DataMapperRegistry } from '../../services/dataMapper';
+import { DataFetcher } from '../../services/dataFetcher';
+import React from 'react';
 
-// Mock data arrays to capture props for testing
+export function createMockDataServices() {
+  const parserRegistry = new DataParserRegistry();
+  const mapperRegistry = new DataMapperRegistry();
+  const dataFetcher = new DataFetcher(mapperRegistry, parserRegistry);
+  return { parserRegistry, mapperRegistry, dataFetcher };
+}
+
 export const dragboardProviderProps: Array<Record<string, unknown>> = [];
 export const headerMock = vi.fn();
 
-// Reset mock data
 export const resetComponentMocks = () => {
   dragboardProviderProps.length = 0;
   headerMock.mockClear();
 };
 
-// Dragboard component mocks
 export const mockDragboardComponents = () => {
   vi.mock('../../components/dragboard', () => ({
     DragboardProvider: ({ children, ...props }: { children: React.ReactNode }) => {
@@ -33,7 +40,6 @@ export const mockDragboardComponents = () => {
   }));
 };
 
-// Tile component mock
 export const mockTileComponent = () => {
   vi.mock('../../components/tile/Tile', () => ({
     Tile: ({ tile }: { tile: Record<string, unknown> }) =>
@@ -41,11 +47,12 @@ export const mockTileComponent = () => {
   }));
 };
 
-// Header component mock
 export const mockHeaderComponent = () => {
-  vi.mock('../../components/header/Header', () => ({
+  vi.mock('../../components/header/Header.tsx', () => ({
     Header: (props: Record<string, unknown>) => {
       headerMock(props);
+
+      console.log('MOCK HEADER RENDERED', props);
       return React.createElement('div', { 'data-testid': 'mock-header' }, [
         'MockHeader',
         React.createElement(
@@ -61,14 +68,12 @@ export const mockHeaderComponent = () => {
   }));
 };
 
-// LogView component mock
 export const mockLogViewComponent = () => {
   vi.mock('../../components/api-log/LogView', () => ({
     LogView: () => React.createElement('div', { 'data-testid': 'mock-logview' }, 'MockLogView'),
   }));
 };
 
-// Mock the lazy import to prevent Suspense
 export const mockLazyImports = () => {
   vi.mock('react', async () => {
     const actual = await vi.importActual('react');
@@ -84,7 +89,6 @@ export const mockLazyImports = () => {
   });
 };
 
-// Hook mocks
 export const mockHooks = () => {
   // Mock useTheme to prevent theme context issues
   vi.mock('../../hooks/useTheme', () => ({
@@ -124,7 +128,6 @@ export const mockHooks = () => {
   }));
 };
 
-// Setup all component mocks
 export const setupComponentMocks = () => {
   mockDragboardComponents();
   mockTileComponent();

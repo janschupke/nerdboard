@@ -1,6 +1,5 @@
-import { DataMapperRegistry, type DataMapper } from '../../../services/dataMapper';
 import type { EuriborRateApiResponse, EuriborRateTileData, EuriborRateHistoryEntry } from './types';
-import { TileType } from '../../../types/tile';
+import type { DataMapper } from '../../../services/dataMapper';
 
 /**
  * Maps ECB API response to EuriborRateTileData for the tile.
@@ -38,10 +37,3 @@ export const ecbEuriborDataMapper: DataMapper<EuriborRateApiResponse, EuriborRat
     historicalData: [],
   }),
 };
-
-/**
- * Registers the ECB Euribor data mapper with the DataMapperRegistry.
- */
-export function registerEcbEuriborDataMapper() {
-  DataMapperRegistry.register(TileType.EURIBOR_RATE, ecbEuriborDataMapper);
-}

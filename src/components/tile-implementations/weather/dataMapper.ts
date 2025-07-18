@@ -1,6 +1,5 @@
-import { BaseDataMapper, DataMapperRegistry } from '../../../services/dataMapper';
+import { BaseDataMapper } from '../../../services/dataMapper';
 import type { WeatherTileData, WeatherApiResponse, WeatherForecast } from './types';
-import { TileType } from '../../../types/tile';
 
 // Relax the constraint for WeatherApiResponse
 export class WeatherDataMapper extends BaseDataMapper<WeatherApiResponse, WeatherTileData> {
@@ -142,8 +141,3 @@ export class WeatherDataMapper extends BaseDataMapper<WeatherApiResponse, Weathe
     };
   }
 }
-
-// Register the mapper
-DataMapperRegistry.register(TileType.WEATHER_HELSINKI, new WeatherDataMapper());
-DataMapperRegistry.register(TileType.WEATHER_PRAGUE, new WeatherDataMapper());
-DataMapperRegistry.register(TileType.WEATHER_TAIPEI, new WeatherDataMapper());

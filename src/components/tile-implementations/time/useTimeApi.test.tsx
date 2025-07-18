@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useTimeApi } from './useTimeApi';
 import './dataMapper';
@@ -11,6 +11,23 @@ import {
   setupFailureMock,
 } from '../../../test/utils/endpointTestUtils';
 import type { TimeParams } from '../../../services/apiEndpoints';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
+import { TimeDataMapper } from './dataMapper';
+import { TileType } from '../../../types/tile';
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <MockDataServicesProvider
+    setup={({ mapperRegistry }) => {
+      mapperRegistry.register(TileType.TIME_HELSINKI, new TimeDataMapper());
+    }}
+  >
+    {children}
+  </MockDataServicesProvider>
+);
+
+beforeAll(() => {
+  // registerTimeDataMapper(); // This line is removed as per the new_code
+});
 
 describe('useTimeApi', () => {
   const mockTileId = 'test-time-tile';
@@ -23,12 +40,19 @@ describe('useTimeApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupTimeSuccessMock();
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act
-      const data = await result.current.getTime(mockTileId, mockParams);
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
 
       // Assert
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('data');
+      expect(fetchResult).toHaveProperty('lastDataRequest');
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
+
+      const data = fetchResult.data;
       expect(data).toBeDefined();
       expect(data).toEqual(
         expect.objectContaining({
@@ -58,14 +82,16 @@ describe('useTimeApi', () => {
         client_ip: '127.0.0.1',
       };
       setupDelayedMock(API_ENDPOINTS.TIME_API, delayedApiData, 50);
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
       // Use params that match the mock's timezone
       const params = { city: 'Europe/Berlin' };
       // Act & Assert
       await waitFor(async () => {
-        const data = await result.current.getTime(mockTileId, params);
+        const fetchResult = await result.current.getTime(mockTileId, params);
+        expect(fetchResult).toBeDefined();
+        const data = fetchResult.data;
         expect(data).toBeDefined();
-        expect(data.currentTime).toBe('14:30:25');
+        expect(data?.currentTime).toBe('14:30:25');
       });
     });
   });
@@ -75,48 +101,56 @@ describe('useTimeApi', () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.TIME_API, 'network');
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act & Assert
-      await expect(result.current.getTime(mockTileId, mockParams)).rejects.toThrow(
-        'Network error: Failed to fetch',
-      );
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
+      expect(fetchResult.lastDataRequest).toBeDefined();
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
     });
 
     it('should handle timeout errors', async () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.TIME_API, 'timeout');
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act & Assert
-      await expect(result.current.getTime(mockTileId, mockParams)).rejects.toThrow(
-        'Request timeout',
-      );
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
+      expect(fetchResult.lastDataRequest).toBeDefined();
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
     });
 
     it('should handle API errors (500)', async () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.TIME_API, 'api');
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act & Assert
-      await expect(result.current.getTime(mockTileId, mockParams)).rejects.toThrow(
-        'API error: 500 Internal Server Error',
-      );
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
+      expect(fetchResult.lastDataRequest).toBeDefined();
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
     });
 
     it('should handle malformed JSON responses', async () => {
       // Arrange
       EndpointTestUtils.clearMocks();
       setupFailureMock(API_ENDPOINTS.TIME_API, 'malformed');
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act & Assert
-      await expect(result.current.getTime(mockTileId, mockParams)).rejects.toThrow(
-        'Invalid JSON response',
-      );
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      expect(fetchResult).toBeDefined();
+      expect(fetchResult).toHaveProperty('lastDataRequestSuccessful', false);
+      expect(fetchResult.lastDataRequest).toBeDefined();
+      expect(typeof fetchResult.lastDataRequest).toBe('number');
     });
   });
 
@@ -188,18 +222,19 @@ describe('useTimeApi', () => {
         },
       ];
 
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act & Assert
       for (const { params, apiData, expected } of testParams) {
         setupSuccessMock(API_ENDPOINTS.TIME_API, apiData);
-        const data = await result.current.getTime(mockTileId, params);
+        const fetchResult = await result.current.getTime(mockTileId, params);
+        const data = fetchResult.data;
         // Debug: log if currentTime is '--:--:--' (invalid)
-        if (data.currentTime === '--:--:--') {
+        if (data?.currentTime === '--:--:--') {
           console.error('Invalid DateTime for params:', params, apiData);
         }
         expect(data).toBeDefined();
-        expect(data.currentTime).toBe(expected);
+        expect(data?.currentTime).toBe(expected);
       }
     });
     it('should handle business hours data', async () => {
@@ -218,14 +253,15 @@ describe('useTimeApi', () => {
       };
       EndpointTestUtils.clearMocks();
       setupSuccessMock(API_ENDPOINTS.TIME_API, businessHoursApiData);
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
       // Use params that match the mock's timezone
       const params = { city: 'America/New_York' };
       // Act
-      const data = await result.current.getTime(mockTileId, params);
+      const fetchResult = await result.current.getTime(mockTileId, params);
+      const data = fetchResult.data;
       // Assert
-      expect(data.isBusinessHours).toBe(true);
-      expect(['open', 'closed', 'opening soon', 'closing soon']).toContain(data.businessStatus);
+      expect(data?.isBusinessHours).toBe(true);
+      expect(['open', 'closed', 'opening soon', 'closing soon']).toContain(data?.businessStatus);
     });
 
     it('should handle time calculations', async () => {
@@ -243,15 +279,16 @@ describe('useTimeApi', () => {
       };
       EndpointTestUtils.clearMocks();
       setupSuccessMock(API_ENDPOINTS.TIME_API, timeApiData);
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act
-      const data = await result.current.getTime(mockTileId, mockParams);
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      const data = fetchResult.data;
 
       // Assert
-      expect(data.currentTime).toBeDefined();
-      expect(data.timezone).toBe('Europe/London');
-      expect(data.dayOfWeek).toBe('Wednesday');
+      expect(data?.currentTime).toBeDefined();
+      expect(data?.timezone).toBe('Europe/London');
+      expect(data?.dayOfWeek).toBe('Wednesday');
       // Optionally, check for timeUntilNextDay if you add this logic to the mapper
     });
 
@@ -270,13 +307,14 @@ describe('useTimeApi', () => {
       };
       EndpointTestUtils.clearMocks();
       setupSuccessMock(API_ENDPOINTS.TIME_API, timezoneApiData);
-      const { result } = renderHook(() => useTimeApi());
+      const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act
-      const data = await result.current.getTime(mockTileId, mockParams);
+      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      const data = fetchResult.data;
 
       // Assert
-      expect(data.offset).toBe('-05:00');
+      expect(data?.offset).toBe('-05:00');
     });
   });
 });

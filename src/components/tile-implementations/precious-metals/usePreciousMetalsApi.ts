@@ -1,39 +1,28 @@
 import type { PreciousMetalsTileData } from './types';
-import { DataFetcher } from '../../../services/dataFetcher';
+import { useDataServices } from '../../../contexts/DataServicesContext';
 import { useCallback } from 'react';
 import { METALS_API_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
-import { TileApiCallTitle, TileType } from '../../../types/tile';
 import type { MetalsApiParams } from '../../../services/apiEndpoints';
+import { TileApiCallTitle, TileType } from '../../../types/tile';
+import type { TileConfig } from '../../../services/storageManager';
 
-/**
- * Fetches precious metals data from Metals-API using the unified dataFetcher and dataMapper.
- * @param tileId - Unique tile identifier for storage
- * @param params - Query params for Metals-API endpoint
- * @param forceRefresh - Whether to bypass cache and force a fresh fetch
- * @returns Promise<PreciousMetalsTileData>
- */
 export function usePreciousMetalsApi() {
+  const { dataFetcher } = useDataServices();
   const getPreciousMetals = useCallback(
     async (
       tileId: string,
       params: MetalsApiParams,
       forceRefresh = false,
-    ): Promise<PreciousMetalsTileData> => {
+    ): Promise<TileConfig<PreciousMetalsTileData>> => {
       const url = buildApiUrl(METALS_API_ENDPOINT, params);
-      const result = await DataFetcher.fetchAndMap(
-        async () => {
-          const res = await fetch(url);
-          if (!res.ok) throw new Error('Metals-API error');
-          return res.json();
-        },
+      return dataFetcher.fetchAndMap(
+        () => fetch(url).then((res) => res.json()),
         tileId,
         TileType.PRECIOUS_METALS,
         { apiCall: TileApiCallTitle.PRECIOUS_METALS, forceRefresh },
       );
-      if (result.error || !result.data) throw new Error(result.error || 'No data');
-      return result.data as PreciousMetalsTileData;
     },
-    [],
+    [dataFetcher],
   );
   return { getPreciousMetals };
 }

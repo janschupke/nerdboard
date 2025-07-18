@@ -1,42 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useWeatherApi } from './useWeatherApi';
 import type { WeatherTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
+import { useTileData } from '../../tile/useTileData';
+import { useMemo } from 'react';
 
-function useWeatherTileData(tileId: string): ReturnType<GenericTileDataHook<WeatherTileData>> {
-  const { getWeather } = useWeatherApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<WeatherTileData | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+const WeatherTileContent = ({ data }: { data: WeatherTileData | null }) => {
+  if (data) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full space-y-2">
+        <div className="text-2xl font-bold text-theme-text-primary">
+          {data.temperature.current}°C
+        </div>
+        <div className="text-sm text-theme-text-secondary">{data.conditions.description}</div>
+      </div>
+    );
+  }
+  return null;
+};
+
+export const WeatherTile = ({
+  tile,
+  meta,
+  ...rest
+}: {
+  tile: DragboardTileData;
+  meta: TileMeta;
+}) => {
   const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
-    getWeather(tileId, { lat: 60.1699, lon: 24.9384 }, isForceRefresh)
-      .then((result) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
-      });
-  }, [tileId, getWeather, isForceRefresh]);
-  return { loading, error, hasData: !!data, data };
-}
-
-export const WeatherTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-    const tileData = useWeatherTileData(tile.id);
-    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
-  },
-  (prev, next) => prev.tile.id === next.tile.id,
-);
+  const { getWeather } = useWeatherApi();
+  const params = useMemo(() => ({ lat: 60.1699, lon: 24.9384 }), []);
+  const { data, status, lastUpdated } = useTileData(getWeather, tile.id, params, isForceRefresh);
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
+      {...rest}
+    >
+      <WeatherTileContent data={data} />
+    </GenericTile>
+  );
+};
 
 WeatherTile.displayName = 'WeatherTile';

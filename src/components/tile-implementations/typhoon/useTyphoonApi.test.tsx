@@ -1,9 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTyphoonApi } from './useTyphoonApi';
-import './dataMapper'; // Ensure the dataMapper is registered
+import { TyphoonDataMapper } from './dataMapper';
 import type { TyphoonTileData } from './types';
-import { vi } from 'vitest';
+import { storageManager } from '../../../services/storageManager';
+import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
+import { TileType } from '../../../types/tile';
+import type { TileConfig } from '../../../services/storageManager';
 
 const mockApiResponse = {
   success: 'true',
@@ -65,9 +68,24 @@ const mockApiResponse = {
 
 global.fetch = vi.fn();
 
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <MockDataServicesProvider
+    setup={({ mapperRegistry }) => {
+      mapperRegistry.register(TileType.TYPHOON, new TyphoonDataMapper());
+    }}
+  >
+    {children}
+  </MockDataServicesProvider>
+);
+
+beforeAll(() => {
+  // registerTyphoonDataMapper(); // This line is removed as per the new_code
+});
+
 describe('useTyphoonApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    storageManager.clearTileState(); // Clear cache between tests
   });
 
   it('fetches and maps Typhoon data successfully', async () => {
@@ -75,11 +93,17 @@ describe('useTyphoonApi', () => {
       ok: true,
       json: async () => mockApiResponse,
     });
-    const { result } = renderHook(() => useTyphoonApi());
-    let data: TyphoonTileData = { typhoons: [], lastUpdated: '' };
+    const { result } = renderHook(() => useTyphoonApi(), { wrapper });
+    let fetchResult!: TileConfig<TyphoonTileData>;
     await act(async () => {
-      data = await result.current.getTyphoonData('test-tile', 'test-key');
+      fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
     });
+    expect(fetchResult).toBeDefined();
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('lastDataRequest');
+    expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+
+    const data = fetchResult.data;
     expect(data).toBeDefined();
     if (data) {
       expect(data.typhoons.length).toBe(1);
@@ -96,23 +120,29 @@ describe('useTyphoonApi', () => {
     (globalThis.fetch as unknown as { mockResolvedValueOnce: Function }).mockResolvedValueOnce({
       ok: false,
     });
-    const { result } = renderHook(() => useTyphoonApi());
-    let data: TyphoonTileData = { typhoons: [], lastUpdated: '' };
+    const { result } = renderHook(() => useTyphoonApi(), { wrapper });
+    let fetchResult!: TileConfig<TyphoonTileData>;
     await act(async () => {
-      data = await result.current.getTyphoonData('test-tile', 'test-key');
+      fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
     });
-    expect(data).toEqual({ typhoons: [], lastUpdated: '' });
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('lastDataRequest');
+    expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+    expect(fetchResult.lastDataRequestSuccessful).toBe(false);
   });
 
   it('returns empty data and error if fetch fails', async () => {
     (globalThis.fetch as unknown as { mockRejectedValueOnce: Function }).mockRejectedValueOnce(
       new Error('Network error'),
     );
-    const { result } = renderHook(() => useTyphoonApi());
-    let data: TyphoonTileData = { typhoons: [], lastUpdated: '' };
+    const { result } = renderHook(() => useTyphoonApi(), { wrapper });
+    let fetchResult!: TileConfig<TyphoonTileData>;
     await act(async () => {
-      data = await result.current.getTyphoonData('test-tile', 'test-key');
+      fetchResult = await result.current.getTyphoonData('test-tile', 'test-key');
     });
-    expect(data).toEqual({ typhoons: [], lastUpdated: '' });
+    expect(fetchResult).toHaveProperty('data');
+    expect(fetchResult).toHaveProperty('lastDataRequest');
+    expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
+    expect(fetchResult.lastDataRequestSuccessful).toBe(false);
   });
 });

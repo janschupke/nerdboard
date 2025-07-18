@@ -1,59 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useTyphoonApi } from './useTyphoonApi';
 import type { TyphoonTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
+import { useTileData } from '../../tile/useTileData';
+import { useMemo } from 'react';
 
-function useTyphoonTileData(
-  tileId: string,
-  apiKey: string,
-): ReturnType<GenericTileDataHook<TyphoonTileData>> {
-  const { getTyphoonData } = useTyphoonApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<TyphoonTileData | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+const TyphoonTileContent = ({ data }: { data: TyphoonTileData | null }) => {
+  if (data && data.typhoons.length > 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full space-y-2">
+        <div className="text-2xl font-bold text-theme-text-primary">{data.typhoons.length}</div>
+        <div className="text-sm text-theme-text-secondary">Active Typhoons</div>
+      </div>
+    );
+  }
+  return null;
+};
+
+export const TyphoonTile = ({
+  tile,
+  meta,
+  ...rest
+}: {
+  tile: DragboardTileData;
+  meta: TileMeta;
+}) => {
   const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
-    getTyphoonData(tileId, apiKey, isForceRefresh)
-      .then((result) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
-      });
-  }, [tileId, apiKey, getTyphoonData, isForceRefresh]);
-  return {
-    loading,
-    error,
-    hasData: !!data && Array.isArray(data.typhoons) && data.typhoons.length > 0,
-    data,
-  };
-}
-
-export const TyphoonTile = React.memo(
-  ({
-    tile,
-    meta,
-    apiKey,
-    ...rest
-  }: {
-    tile: DragboardTileData;
-    meta: TileMeta;
-    apiKey: string;
-  }) => {
-    const tileData = useTyphoonTileData(tile.id, apiKey);
-    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
-  },
-  (prev, next) => prev.tile.id === next.tile.id && prev.apiKey === next.apiKey,
-);
+  const { getTyphoonData } = useTyphoonApi();
+  const params = useMemo(() => 'demo-key', []);
+  const { data, status, lastUpdated } = useTileData(
+    getTyphoonData,
+    tile.id,
+    params,
+    isForceRefresh,
+  );
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
+      {...rest}
+    >
+      <TyphoonTileContent data={data} />
+    </GenericTile>
+  );
+};
 
 TyphoonTile.displayName = 'TyphoonTile';

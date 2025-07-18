@@ -1,42 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useEarthquakeApi } from './useEarthquakeApi';
-import type { EarthquakeTileData } from './types';
+import type { EarthquakeTileDataArray } from './useEarthquakeApi';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
+import { useTileData } from '../../tile/useTileData';
+import { useMemo } from 'react';
 
-function useEarthquakeTileData(
-  tileId: string,
-): ReturnType<GenericTileDataHook<EarthquakeTileData[]>> {
-  const { getEarthquakes } = useEarthquakeApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<EarthquakeTileData[] | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+const EarthquakeTileContent = ({ data }: { data: EarthquakeTileDataArray | null }) => {
+  if (data && data.items.length > 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full space-y-2">
+        <div className="text-2xl font-bold text-theme-text-primary">{data.items.length}</div>
+        <div className="text-sm text-theme-text-secondary">Recent earthquakes</div>
+      </div>
+    );
+  }
+  return null;
+};
+
+export const EarthquakeTile = ({
+  tile,
+  meta,
+  ...rest
+}: {
+  tile: DragboardTileData;
+  meta: TileMeta;
+}) => {
   const isForceRefresh = useForceRefreshFromKey();
+  const { getEarthquakes } = useEarthquakeApi();
+  const params = useMemo(() => ({ days: 7 }), []);
+  const { data, status, lastUpdated } = useTileData(
+    getEarthquakes,
+    tile.id,
+    params,
+    isForceRefresh,
+  );
+  // Use the time of the first earthquake as lastUpdate if available
+  const lastUpdate =
+    data && data.items.length > 0
+      ? new Date(data.items[0].time).toISOString()
+      : lastUpdated
+        ? lastUpdated.toISOString()
+        : undefined;
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdate}
+      data={data}
+      {...rest}
+    >
+      <EarthquakeTileContent data={data} />
+    </GenericTile>
+  );
+};
 
-  useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
-    getEarthquakes(tileId, {}, isForceRefresh)
-      .then((result) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
-      });
-  }, [tileId, getEarthquakes, isForceRefresh]);
-  return { loading, error, hasData: !!data && data.length > 0, data };
-}
-
-export const EarthquakeTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-    const tileData = useEarthquakeTileData(tile.id);
-    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
-  },
-  (prev, next) => prev.tile.id === next.tile.id,
-);
+EarthquakeTile.displayName = 'EarthquakeTile';

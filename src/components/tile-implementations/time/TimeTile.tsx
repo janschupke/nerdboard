@@ -1,42 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useTimeApi } from './useTimeApi';
 import type { TimeTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
+import { useTileData } from '../../tile/useTileData';
+import { useMemo } from 'react';
 
-function useTimeTileData(tileId: string): ReturnType<GenericTileDataHook<TimeTileData>> {
-  const { getTime } = useTimeApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<TimeTileData | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+const TimeTileContent = ({ data }: { data: TimeTileData | null }) => {
+  if (data) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full space-y-2">
+        <div className="text-2xl font-bold text-theme-text-primary">{data.currentTime}</div>
+        <div className="text-sm text-theme-text-secondary">{data.date}</div>
+      </div>
+    );
+  }
+  return null;
+};
+
+export const TimeTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
   const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
-    getTime(tileId, { city: 'Helsinki' }, isForceRefresh)
-      .then((result) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
-      });
-  }, [tileId, getTime, isForceRefresh]);
-  return { loading, error, hasData: !!data && !!data.currentTime, data };
-}
-
-export const TimeTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-    const tileData = useTimeTileData(tile.id);
-    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
-  },
-  (prev, next) => prev.tile.id === next.tile.id,
-);
+  const { getTime } = useTimeApi();
+  const params = useMemo(() => ({ city: 'Europe/Helsinki' }), []);
+  const { data, status, lastUpdated } = useTileData(getTime, tile.id, params, isForceRefresh);
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
+      {...rest}
+    >
+      <TimeTileContent data={data} />
+    </GenericTile>
+  );
+};
 
 TimeTile.displayName = 'TimeTile';

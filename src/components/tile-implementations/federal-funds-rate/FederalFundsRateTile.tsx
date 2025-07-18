@@ -1,44 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useFederalFundsApi } from './useFederalFundsApi';
 import type { FederalFundsRateTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
+import { useTileData } from '../../tile/useTileData';
+import { useMemo } from 'react';
 
-function useFederalFundsTileData(
-  tileId: string,
-): ReturnType<GenericTileDataHook<FederalFundsRateTileData>> {
-  const { getFederalFundsRate } = useFederalFundsApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<FederalFundsRateTileData | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+const FederalFundsRateTileContent = ({ data }: { data: FederalFundsRateTileData | null }) => {
+  if (data) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full space-y-2">
+        <div className="text-2xl font-bold text-theme-text-primary">{data.currentRate}%</div>
+        <div className="text-sm text-theme-text-secondary">Federal Funds Rate</div>
+      </div>
+    );
+  }
+  return null;
+};
+
+export const FederalFundsRateTile = ({
+  tile,
+  meta,
+  ...rest
+}: {
+  tile: DragboardTileData;
+  meta: TileMeta;
+}) => {
   const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
-    getFederalFundsRate(tileId, { series_id: 'FEDFUNDS', file_type: 'json' }, isForceRefresh)
-      .then((result) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
-      });
-  }, [tileId, getFederalFundsRate, isForceRefresh]);
-  return { loading, error, hasData: !!data, data };
-}
-
-export const FederalFundsRateTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-    const tileData = useFederalFundsTileData(tile.id);
-    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
-  },
-  (prev, next) => prev.tile.id === next.tile.id,
-);
+  const { getFederalFundsRate } = useFederalFundsApi();
+  const params = useMemo(
+    () => ({ series_id: 'FEDFUNDS' as const, file_type: 'json' as const }),
+    [],
+  );
+  const { data, status, lastUpdated } = useTileData(
+    getFederalFundsRate,
+    tile.id,
+    params,
+    isForceRefresh,
+  );
+  let lastUpdate: string | undefined = undefined;
+  if (data?.lastUpdate) {
+    lastUpdate =
+      typeof data.lastUpdate === 'string' ? data.lastUpdate : data.lastUpdate.toISOString();
+  } else if (lastUpdated) {
+    lastUpdate = lastUpdated.toISOString();
+  }
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdate}
+      data={data}
+      {...rest}
+    >
+      <FederalFundsRateTileContent data={data} />
+    </GenericTile>
+  );
+};
 
 FederalFundsRateTile.displayName = 'FederalFundsRateTile';

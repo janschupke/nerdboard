@@ -1,8 +1,6 @@
-# API Research Document
+# API Research for Dashboard
 
-## Overview
-
-This document provides a comprehensive analysis of API endpoints for the NerdBoard application, including existing implementations, their current status, alternatives, and new endpoints for earthquake and typhoon data.
+This document provides a comprehensive analysis of API endpoints for the Dashboard application, including existing implementations, their current status, alternatives, and new endpoints for earthquake and typhoon data.
 
 ## Existing Endpoints Analysis
 

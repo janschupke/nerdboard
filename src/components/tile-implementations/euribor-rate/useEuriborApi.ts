@@ -1,29 +1,28 @@
 import type { EuriborRateTileData } from './types';
-import { DataFetcher } from '../../../services/dataFetcher';
+import { useDataServices } from '../../../contexts/DataServicesContext';
 import { useCallback } from 'react';
 import { EMMI_EURIBOR_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import { TileApiCallTitle, TileType } from '../../../types/tile';
+import type { EuriborParams } from '../../../services/apiEndpoints';
+import type { TileConfig } from '../../../services/storageManager';
 
-/**
- * Fetches Euribor rate data from the ECB API using the unified dataFetcher and dataMapper.
- * @param tileId - Unique tile identifier for storage
- * @param forceRefresh - Whether to bypass cache and force a fresh fetch
- * @returns Promise<EuriborRateTileData>
- */
 export function useEuriborApi() {
+  const { dataFetcher } = useDataServices();
   const getEuriborRate = useCallback(
-    async (tileId: string, forceRefresh = false): Promise<EuriborRateTileData> => {
-      const url = buildApiUrl(EMMI_EURIBOR_ENDPOINT, {});
-      const result = await DataFetcher.fetchAndMap(
+    async (
+      tileId: string,
+      params: EuriborParams,
+      forceRefresh = false,
+    ): Promise<TileConfig<EuriborRateTileData>> => {
+      const url = buildApiUrl(EMMI_EURIBOR_ENDPOINT, params);
+      return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),
         tileId,
         TileType.EURIBOR_RATE,
         { apiCall: TileApiCallTitle.EURIBOR_RATE, forceRefresh },
       );
-      if (result.error) throw new Error(result.error);
-      return result.data as EuriborRateTileData;
     },
-    [],
+    [dataFetcher],
   );
   return { getEuriborRate };
 }

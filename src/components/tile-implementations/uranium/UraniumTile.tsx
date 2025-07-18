@@ -1,42 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useUraniumApi } from './useUraniumApi';
 import type { UraniumTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
+import { useTileData } from '../../tile/useTileData';
+import { useMemo } from 'react';
 
-function useUraniumTileData(tileId: string): ReturnType<GenericTileDataHook<UraniumTileData>> {
-  const { getUraniumPrice } = useUraniumApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<UraniumTileData | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+const UraniumTileContent = ({ data }: { data: UraniumTileData | null }) => {
+  if (data) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full space-y-2">
+        <div className="text-2xl font-bold text-theme-text-primary">${data.spotPrice}</div>
+        <div className="text-sm text-theme-text-secondary">Uranium Price</div>
+      </div>
+    );
+  }
+  return null;
+};
+
+export const UraniumTile = ({
+  tile,
+  meta,
+  ...rest
+}: {
+  tile: DragboardTileData;
+  meta: TileMeta;
+}) => {
   const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
-    getUraniumPrice(tileId, {}, isForceRefresh)
-      .then((result) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
-      });
-  }, [tileId, getUraniumPrice, isForceRefresh]);
-  return { loading, error, hasData: !!data, data };
-}
-
-export const UraniumTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-    const tileData = useUraniumTileData(tile.id);
-    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
-  },
-  (prev, next) => prev.tile.id === next.tile.id,
-);
+  const { getUraniumPrice } = useUraniumApi();
+  const params = useMemo(() => ({ range: '1D' }), []);
+  const { data, status, lastUpdated } = useTileData(
+    getUraniumPrice,
+    tile.id,
+    params,
+    isForceRefresh,
+  );
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
+      {...rest}
+    >
+      <UraniumTileContent data={data} />
+    </GenericTile>
+  );
+};
 
 UraniumTile.displayName = 'UraniumTile';

@@ -1,42 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { GenericTile, type GenericTileDataHook, type TileMeta } from '../../tile/GenericTile';
+import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useEuriborApi } from './useEuriborApi';
 import type { EuriborRateTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
+import { useTileData } from '../../tile/useTileData';
+import { useMemo } from 'react';
 
-function useEuriborTileData(tileId: string): ReturnType<GenericTileDataHook<EuriborRateTileData>> {
-  const { getEuriborRate } = useEuriborApi();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<EuriborRateTileData | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+const EuriborRateTileContent = ({ data }: { data: EuriborRateTileData | null }) => {
+  if (data) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full space-y-2">
+        <div className="text-2xl font-bold text-theme-text-primary">{data.currentRate}%</div>
+        <div className="text-sm text-theme-text-secondary">Euribor Rate</div>
+      </div>
+    );
+  }
+  return null;
+};
+
+export const EuriborRateTile = ({
+  tile,
+  meta,
+  ...rest
+}: {
+  tile: DragboardTileData;
+  meta: TileMeta;
+}) => {
   const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    setLoading(true);
-    setData(undefined);
-    setError(null);
-    getEuriborRate(tileId, isForceRefresh)
-      .then((result) => {
-        setData(result);
-        setError(null);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setData(undefined);
-        setError(err?.message || 'Error');
-        setLoading(false);
-      });
-  }, [tileId, getEuriborRate, isForceRefresh]);
-  return { loading, error, hasData: !!data, data };
-}
-
-export const EuriborRateTile = React.memo(
-  ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-    const tileData = useEuriborTileData(tile.id);
-    return <GenericTile tile={tile} meta={meta} tileData={tileData} {...rest} />;
-  },
-  (prev, next) => prev.tile.id === next.tile.id,
-);
+  const { getEuriborRate } = useEuriborApi();
+  const params = useMemo(() => ({}), []);
+  const { data, status, lastUpdated } = useTileData(
+    getEuriborRate,
+    tile.id,
+    params,
+    isForceRefresh,
+  );
+  return (
+    <GenericTile
+      tile={tile}
+      meta={meta}
+      status={status}
+      lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
+      data={data}
+      {...rest}
+    >
+      <EuriborRateTileContent data={data} />
+    </GenericTile>
+  );
+};
 
 EuriborRateTile.displayName = 'EuriborRateTile';

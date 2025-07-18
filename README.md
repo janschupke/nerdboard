@@ -1,6 +1,6 @@
-# Nerdboard
+# Dashboard
 
-A modern, extensible dashboard application built with React 19, TypeScript, and Vite. Nerdboard displays real-time market, financial, and weather data in an interactive, accessible, and highly customizable interface.
+A modern, extensible dashboard application built with React 19, TypeScript, and Vite. Dashboard displays real-time market, financial, and weather data in an interactive, accessible, and highly customizable interface.
 
 ## Tech Stack
 
@@ -86,6 +86,7 @@ A modern, extensible dashboard application built with React 19, TypeScript, and 
 ### Testing (src/test/)
 
 - Test setup, mocks, and test utilities.
+- Individual unit tests are co-located with the files they're testing. Never in **test** folder
 
 ## Project Structure
 
@@ -126,7 +127,7 @@ The application uses a comprehensive API proxy system to handle CORS issues and 
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd nerdboard
+cd dashboard
 
 # Install dependencies
 npm install
@@ -151,7 +152,3 @@ npm run test:ui      # Run tests with UI
 npm run lint         # Run ESLint
 npm run type-check   # Run TypeScript type checking
 ```
-
-## License
-
-MIT License - see LICENSE file for details.

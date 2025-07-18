@@ -34,7 +34,7 @@ const DragboardTileComponent: React.FC<DragboardTileProps> = ({ id, position, si
     (e: React.DragEvent) => {
       if (!config.movementEnabled) return;
       e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('application/nerdboard-tile-id', id);
+      e.dataTransfer.setData('application/dashboard-tile-id', id);
       startTileDrag(id, position);
     },
     [id, position, startTileDrag, config.movementEnabled],
