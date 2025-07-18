@@ -68,6 +68,19 @@ const StatusBar = ({ status, lastUpdate }: {
   );
 };
 
+const LoadingContent = React.memo(() => (
+  <div className="flex flex-col items-center justify-center h-full space-y-2">
+    <Icon name="loading" size="lg" className="text-theme-status-info animate-spin" />
+  </div>
+));
+
+const ErrorContent = React.memo(() => (
+  <div className="flex flex-col items-center justify-center h-full space-y-2">
+    <Icon name="close" size="lg" className="text-theme-status-error" />
+    <p className="text-theme-status-error text-sm text-center">Data failed to fetch</p>
+  </div>
+));
+
 export const GenericTile = React.memo(
   forwardRef<HTMLDivElement, GenericTileProps>(
     ({ tile, meta, onRemove, dragHandleProps, className, style, children, status, lastUpdate }, ref) => {
@@ -79,11 +92,31 @@ export const GenericTile = React.memo(
         }
       }, [tile.id, onRemove]);
 
-      const getTileClasses = () => {
-        const baseClasses =
-          'rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 relative border border-theme-border-primary';
+      const getTileClasses = useCallback(() => {
+        let borderClasses = 'border-theme-border-primary';
+        
+        // Apply status-specific border colors
+        if (status === 'error') {
+          borderClasses = 'border-theme-status-error';
+        } else if (status === 'stale') {
+          borderClasses = 'border-theme-status-warning';
+        }
+        
+        const baseClasses = `rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 relative border ${borderClasses}`;
         return `${baseClasses} ${className || ''}`;
-      };
+      }, [status, className]);
+
+      // Memoize the content based on status
+      const content = useMemo(() => {
+        if (status === 'loading') {
+          return <LoadingContent />;
+        }
+        if (status === 'error') {
+          return <ErrorContent />;
+        }
+        // For stale and success states, render the children (tile-specific content)
+        return children;
+      }, [status, children]);
 
       // Memoize the header props to prevent re-renders
       const headerProps = useMemo(
@@ -137,7 +170,7 @@ export const GenericTile = React.memo(
 
             {/* Tile Content */}
             <div className="flex-1 p-2" role="region" aria-label={`${meta.title} content`}>
-              {children}
+              {content}
             </div>
 
             {/* Status Bar */}

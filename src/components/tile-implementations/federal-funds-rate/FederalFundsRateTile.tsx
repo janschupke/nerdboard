@@ -3,35 +3,11 @@ import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useFederalFundsApi } from './useFederalFundsApi';
 import type { FederalFundsRateTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
-import { Icon } from '../../ui/Icon';
-import { RequestStatus } from '../../../services/dataFetcher';
 import { useTileData } from '../../tile/useTileData';
+import { useMemo } from 'react';
 
-const FederalFundsRateTileContent = ({ data, status }: { data: FederalFundsRateTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
-  if (status === RequestStatus.Loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <Icon name="loading" size="lg" className="text-theme-status-info" />
-      </div>
-    );
-  }
-  if (status === RequestStatus.Error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <Icon name="close" size="lg" className="text-theme-status-error" />
-        <p className="text-theme-status-error text-sm text-center">Data failed to fetch</p>
-      </div>
-    );
-  }
-  if (status === RequestStatus.Stale) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <Icon name="warning" size="lg" className="text-theme-status-warning" />
-        <p className="text-theme-status-warning text-sm text-center">Data may be outdated</p>
-      </div>
-    );
-  }
-  if (status === RequestStatus.Success && data) {
+const FederalFundsRateTileContent = ({ data }: { data: FederalFundsRateTileData | null }) => {
+  if (data) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <div className="text-2xl font-bold text-theme-text-primary">
@@ -49,7 +25,8 @@ const FederalFundsRateTileContent = ({ data, status }: { data: FederalFundsRateT
 export const FederalFundsRateTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
   const isForceRefresh = useForceRefreshFromKey();
   const { getFederalFundsRate } = useFederalFundsApi();
-  const { data, status, lastUpdated } = useTileData(getFederalFundsRate, tile.id, { series_id: 'FEDFUNDS', file_type: 'json' }, isForceRefresh);
+  const params = useMemo(() => ({ series_id: 'FEDFUNDS' as const, file_type: 'json' as const }), []);
+  const { data, status, lastUpdated } = useTileData(getFederalFundsRate, tile.id, params, isForceRefresh);
   let lastUpdate: string | undefined = undefined;
   if (data?.lastUpdate) {
     lastUpdate = typeof data.lastUpdate === 'string' ? data.lastUpdate : data.lastUpdate.toISOString();
@@ -64,7 +41,7 @@ export const FederalFundsRateTile = ({ tile, meta, ...rest }: { tile: DragboardT
       lastUpdate={lastUpdate}
       {...rest}
     >
-      <FederalFundsRateTileContent data={data} status={status} />
+      <FederalFundsRateTileContent data={data} />
     </GenericTile>
   );
 };

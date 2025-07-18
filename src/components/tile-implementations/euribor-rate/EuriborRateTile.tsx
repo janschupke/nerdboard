@@ -3,42 +3,18 @@ import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useEuriborApi } from './useEuriborApi';
 import type { EuriborRateTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
-import { Icon } from '../../ui/Icon';
-import { RequestStatus } from '../../../services/dataFetcher';
 import { useTileData } from '../../tile/useTileData';
+import { useMemo } from 'react';
 
-const EuriborRateTileContent = ({ data, status }: { data: EuriborRateTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
-  if (status === RequestStatus.Loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <Icon name="loading" size="lg" className="text-theme-status-info" />
-      </div>
-    );
-  }
-  if (status === RequestStatus.Error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <Icon name="close" size="lg" className="text-theme-status-error" />
-        <p className="text-theme-status-error text-sm text-center">Data failed to fetch</p>
-      </div>
-    );
-  }
-  if (status === RequestStatus.Stale) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <Icon name="warning" size="lg" className="text-theme-status-warning" />
-        <p className="text-theme-status-warning text-sm text-center">Data may be outdated</p>
-      </div>
-    );
-  }
-  if (status === RequestStatus.Success && data) {
+const EuriborRateTileContent = ({ data }: { data: EuriborRateTileData | null }) => {
+  if (data) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <div className="text-2xl font-bold text-theme-text-primary">
           {data.currentRate}%
         </div>
         <div className="text-sm text-theme-text-secondary">
-          EURIBOR Rate
+          Euribor Rate
         </div>
       </div>
     );
@@ -49,22 +25,17 @@ const EuriborRateTileContent = ({ data, status }: { data: EuriborRateTileData | 
 export const EuriborRateTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
   const isForceRefresh = useForceRefreshFromKey();
   const { getEuriborRate } = useEuriborApi();
-  const { data, status, lastUpdated } = useTileData(getEuriborRate, tile.id, {}, isForceRefresh);
-  let lastUpdate: string | undefined = undefined;
-  if (data?.lastUpdate) {
-    lastUpdate = typeof data.lastUpdate === 'string' ? data.lastUpdate : data.lastUpdate.toISOString();
-  } else if (lastUpdated) {
-    lastUpdate = lastUpdated.toISOString();
-  }
+  const params = useMemo(() => ({}), []);
+  const { data, status, lastUpdated } = useTileData(getEuriborRate, tile.id, params, isForceRefresh);
   return (
     <GenericTile
       tile={tile}
       meta={meta}
       status={status}
-      lastUpdate={lastUpdate}
+      lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
       {...rest}
     >
-      <EuriborRateTileContent data={data} status={status} />
+      <EuriborRateTileContent data={data} />
     </GenericTile>
   );
 };
