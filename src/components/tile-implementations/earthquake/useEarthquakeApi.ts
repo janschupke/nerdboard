@@ -1,20 +1,27 @@
 import type { EarthquakeTileData } from './types';
-import { DataFetcher, type FetchResult } from '../../../services/dataFetcher';
+import { DataFetcher } from '../../../services/dataFetcher';
 import { useCallback } from 'react';
 import { USGS_EARTHQUAKE_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { UsgsEarthquakeParams } from '../../../services/apiEndpoints';
 import { TileType, TileApiCallTitle } from '../../../types/tile';
+import type { TileConfig, TileDataType } from '../../../services/storageManager';
+
+// Wrapper type for array
+export interface EarthquakeTileDataArray extends TileDataType {
+  items: EarthquakeTileData[];
+}
 
 export function useEarthquakeApi() {
   const getEarthquakes = useCallback(
-    async (tileId: string, params: UsgsEarthquakeParams, forceRefresh = false): Promise<FetchResult<EarthquakeTileData[]>> => {
+    async (tileId: string, params: UsgsEarthquakeParams, forceRefresh = false): Promise<TileConfig<EarthquakeTileDataArray>> => {
       const url = buildApiUrl(USGS_EARTHQUAKE_ENDPOINT, params);
+      // Map the array response to the wrapper type
       return DataFetcher.fetchAndMap(
-        () => fetch(url).then((res) => res.json()),
+        () => fetch(url).then((res) => res.json()).then((data) => ({ items: Array.isArray(data) ? data : [] })),
         tileId,
         TileType.EARTHQUAKE,
         { apiCall: TileApiCallTitle.EARTHQUAKE, forceRefresh },
-      ) as Promise<FetchResult<EarthquakeTileData[]>>;
+      );
     },
     [],
   );

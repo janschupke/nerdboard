@@ -2,9 +2,9 @@ import React, { useCallback, forwardRef, useMemo } from 'react';
 import type { DragboardTileData, DraggableTileProps } from '../dragboard';
 import { Icon } from '../ui/Icon';
 import { TileErrorBoundary } from './TileErrorBoundary';
-import { RequestStatus } from '../../services/dataFetcher';
 import { LoadingComponent } from './LoadingComponent';
 import type { TileCategory } from '../../types/tileCategories';
+import { TileStatus } from './useTileData';
 
 export interface TileMeta {
   title: string;
@@ -16,24 +16,24 @@ export interface GenericTileProps extends DraggableTileProps {
   tile: DragboardTileData;
   meta: TileMeta;
   children?: React.ReactNode;
-  status?: RequestStatus;
+  status?: TileStatus;
   lastUpdate?: string;
   style?: React.CSSProperties;
 }
 
 const StatusBar = ({ status, lastUpdate }: {
-  status?: RequestStatus;
+  status?: TileStatus;
   lastUpdate?: string;
 }) => {
   // Determine status icon and color
   const getStatusIcon = () => {
     switch (status) {
-      case RequestStatus.Stale:
+      case TileStatus.Stale:
         return { name: 'warning', className: 'text-theme-status-warning' };
-      case RequestStatus.Success:
+      case TileStatus.Success:
         return { name: 'check', className: 'text-theme-status-success' };
-        case RequestStatus.Error:
-          return { name: 'close', className: 'text-theme-status-error' };
+      case TileStatus.Error:
+        return { name: 'close', className: 'text-theme-status-error' };
       default:
         return null;
     }
@@ -90,9 +90,9 @@ export const GenericTile = React.memo(
         let borderClasses = 'border-theme-border-primary';
         
         // Apply status-specific border colors
-        if (status === RequestStatus.Error) {
+        if (status === TileStatus.Error) {
           borderClasses = 'border-theme-status-error';
-        } else if (status === RequestStatus.Stale) {
+        } else if (status === TileStatus.Stale) {
           borderClasses = 'border-theme-status-warning';
         }
         
@@ -102,10 +102,10 @@ export const GenericTile = React.memo(
 
       // Memoize the content based on status
       const content = useMemo(() => {
-        if (status === RequestStatus.Loading) {
+        if (status === TileStatus.Loading) {
           return <LoadingComponent />;
         }
-        if (status === RequestStatus.Error) {
+        if (status === TileStatus.Error) {
           return <ErrorContent />;
         }
         // For stale and success states, render the children (tile-specific content)
