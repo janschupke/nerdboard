@@ -14,7 +14,7 @@ export function useUraniumApi() {
       params: UraniumHtmlParams,
       forceRefresh = false,
     ): Promise<TileConfig<UraniumTileData>> => {
-      const url = buildApiUrl(URANIUM_HTML_ENDPOINT, params);
+      const url = buildApiUrl<UraniumHtmlParams>(URANIUM_HTML_ENDPOINT, params);
       return dataFetcher.fetchAndParse(
         () => fetch(url).then((res) => res.text()),
         tileId,

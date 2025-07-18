@@ -14,7 +14,7 @@ export function useCryptoApi() {
       params: CryptoMarketsParams,
       forceRefresh = false,
     ): Promise<TileConfig<CryptocurrencyTileData>> => {
-      const url = buildApiUrl(COINGECKO_MARKETS_ENDPOINT, params);
+      const url = buildApiUrl<CryptoMarketsParams>(COINGECKO_MARKETS_ENDPOINT, params);
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),
         tileId,

@@ -14,7 +14,7 @@ export function useWeatherApi() {
       params: WeatherParams,
       forceRefresh = false,
     ): Promise<TileConfig<WeatherTileData>> => {
-      const url = buildApiUrl(OPENWEATHERMAP_ONECALL_ENDPOINT, params);
+      const url = buildApiUrl<WeatherParams>(OPENWEATHERMAP_ONECALL_ENDPOINT, params);
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),
         tileId,

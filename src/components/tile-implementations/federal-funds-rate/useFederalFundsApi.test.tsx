@@ -12,7 +12,7 @@ import {
   setupFailureMock,
 } from '../../../test/utils/endpointTestUtils';
 import { MockResponseData } from '../../../test/mocks/endpointMocks';
-import type { FredSeriesObservationsParams } from '../../../services/apiEndpoints';
+import type { FredParams } from '../../../services/apiEndpoints';
 import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -31,9 +31,10 @@ beforeAll(() => {
 
 describe('useFederalFundsApi', () => {
   const mockTileId = 'test-federal-funds-tile';
-  const mockParams: FredSeriesObservationsParams = {
+  const mockParams: FredParams = {
     series_id: 'FEDFUNDS',
     file_type: 'json',
+    api_key: 'test-api-key',
   };
 
   describe('getFederalFundsRate - Success Scenarios', () => {
@@ -135,10 +136,10 @@ describe('useFederalFundsApi', () => {
       EndpointTestUtils.clearMocks();
       setupFederalFundsRateSuccessMock();
       const { result } = renderHook(() => useFederalFundsApi(), { wrapper });
-      const testParams: FredSeriesObservationsParams[] = [
-        { series_id: 'FEDFUNDS', file_type: 'json' },
-        { series_id: 'DFF', file_type: 'json' },
-        { series_id: 'EFFR', file_type: 'json' },
+      const testParams: FredParams[] = [
+        { series_id: 'FEDFUNDS', file_type: 'json', api_key: 'test-api-key' },
+        { series_id: 'DFF', file_type: 'json', api_key: 'test-api-key' },
+        { series_id: 'EFFR', file_type: 'json', api_key: 'test-api-key' },
       ];
       for (const params of testParams) {
         const fetchResult = await result.current.getFederalFundsRate(mockTileId, params);

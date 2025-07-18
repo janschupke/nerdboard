@@ -14,11 +14,10 @@ export interface EuriborRateHistoryEntry {
 
 export type TimeRange = '1M' | '3M' | '6M' | '1Y' | '5Y' | 'Max';
 
+// ECB 12-month Euribor endpoint returns a structure with dataSets and structure fields.
 export interface EuriborRateApiResponse extends BaseApiResponse {
-  rates: Array<{
-    date: string;
-    value: string;
-  }>;
+  dataSets: unknown[];
+  structure: unknown;
 }
 
 export interface EuriborRateConfig {

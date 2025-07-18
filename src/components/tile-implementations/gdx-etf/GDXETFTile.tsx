@@ -4,6 +4,7 @@ import { useGdxEtfApi } from './useGdxEtfApi';
 import type { GdxEtfTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { useTileData } from '../../tile/useTileData';
+import type { AlphaVantageParams } from '../../../services/apiEndpoints';
 import { useMemo } from 'react';
 
 const GDXETFTileContent = ({ data }: { data: GdxEtfTileData | null }) => {
@@ -28,7 +29,14 @@ export const GDXETFTile = ({
 }) => {
   const isForceRefresh = useForceRefreshFromKey();
   const { getGDXETF } = useGdxEtfApi();
-  const params = useMemo(() => ({ function: 'GLOBAL_QUOTE', symbol: 'GDX', apikey: 'demo' }), []);
+  const params = useMemo<AlphaVantageParams>(
+    () => ({
+      function: 'GLOBAL_QUOTE',
+      symbol: 'GDX',
+      apikey: import.meta.env.ALPHA_VANTAGE_API_KEY,
+    }),
+    [],
+  );
   const { data, status, lastUpdated } = useTileData(getGDXETF, tile.id, params, isForceRefresh);
   return (
     <GenericTile

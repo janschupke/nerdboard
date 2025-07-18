@@ -4,7 +4,7 @@ import { renderHook } from '@testing-library/react';
 import { usePreciousMetalsApi } from './usePreciousMetalsApi';
 import { PreciousMetalsDataMapper } from './dataMapper';
 import { TileType } from '../../../types/tile';
-import type { MetalsApiParams } from '../../../services/apiEndpoints';
+import type { GoldApiParams } from '../../../services/apiEndpoints';
 import type { PreciousMetalsTileData } from './types';
 import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
 
@@ -24,10 +24,9 @@ beforeAll(() => {
 
 describe('usePreciousMetalsApi', () => {
   const mockTileId = 'test-precious-metals-tile';
-  const mockParams: MetalsApiParams = {
-    access_key: 'demo',
-    base: 'USD',
-    symbols: 'XAU,XAG',
+  const mockParams: GoldApiParams = {
+    currency: 'USD',
+    unit: 'ounce',
   };
   const mockApiResponse: PreciousMetalsTileData = {
     gold: { price: 2050.75, change_24h: 10, change_percentage_24h: 0.5 },

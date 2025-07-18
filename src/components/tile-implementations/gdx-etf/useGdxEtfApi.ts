@@ -14,7 +14,7 @@ export function useGdxEtfApi() {
       params: AlphaVantageParams,
       forceRefresh = false,
     ): Promise<TileConfig<GdxEtfTileData>> => {
-      const url = buildApiUrl(ALPHA_VANTAGE_GDX_ENDPOINT, params);
+      const url = buildApiUrl<AlphaVantageParams>(ALPHA_VANTAGE_GDX_ENDPOINT, params);
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),
         tileId,
