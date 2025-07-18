@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useEarthquakeApi } from './useEarthquakeApi';
@@ -6,37 +5,7 @@ import type { EarthquakeTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
 import { RequestStatus } from '../../../services/dataFetcher';
-import type { FetchResult } from '../../../services/dataFetcher';
-
-function useEarthquakeTileData(tileId: string) {
-  const { getEarthquakes } = useEarthquakeApi();
-  const [result, setResult] = useState<FetchResult<EarthquakeTileData[]>>({
-    data: null,
-    status: RequestStatus.Loading,
-    lastUpdated: null,
-    error: null,
-    isCached: false,
-    retryCount: 0,
-  });
-  const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    let cancelled = false;
-    setResult((r) => ({ ...r, status: RequestStatus.Loading }));
-    getEarthquakes(tileId, { days: 7 }, isForceRefresh)
-      .then((fetchResult) => {
-        if (!cancelled) setResult(fetchResult as FetchResult<EarthquakeTileData[]>);
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setResult((r) => ({ ...r, status: RequestStatus.Error, error: err?.message || 'Error' }));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tileId, getEarthquakes, isForceRefresh]);
-  return result;
-}
+import { useTileData } from '../../tile/useTileData';
 
 const EarthquakeTileContent = ({ data, status }: { data: EarthquakeTileData[] | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
   if (status === RequestStatus.Loading) {
@@ -63,7 +32,6 @@ const EarthquakeTileContent = ({ data, status }: { data: EarthquakeTileData[] | 
     );
   }
   if (status === RequestStatus.Success && data && data.length > 0) {
-    const recentEarthquakes = data.slice(0, 3);
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <div className="text-2xl font-bold text-theme-text-primary">
@@ -79,7 +47,9 @@ const EarthquakeTileContent = ({ data, status }: { data: EarthquakeTileData[] | 
 };
 
 export const EarthquakeTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-  const { data, status, lastUpdated } = useEarthquakeTileData(tile.id);
+  const isForceRefresh = useForceRefreshFromKey();
+  const { getEarthquakes } = useEarthquakeApi();
+  const { data, status, lastUpdated } = useTileData(getEarthquakes, tile.id, { days: 7 }, isForceRefresh);
   // Use the time of the first earthquake as lastUpdate if available
   const lastUpdate = data && data.length > 0 ? new Date(data[0].time).toISOString() : (lastUpdated ? lastUpdated.toISOString() : undefined);
   return (
@@ -90,7 +60,7 @@ export const EarthquakeTile = ({ tile, meta, ...rest }: { tile: DragboardTileDat
       lastUpdate={lastUpdate}
       {...rest}
     >
-      <EarthquakeTileContent data={data} status={status} />
+      <EarthquakeTileContent data={data as EarthquakeTileData[] | null} status={status} />
     </GenericTile>
   );
 };

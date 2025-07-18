@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useEuriborApi } from './useEuriborApi';
@@ -6,37 +5,7 @@ import type { EuriborRateTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
 import { RequestStatus } from '../../../services/dataFetcher';
-import type { FetchResult } from '../../../services/dataFetcher';
-
-function useEuriborTileData(tileId: string) {
-  const { getEuriborRate } = useEuriborApi();
-  const [result, setResult] = useState<FetchResult<EuriborRateTileData>>({
-    data: null,
-    status: RequestStatus.Loading,
-    lastUpdated: null,
-    error: null,
-    isCached: false,
-    retryCount: 0,
-  });
-  const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    let cancelled = false;
-    setResult((r) => ({ ...r, status: RequestStatus.Loading }));
-    getEuriborRate(tileId, {}, isForceRefresh)
-      .then((fetchResult) => {
-        if (!cancelled) setResult(fetchResult as FetchResult<EuriborRateTileData>);
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setResult((r) => ({ ...r, status: RequestStatus.Error, error: err?.message || 'Error' }));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tileId, getEuriborRate, isForceRefresh]);
-  return result;
-}
+import { useTileData } from '../../tile/useTileData';
 
 const EuriborRateTileContent = ({ data, status }: { data: EuriborRateTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
   if (status === RequestStatus.Loading) {
@@ -78,7 +47,9 @@ const EuriborRateTileContent = ({ data, status }: { data: EuriborRateTileData | 
 };
 
 export const EuriborRateTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-  const { data, status, lastUpdated } = useEuriborTileData(tile.id);
+  const isForceRefresh = useForceRefreshFromKey();
+  const { getEuriborRate } = useEuriborApi();
+  const { data, status, lastUpdated } = useTileData(getEuriborRate, tile.id, {}, isForceRefresh);
   let lastUpdate: string | undefined = undefined;
   if (data?.lastUpdate) {
     lastUpdate = typeof data.lastUpdate === 'string' ? data.lastUpdate : data.lastUpdate.toISOString();

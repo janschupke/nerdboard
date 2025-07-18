@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useTyphoonApi } from './useTyphoonApi';
@@ -6,37 +5,7 @@ import type { TyphoonTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
 import { RequestStatus } from '../../../services/dataFetcher';
-import type { FetchResult } from '../../../services/dataFetcher';
-
-function useTyphoonTileData(tileId: string) {
-  const { getTyphoonData } = useTyphoonApi();
-  const [result, setResult] = useState<FetchResult<TyphoonTileData>>({
-    data: null,
-    status: RequestStatus.Loading,
-    lastUpdated: null,
-    error: null,
-    isCached: false,
-    retryCount: 0,
-  });
-  const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    let cancelled = false;
-    setResult((r) => ({ ...r, status: RequestStatus.Loading }));
-    getTyphoonData(tileId, 'demo', isForceRefresh)
-      .then((fetchResult) => {
-        if (!cancelled) setResult(fetchResult as FetchResult<TyphoonTileData>);
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setResult((r) => ({ ...r, status: RequestStatus.Error, error: err?.message || 'Error' }));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tileId, getTyphoonData, isForceRefresh]);
-  return result;
-}
+import { useTileData } from '../../tile/useTileData';
 
 const TyphoonTileContent = ({ data, status }: { data: TyphoonTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
   if (status === RequestStatus.Loading) {
@@ -69,7 +38,7 @@ const TyphoonTileContent = ({ data, status }: { data: TyphoonTileData | null; st
           {data.typhoons.length}
         </div>
         <div className="text-sm text-theme-text-secondary">
-          Active typhoons
+          Active Typhoons
         </div>
       </div>
     );
@@ -78,7 +47,9 @@ const TyphoonTileContent = ({ data, status }: { data: TyphoonTileData | null; st
 };
 
 export const TyphoonTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-  const { data, status, lastUpdated } = useTyphoonTileData(tile.id);
+  const isForceRefresh = useForceRefreshFromKey();
+  const { getTyphoonData } = useTyphoonApi();
+  const { data, status, lastUpdated } = useTileData(getTyphoonData, tile.id, 'demo-key', isForceRefresh);
   return (
     <GenericTile
       tile={tile}

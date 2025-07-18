@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { usePreciousMetalsApi } from './usePreciousMetalsApi';
@@ -6,37 +5,7 @@ import type { PreciousMetalsTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
 import { RequestStatus } from '../../../services/dataFetcher';
-import type { FetchResult } from '../../../services/dataFetcher';
-
-function usePreciousMetalsTileData(tileId: string) {
-  const { getPreciousMetals } = usePreciousMetalsApi();
-  const [result, setResult] = useState<FetchResult<PreciousMetalsTileData>>({
-    data: null,
-    status: RequestStatus.Loading,
-    lastUpdated: null,
-    error: null,
-    isCached: false,
-    retryCount: 0,
-  });
-  const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    let cancelled = false;
-    setResult((r) => ({ ...r, status: RequestStatus.Loading }));
-    getPreciousMetals(tileId, { access_key: 'demo' }, isForceRefresh)
-      .then((fetchResult) => {
-        if (!cancelled) setResult(fetchResult as FetchResult<PreciousMetalsTileData>);
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setResult((r) => ({ ...r, status: RequestStatus.Error, error: err?.message || 'Error' }));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tileId, getPreciousMetals, isForceRefresh]);
-  return result;
-}
+import { useTileData } from '../../tile/useTileData';
 
 const PreciousMetalsTileContent = ({ data, status }: { data: PreciousMetalsTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
   if (status === RequestStatus.Loading) {
@@ -78,14 +47,15 @@ const PreciousMetalsTileContent = ({ data, status }: { data: PreciousMetalsTileD
 };
 
 export const PreciousMetalsTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-  const { data, status, lastUpdated } = usePreciousMetalsTileData(tile.id);
-  const lastUpdate = data?.gold?.lastUpdated || data?.silver?.lastUpdated || (lastUpdated ? lastUpdated.toISOString() : undefined);
+  const isForceRefresh = useForceRefreshFromKey();
+  const { getPreciousMetals } = usePreciousMetalsApi();
+  const { data, status, lastUpdated } = useTileData(getPreciousMetals, tile.id, { access_key: 'demo', base: 'USD', symbols: 'XAU' }, isForceRefresh);
   return (
     <GenericTile
       tile={tile}
       meta={meta}
       status={status}
-      lastUpdate={lastUpdate}
+      lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
       {...rest}
     >
       <PreciousMetalsTileContent data={data} status={status} />

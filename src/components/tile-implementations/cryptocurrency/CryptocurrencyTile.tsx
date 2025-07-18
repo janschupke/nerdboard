@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useCryptoApi } from './useCryptoApi';
@@ -6,37 +5,7 @@ import type { CryptocurrencyTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
 import { RequestStatus } from '../../../services/dataFetcher';
-import type { FetchResult } from '../../../services/dataFetcher';
-
-function useCryptoTileData(tileId: string) {
-  const { getCryptocurrencyMarkets } = useCryptoApi();
-  const [result, setResult] = useState<FetchResult<CryptocurrencyTileData>>({
-    data: null,
-    status: RequestStatus.Loading,
-    lastUpdated: null,
-    error: null,
-    isCached: false,
-    retryCount: 0,
-  });
-  const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    let cancelled = false;
-    setResult((r) => ({ ...r, status: RequestStatus.Loading }));
-    getCryptocurrencyMarkets(tileId, { vs_currency: 'usd' }, isForceRefresh)
-      .then((fetchResult) => {
-        if (!cancelled) setResult(fetchResult as FetchResult<CryptocurrencyTileData>);
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setResult((r) => ({ ...r, status: RequestStatus.Error, error: err?.message || 'Error' }));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tileId, getCryptocurrencyMarkets, isForceRefresh]);
-  return result;
-}
+import { useTileData } from '../../tile/useTileData';
 
 const CryptocurrencyTileContent = ({ data, status }: { data: CryptocurrencyTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
   if (status === RequestStatus.Loading) {
@@ -79,7 +48,9 @@ const CryptocurrencyTileContent = ({ data, status }: { data: CryptocurrencyTileD
 };
 
 export const CryptocurrencyTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-  const { data, status, lastUpdated } = useCryptoTileData(tile.id);
+  const isForceRefresh = useForceRefreshFromKey();
+  const { getCryptocurrencyMarkets } = useCryptoApi();
+  const { data, status, lastUpdated } = useTileData(getCryptocurrencyMarkets, tile.id, { vs_currency: 'usd' }, isForceRefresh);
   return (
     <GenericTile
       tile={tile}
@@ -88,7 +59,7 @@ export const CryptocurrencyTile = ({ tile, meta, ...rest }: { tile: DragboardTil
       lastUpdate={lastUpdated ? lastUpdated.toISOString() : undefined}
       {...rest}
     >
-      <CryptocurrencyTileContent data={data} status={status} />
+      <CryptocurrencyTileContent data={data as CryptocurrencyTileData | null} status={status} />
     </GenericTile>
   );
 };

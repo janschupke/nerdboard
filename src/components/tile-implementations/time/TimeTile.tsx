@@ -1,58 +1,21 @@
-import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useTimeApi } from './useTimeApi';
 import type { TimeTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
-import type { RequestStatus } from '../../../services/dataFetcher';
+import { RequestStatus } from '../../../services/dataFetcher';
+import { useTileData } from '../../tile/useTileData';
 
-function useTimeTileData(tileId: string) {
-  const { getTime } = useTimeApi();
-  const [result, setResult] = useState<{
-    data: TimeTileData | null;
-    status: RequestStatus;
-    lastUpdated: Date | null;
-    error: string | null;
-    isCached: boolean;
-    retryCount: number;
-  }>({
-    data: null,
-    status: 'loading',
-    lastUpdated: null,
-    error: null,
-    isCached: false,
-    retryCount: 0,
-  });
-  const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    let cancelled = false;
-    setResult((r) => ({ ...r, status: 'loading' }));
-    getTime(tileId, { city: 'Helsinki' }, isForceRefresh)
-      .then((fetchResult) => {
-        if (!cancelled) setResult(fetchResult);
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setResult((r) => ({ ...r, status: 'error', error: err?.message || 'Error' }));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tileId, getTime, isForceRefresh]);
-  return result;
-}
-
-const TimeTileContent = ({ data, status }: { data: TimeTileData | null; status: RequestStatus }) => {
-  if (status === 'loading') {
+const TimeTileContent = ({ data, status }: { data: TimeTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
+  if (status === RequestStatus.Loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="loading" size="lg" className="text-theme-status-info" />
       </div>
     );
   }
-  if (status === 'error') {
+  if (status === RequestStatus.Error) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="close" size="lg" className="text-theme-status-error" />
@@ -60,7 +23,7 @@ const TimeTileContent = ({ data, status }: { data: TimeTileData | null; status: 
       </div>
     );
   }
-  if (status === 'stale') {
+  if (status === RequestStatus.Stale) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <Icon name="warning" size="lg" className="text-theme-status-warning" />
@@ -68,14 +31,14 @@ const TimeTileContent = ({ data, status }: { data: TimeTileData | null; status: 
       </div>
     );
   }
-  if (status === 'success' && data) {
+  if (status === RequestStatus.Success && data) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
         <div className="text-2xl font-bold text-theme-text-primary">
           {data.currentTime}
         </div>
         <div className="text-sm text-theme-text-secondary">
-          {data.timezone}
+          {data.date}
         </div>
       </div>
     );
@@ -84,7 +47,9 @@ const TimeTileContent = ({ data, status }: { data: TimeTileData | null; status: 
 };
 
 export const TimeTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-  const { data, status, lastUpdated } = useTimeTileData(tile.id);
+  const isForceRefresh = useForceRefreshFromKey();
+  const { getTime } = useTimeApi();
+  const { data, status, lastUpdated } = useTileData(getTime, tile.id, { city: 'Europe/Helsinki' }, isForceRefresh);
   return (
     <GenericTile
       tile={tile}

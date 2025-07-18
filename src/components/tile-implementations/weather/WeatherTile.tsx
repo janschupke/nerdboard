@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useWeatherApi } from './useWeatherApi';
@@ -6,37 +5,7 @@ import type { WeatherTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
 import { RequestStatus } from '../../../services/dataFetcher';
-import type { FetchResult } from '../../../services/dataFetcher';
-
-function useWeatherTileData(tileId: string) {
-  const { getWeather } = useWeatherApi();
-  const [result, setResult] = useState<FetchResult<WeatherTileData>>({
-    data: null,
-    status: RequestStatus.Loading,
-    lastUpdated: null,
-    error: null,
-    isCached: false,
-    retryCount: 0,
-  });
-  const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    let cancelled = false;
-    setResult((r) => ({ ...r, status: RequestStatus.Loading }));
-    getWeather(tileId, { lat: 60.1699, lon: 24.9384 }, isForceRefresh)
-      .then((fetchResult) => {
-        if (!cancelled) setResult(fetchResult as FetchResult<WeatherTileData>);
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setResult((r) => ({ ...r, status: RequestStatus.Error, error: err?.message || 'Error' }));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tileId, getWeather, isForceRefresh]);
-  return result;
-}
+import { useTileData } from '../../tile/useTileData';
 
 const WeatherTileContent = ({ data, status }: { data: WeatherTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
   if (status === RequestStatus.Loading) {
@@ -78,7 +47,9 @@ const WeatherTileContent = ({ data, status }: { data: WeatherTileData | null; st
 };
 
 export const WeatherTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-  const { data, status, lastUpdated } = useWeatherTileData(tile.id);
+  const isForceRefresh = useForceRefreshFromKey();
+  const { getWeather } = useWeatherApi();
+  const { data, status, lastUpdated } = useTileData(getWeather, tile.id, { lat: 60.1699, lon: 24.9384 }, isForceRefresh);
   return (
     <GenericTile
       tile={tile}

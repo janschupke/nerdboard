@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useUraniumApi } from './useUraniumApi';
@@ -6,37 +5,7 @@ import type { UraniumTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
 import { RequestStatus } from '../../../services/dataFetcher';
-import type { FetchResult } from '../../../services/dataFetcher';
-
-function useUraniumTileData(tileId: string) {
-  const { getUraniumPrice } = useUraniumApi();
-  const [result, setResult] = useState<FetchResult<UraniumTileData>>({
-    data: null,
-    status: RequestStatus.Loading,
-    lastUpdated: null,
-    error: null,
-    isCached: false,
-    retryCount: 0,
-  });
-  const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    let cancelled = false;
-    setResult((r) => ({ ...r, status: RequestStatus.Loading }));
-    getUraniumPrice(tileId, {}, isForceRefresh)
-      .then((fetchResult) => {
-        if (!cancelled) setResult(fetchResult as FetchResult<UraniumTileData>);
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setResult((r) => ({ ...r, status: RequestStatus.Error, error: err?.message || 'Error' }));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tileId, getUraniumPrice, isForceRefresh]);
-  return result;
-}
+import { useTileData } from '../../tile/useTileData';
 
 const UraniumTileContent = ({ data, status }: { data: UraniumTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
   if (status === RequestStatus.Loading) {
@@ -78,7 +47,9 @@ const UraniumTileContent = ({ data, status }: { data: UraniumTileData | null; st
 };
 
 export const UraniumTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-  const { data, status, lastUpdated } = useUraniumTileData(tile.id);
+  const isForceRefresh = useForceRefreshFromKey();
+  const { getUraniumPrice } = useUraniumApi();
+  const { data, status, lastUpdated } = useTileData(getUraniumPrice, tile.id, { range: '1D' }, isForceRefresh);
   return (
     <GenericTile
       tile={tile}

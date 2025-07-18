@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { GenericTile, type TileMeta } from '../../tile/GenericTile';
 import type { DragboardTileData } from '../../dragboard/dragboardTypes';
 import { useFederalFundsApi } from './useFederalFundsApi';
@@ -6,37 +5,7 @@ import type { FederalFundsRateTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { Icon } from '../../ui/Icon';
 import { RequestStatus } from '../../../services/dataFetcher';
-import type { FetchResult } from '../../../services/dataFetcher';
-
-function useFederalFundsTileData(tileId: string) {
-  const { getFederalFundsRate } = useFederalFundsApi();
-  const [result, setResult] = useState<FetchResult<FederalFundsRateTileData>>({
-    data: null,
-    status: RequestStatus.Loading,
-    lastUpdated: null,
-    error: null,
-    isCached: false,
-    retryCount: 0,
-  });
-  const isForceRefresh = useForceRefreshFromKey();
-
-  useEffect(() => {
-    let cancelled = false;
-    setResult((r) => ({ ...r, status: RequestStatus.Loading }));
-    getFederalFundsRate(tileId, { series_id: 'FEDFUNDS', file_type: 'json' }, isForceRefresh)
-      .then((fetchResult) => {
-        if (!cancelled) setResult(fetchResult as FetchResult<FederalFundsRateTileData>);
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setResult((r) => ({ ...r, status: RequestStatus.Error, error: err?.message || 'Error' }));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tileId, getFederalFundsRate, isForceRefresh]);
-  return result;
-}
+import { useTileData } from '../../tile/useTileData';
 
 const FederalFundsRateTileContent = ({ data, status }: { data: FederalFundsRateTileData | null; status: typeof RequestStatus[keyof typeof RequestStatus] }) => {
   if (status === RequestStatus.Loading) {
@@ -78,7 +47,9 @@ const FederalFundsRateTileContent = ({ data, status }: { data: FederalFundsRateT
 };
 
 export const FederalFundsRateTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
-  const { data, status, lastUpdated } = useFederalFundsTileData(tile.id);
+  const isForceRefresh = useForceRefreshFromKey();
+  const { getFederalFundsRate } = useFederalFundsApi();
+  const { data, status, lastUpdated } = useTileData(getFederalFundsRate, tile.id, { series_id: 'FEDFUNDS', file_type: 'json' }, isForceRefresh);
   let lastUpdate: string | undefined = undefined;
   if (data?.lastUpdate) {
     lastUpdate = typeof data.lastUpdate === 'string' ? data.lastUpdate : data.lastUpdate.toISOString();
