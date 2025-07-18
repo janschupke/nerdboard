@@ -9,7 +9,11 @@ import type { TileConfig } from '../../../services/storageManager';
 export function useEuriborApi() {
   const { dataFetcher } = useDataServices();
   const getEuriborRate = useCallback(
-    async (tileId: string, params: EuriborParams, forceRefresh = false): Promise<TileConfig<EuriborRateTileData>> => {
+    async (
+      tileId: string,
+      params: EuriborParams,
+      forceRefresh = false,
+    ): Promise<TileConfig<EuriborRateTileData>> => {
       const url = buildApiUrl(EMMI_EURIBOR_ENDPOINT, params);
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),

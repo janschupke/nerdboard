@@ -10,23 +10,31 @@ const PreciousMetalsTileContent = ({ data }: { data: PreciousMetalsTileData | nu
   if (data) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <div className="text-2xl font-bold text-theme-text-primary">
-          ${data.gold.price}
-        </div>
-        <div className="text-sm text-theme-text-secondary">
-          Gold Price
-        </div>
+        <div className="text-2xl font-bold text-theme-text-primary">${data.gold.price}</div>
+        <div className="text-sm text-theme-text-secondary">Gold Price</div>
       </div>
     );
   }
   return null;
 };
 
-export const PreciousMetalsTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+export const PreciousMetalsTile = ({
+  tile,
+  meta,
+  ...rest
+}: {
+  tile: DragboardTileData;
+  meta: TileMeta;
+}) => {
   const isForceRefresh = useForceRefreshFromKey();
   const { getPreciousMetals } = usePreciousMetalsApi();
   const params = useMemo(() => ({ access_key: 'demo', base: 'USD', symbols: 'XAU' }), []);
-  const { data, status, lastUpdated } = useTileData(getPreciousMetals, tile.id, params, isForceRefresh);
+  const { data, status, lastUpdated } = useTileData(
+    getPreciousMetals,
+    tile.id,
+    params,
+    isForceRefresh,
+  );
   return (
     <GenericTile
       tile={tile}

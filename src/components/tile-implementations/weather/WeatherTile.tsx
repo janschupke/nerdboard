@@ -13,16 +13,21 @@ const WeatherTileContent = ({ data }: { data: WeatherTileData | null }) => {
         <div className="text-2xl font-bold text-theme-text-primary">
           {data.temperature.current}°C
         </div>
-        <div className="text-sm text-theme-text-secondary">
-          {data.conditions.description}
-        </div>
+        <div className="text-sm text-theme-text-secondary">{data.conditions.description}</div>
       </div>
     );
   }
   return null;
 };
 
-export const WeatherTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+export const WeatherTile = ({
+  tile,
+  meta,
+  ...rest
+}: {
+  tile: DragboardTileData;
+  meta: TileMeta;
+}) => {
   const isForceRefresh = useForceRefreshFromKey();
   const { getWeather } = useWeatherApi();
   const params = useMemo(() => ({ lat: 60.1699, lon: 24.9384 }), []);

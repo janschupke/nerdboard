@@ -9,7 +9,11 @@ import type { TileConfig } from '../../../services/storageManager';
 export function useGdxEtfApi() {
   const { dataFetcher } = useDataServices();
   const getGDXETF = useCallback(
-    async (tileId: string, params: AlphaVantageParams, forceRefresh = false): Promise<TileConfig<GdxEtfTileData>> => {
+    async (
+      tileId: string,
+      params: AlphaVantageParams,
+      forceRefresh = false,
+    ): Promise<TileConfig<GdxEtfTileData>> => {
       const url = buildApiUrl(ALPHA_VANTAGE_GDX_ENDPOINT, params);
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),

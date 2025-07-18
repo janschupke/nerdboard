@@ -10,23 +10,31 @@ const TyphoonTileContent = ({ data }: { data: TyphoonTileData | null }) => {
   if (data && data.typhoons.length > 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <div className="text-2xl font-bold text-theme-text-primary">
-          {data.typhoons.length}
-        </div>
-        <div className="text-sm text-theme-text-secondary">
-          Active Typhoons
-        </div>
+        <div className="text-2xl font-bold text-theme-text-primary">{data.typhoons.length}</div>
+        <div className="text-sm text-theme-text-secondary">Active Typhoons</div>
       </div>
     );
   }
   return null;
 };
 
-export const TyphoonTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+export const TyphoonTile = ({
+  tile,
+  meta,
+  ...rest
+}: {
+  tile: DragboardTileData;
+  meta: TileMeta;
+}) => {
   const isForceRefresh = useForceRefreshFromKey();
   const { getTyphoonData } = useTyphoonApi();
   const params = useMemo(() => 'demo-key', []);
-  const { data, status, lastUpdated } = useTileData(getTyphoonData, tile.id, params, isForceRefresh);
+  const { data, status, lastUpdated } = useTileData(
+    getTyphoonData,
+    tile.id,
+    params,
+    isForceRefresh,
+  );
   return (
     <GenericTile
       tile={tile}

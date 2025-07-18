@@ -9,7 +9,11 @@ import type { TileConfig } from '../../../services/storageManager';
 export function useUraniumApi() {
   const { dataFetcher } = useDataServices();
   const getUraniumPrice = useCallback(
-    async (tileId: string, params: UraniumHtmlParams, forceRefresh = false): Promise<TileConfig<UraniumTileData>> => {
+    async (
+      tileId: string,
+      params: UraniumHtmlParams,
+      forceRefresh = false,
+    ): Promise<TileConfig<UraniumTileData>> => {
       const url = buildApiUrl(URANIUM_HTML_ENDPOINT, params);
       return dataFetcher.fetchAndParse(
         () => fetch(url).then((res) => res.text()),

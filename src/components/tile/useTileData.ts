@@ -7,13 +7,13 @@ export const TileStatus = {
   Error: 'error',
   Stale: 'stale',
 } as const;
-export type TileStatus = typeof TileStatus[keyof typeof TileStatus];
+export type TileStatus = (typeof TileStatus)[keyof typeof TileStatus];
 
 export function useTileData<T extends TileDataType, P>(
   apiFn: (tileId: string, params: P, forceRefresh?: boolean) => Promise<TileConfig<T>>,
   tileId: string,
   params: P,
-  forceRefresh: boolean
+  forceRefresh: boolean,
 ): { data: T | null; status: TileStatus; lastUpdated: Date | null } {
   const [result, setResult] = useState<TileConfig<T> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,4 +58,4 @@ export function useTileData<T extends TileDataType, P>(
   }
 
   return { data, status, lastUpdated };
-} 
+}

@@ -9,7 +9,11 @@ import type { TileConfig } from '../../../services/storageManager';
 export function useCryptoApi() {
   const { dataFetcher } = useDataServices();
   const getCryptocurrencyMarkets = useCallback(
-    async (tileId: string, params: CryptoMarketsParams, forceRefresh = false): Promise<TileConfig<CryptocurrencyTileData>> => {
+    async (
+      tileId: string,
+      params: CryptoMarketsParams,
+      forceRefresh = false,
+    ): Promise<TileConfig<CryptocurrencyTileData>> => {
       const url = buildApiUrl(COINGECKO_MARKETS_ENDPOINT, params);
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),

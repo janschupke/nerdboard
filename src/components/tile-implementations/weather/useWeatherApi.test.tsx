@@ -47,7 +47,7 @@ describe('useWeatherApi', () => {
       expect(fetchResult).toHaveProperty('data');
       expect(fetchResult).toHaveProperty('lastDataRequest');
       expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
-      
+
       const data = fetchResult.data;
       expect(data).toBeDefined();
       expect(data).toEqual(

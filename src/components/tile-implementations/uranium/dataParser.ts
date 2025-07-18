@@ -1,6 +1,5 @@
-import { DataParserRegistry, BaseDataParser } from '../../../services/dataParser';
+import { BaseDataParser } from '../../../services/dataParser';
 import type { UraniumTileData } from './types';
-import { TileType } from '../../../types/tile';
 
 /**
  * Parses Trading Economics HTML to UraniumTileData for the tile.
@@ -36,11 +35,4 @@ export class UraniumHtmlDataParser extends BaseDataParser<string, UraniumTileDat
       history: [],
     };
   }
-}
-
-/**
- * Registers the Uranium HTML data parser with the DataParserRegistry.
- */
-export function registerUraniumDataParser() {
-  DataParserRegistry.register(TileType.URANIUM, new UraniumHtmlDataParser());
 }

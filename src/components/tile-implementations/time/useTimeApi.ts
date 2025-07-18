@@ -9,7 +9,11 @@ import type { TileConfig } from '../../../services/storageManager';
 export function useTimeApi() {
   const { dataFetcher } = useDataServices();
   const getTime = useCallback(
-    async (tileId: string, params: TimeParams, forceRefresh = false): Promise<TileConfig<TimeTileData>> => {
+    async (
+      tileId: string,
+      params: TimeParams,
+      forceRefresh = false,
+    ): Promise<TileConfig<TimeTileData>> => {
       const url = buildApiUrl(TIME_API_ENDPOINT, params);
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),

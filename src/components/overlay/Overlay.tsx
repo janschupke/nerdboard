@@ -6,7 +6,7 @@ import { useLogManager } from '../api-log/useLogManager';
 import { DragboardProvider, DragboardGrid, DragboardTile, useDragboard } from '../dragboard';
 import { DASHBOARD_GRID_CONFIG } from './gridConfig';
 import { Tile } from '../tile/Tile';
-import { Header } from '../header/Header';
+import { Header } from '../../components/header/Header.tsx';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useStorageManager } from '../../services/storageManager';
 import { RefreshContext } from '../../contexts/RefreshContext';
@@ -113,13 +113,16 @@ function useTileStorage() {
     const dashboard = storage.getDashboardState();
     if (dashboard && Array.isArray(dashboard.tiles)) {
       setInitialTiles(
-        dashboard.tiles.map((tile) => ({
-          ...tile,
-          type: tile.type,
-          size: tile.size,
-          createdAt: typeof tile.createdAt === 'number' ? tile.createdAt : Date.now(),
-          config: tile.config || {},
-        }) as DragboardTileData),
+        dashboard.tiles.map(
+          (tile) =>
+            ({
+              ...tile,
+              type: tile.type,
+              size: tile.size,
+              createdAt: typeof tile.createdAt === 'number' ? tile.createdAt : Date.now(),
+              config: tile.config || {},
+            }) as DragboardTileData,
+        ),
       );
     }
   }, [storage]);
@@ -150,7 +153,11 @@ function TilePersistenceListener({ storage }: { storage: ReturnType<typeof useSt
         for (const id of prevIds) {
           if (!currentIds.has(id)) {
             // TODO: data reset?
-            storage.setTileState(id, { data: null, lastDataRequest: 0, lastDataRequestSuccessful: false });
+            storage.setTileState(id, {
+              data: null,
+              lastDataRequest: 0,
+              lastDataRequestSuccessful: false,
+            });
           }
         }
       }

@@ -62,7 +62,7 @@ describe('useCryptoApi', () => {
       // expect(fetchResult.lastDataRequestSuccessful).toBe(true);
       // For timestamp:
       expect(typeof fetchResult.lastDataRequest).toBe('number');
-      
+
       const data = fetchResult.data;
       expect(data).toBeDefined();
       expect(data).toEqual(

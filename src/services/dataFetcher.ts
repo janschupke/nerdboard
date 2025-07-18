@@ -51,7 +51,7 @@ export class DataFetcher {
     const { forceRefresh = false, apiCall = tileType } = options;
     const cached = storageManager.getTileState<TTileData>(storageKey);
     const now = Date.now();
-    const isFresh = cached && (now - cached.lastDataRequest < DATA_REFRESH_INTERVAL);
+    const isFresh = cached && now - cached.lastDataRequest < DATA_REFRESH_INTERVAL;
 
     if (!forceRefresh && cached && isFresh) {
       return {
@@ -69,9 +69,9 @@ export class DataFetcher {
     try {
       const apiResponse = await fetchFunction();
       // If the API response contains an 'error' property, treat as error
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- apiResponse is unknown, safe cast for error handling
+
       if (apiResponse && typeof apiResponse === 'object' && 'error' in apiResponse) {
-        throw new Error((apiResponse as any).error || 'API error');
+        throw new Error(((apiResponse as Record<string, unknown>).error as string) || 'API error');
       }
       const mappedData = mapper.safeMap(apiResponse) as unknown as TTileData;
       // On success, update data and status
@@ -97,7 +97,8 @@ export class DataFetcher {
       });
       // On error, update only lastDataRequest and lastDataRequestSuccessful, do not update data
       const cached = storageManager.getTileState<TTileData>(storageKey);
-      const prevData = cached && cached.data ? cached.data : mapper.createDefault() as unknown as TTileData;
+      const prevData =
+        cached && cached.data ? cached.data : (mapper.createDefault() as unknown as TTileData);
       this.setTileState<TTileData>(storageKey, prevData, false);
       return {
         data: prevData,
@@ -116,7 +117,7 @@ export class DataFetcher {
     const { forceRefresh = false, apiCall = tileType } = options;
     const cached = storageManager.getTileState<TTileData>(storageKey);
     const now = Date.now();
-    const isFresh = cached && (now - cached.lastDataRequest < DATA_REFRESH_INTERVAL);
+    const isFresh = cached && now - cached.lastDataRequest < DATA_REFRESH_INTERVAL;
 
     if (!forceRefresh && cached && isFresh) {
       return {
@@ -133,7 +134,31 @@ export class DataFetcher {
 
     try {
       const rawData = await fetchFunction();
-      const tileData = parser.safeParse(rawData) as unknown as TTileData;
+      let tileData: TTileData;
+      try {
+        tileData = parser.safeParse(rawData) as unknown as TTileData;
+      } catch (parseError) {
+        // If parser.safeParse throws, treat as error
+        const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+        const logDetails: APILogDetails = {
+          storageKey,
+          errorName: parseError instanceof Error ? parseError.name : 'Unknown',
+          errorMessage,
+        };
+        storageManager.addLog({
+          level: APILogLevel.ERROR,
+          apiCall,
+          reason: errorMessage,
+          details: logDetails,
+        });
+        const prevData = parser.createDefault() as unknown as TTileData;
+        this.setTileState<TTileData>(storageKey, prevData, false);
+        return {
+          data: prevData,
+          lastDataRequest: Date.now(),
+          lastDataRequestSuccessful: false,
+        };
+      }
       // On success, update data and status
       this.setTileState<TTileData>(storageKey, tileData, true);
       return {
@@ -157,7 +182,8 @@ export class DataFetcher {
       });
       // On error, update only lastDataRequest and lastDataRequestSuccessful, do not update data
       const cached = storageManager.getTileState<TTileData>(storageKey);
-      const prevData = cached && cached.data ? cached.data : parser.createDefault() as unknown as TTileData;
+      const prevData =
+        cached && cached.data ? cached.data : (parser.createDefault() as unknown as TTileData);
       this.setTileState<TTileData>(storageKey, prevData, false);
       return {
         data: prevData,

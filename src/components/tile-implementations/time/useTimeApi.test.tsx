@@ -51,7 +51,7 @@ describe('useTimeApi', () => {
       expect(fetchResult).toHaveProperty('lastDataRequest');
       expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
       expect(typeof fetchResult.lastDataRequest).toBe('number');
-      
+
       const data = fetchResult.data;
       expect(data).toBeDefined();
       expect(data).toEqual(

@@ -36,12 +36,7 @@ const TileComponent = ({ tile, dragHandleProps, onRemove, refreshKey }: TileProp
   return (
     <Suspense
       fallback={
-        <GenericTile
-          tile={tile}
-          meta={meta}
-          dragHandleProps={dragHandleProps}
-          onRemove={onRemove}
-        >
+        <GenericTile tile={tile} meta={meta} dragHandleProps={dragHandleProps} onRemove={onRemove}>
           <LoadingComponent />
         </GenericTile>
       }

@@ -16,7 +16,11 @@ import type { TileConfig } from '../../../services/storageManager';
 export function useFederalFundsApi() {
   const { dataFetcher } = useDataServices();
   const getFederalFundsRate = useCallback(
-    async (tileId: string, params: FredSeriesObservationsParams, forceRefresh = false): Promise<TileConfig<FederalFundsRateTileData>> => {
+    async (
+      tileId: string,
+      params: FredSeriesObservationsParams,
+      forceRefresh = false,
+    ): Promise<TileConfig<FederalFundsRateTileData>> => {
       const url = buildApiUrl(FRED_SERIES_OBSERVATIONS_ENDPOINT, params);
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),

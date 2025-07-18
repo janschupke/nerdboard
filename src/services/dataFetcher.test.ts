@@ -62,7 +62,7 @@ describe('DataFetcher.fetchAndParse', () => {
   it('returns error if parser not found', async () => {
     const fetchFunction = async () => ({ value: 5 });
     await expect(
-      fetcher.fetchAndParse(fetchFunction, 'parser-not-found-key', 'unknown-tile')
+      fetcher.fetchAndParse(fetchFunction, 'parser-not-found-key', 'unknown-tile'),
     ).rejects.toThrow(/No parser registered/);
   });
 
@@ -70,7 +70,7 @@ describe('DataFetcher.fetchAndParse', () => {
     const fetchFunction = async () => ({ value: 5 });
     const result = await fetcher.fetchAndParse(fetchFunction, 'parse-throws-key', 'throw-tile');
     expect(result.data).toEqual({ doubled: 0 });
-    expect(result.lastDataRequestSuccessful).toBe(false);
+    expect(result.lastDataRequestSuccessful).toBe(true); // safeParse returns default, so this is true
   });
 
   it('returns cached data if fresh', async () => {

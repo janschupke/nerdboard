@@ -30,4 +30,4 @@ export const tileDataMappers = {
 
 export const tileDataParsers = {
   [TileType.URANIUM]: () => new UraniumHtmlDataParser(),
-}; 
+};

@@ -9,7 +9,11 @@ import type { TileConfig } from '../../../services/storageManager';
 export function usePreciousMetalsApi() {
   const { dataFetcher } = useDataServices();
   const getPreciousMetals = useCallback(
-    async (tileId: string, params: MetalsApiParams, forceRefresh = false): Promise<TileConfig<PreciousMetalsTileData>> => {
+    async (
+      tileId: string,
+      params: MetalsApiParams,
+      forceRefresh = false,
+    ): Promise<TileConfig<PreciousMetalsTileData>> => {
       const url = buildApiUrl(METALS_API_ENDPOINT, params);
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),

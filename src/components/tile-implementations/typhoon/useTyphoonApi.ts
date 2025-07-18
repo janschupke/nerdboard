@@ -8,7 +8,11 @@ import type { TileConfig } from '../../../services/storageManager';
 export function useTyphoonApi() {
   const { dataFetcher } = useDataServices();
   const getTyphoonData = useCallback(
-    async (tileId: string, apiKey: string, forceRefresh = false): Promise<TileConfig<TyphoonTileData>> => {
+    async (
+      tileId: string,
+      apiKey: string,
+      forceRefresh = false,
+    ): Promise<TileConfig<TyphoonTileData>> => {
       const params = { Authorization: apiKey, format: 'JSON' as const };
       const url = buildApiUrl(CWB_TYPHOON_ENDPOINT, params);
       return dataFetcher.fetchAndMap(

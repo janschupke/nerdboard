@@ -10,12 +10,8 @@ const TimeTileContent = ({ data }: { data: TimeTileData | null }) => {
   if (data) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <div className="text-2xl font-bold text-theme-text-primary">
-          {data.currentTime}
-        </div>
-        <div className="text-sm text-theme-text-secondary">
-          {data.date}
-        </div>
+        <div className="text-2xl font-bold text-theme-text-primary">{data.currentTime}</div>
+        <div className="text-sm text-theme-text-secondary">{data.date}</div>
       </div>
     );
   }

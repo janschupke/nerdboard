@@ -10,19 +10,22 @@ const GDXETFTileContent = ({ data }: { data: GdxEtfTileData | null }) => {
   if (data) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
-        <div className="text-2xl font-bold text-theme-text-primary">
-          ${data.currentPrice}
-        </div>
-        <div className="text-sm text-theme-text-secondary">
-          {data.symbol}
-        </div>
+        <div className="text-2xl font-bold text-theme-text-primary">${data.currentPrice}</div>
+        <div className="text-sm text-theme-text-secondary">{data.symbol}</div>
       </div>
     );
   }
   return null;
 };
 
-export const GDXETFTile = ({ tile, meta, ...rest }: { tile: DragboardTileData; meta: TileMeta }) => {
+export const GDXETFTile = ({
+  tile,
+  meta,
+  ...rest
+}: {
+  tile: DragboardTileData;
+  meta: TileMeta;
+}) => {
   const isForceRefresh = useForceRefreshFromKey();
   const { getGDXETF } = useGdxEtfApi();
   const params = useMemo(() => ({ function: 'GLOBAL_QUOTE', symbol: 'GDX', apikey: 'demo' }), []);

@@ -9,7 +9,7 @@ import { TileStatus } from './useTileData';
 export interface TileMeta {
   title: string;
   icon: string;
-  category: TileCategory;
+  category?: TileCategory;
 }
 
 export interface GenericTileProps extends DraggableTileProps {
@@ -18,13 +18,9 @@ export interface GenericTileProps extends DraggableTileProps {
   children?: React.ReactNode;
   status?: TileStatus;
   lastUpdate?: string;
-  style?: React.CSSProperties;
 }
 
-const StatusBar = ({ status, lastUpdate }: {
-  status?: TileStatus;
-  lastUpdate?: string;
-}) => {
+const StatusBar = ({ status, lastUpdate }: { status?: TileStatus; lastUpdate?: string }) => {
   // Determine status icon and color
   const getStatusIcon = () => {
     switch (status) {
@@ -59,12 +55,8 @@ const StatusBar = ({ status, lastUpdate }: {
   const statusIcon = getStatusIcon();
 
   return (
-    <div
-      className="flex items-center justify-between px-2 py-1 text-xs border-t border-surface-primary bg-surface-secondary text-secondary"
-    >
-      <span>
-        Last request: {formatLastUpdate(lastUpdate)}
-      </span>
+    <div className="flex items-center justify-between px-2 py-1 text-xs border-t border-surface-primary bg-surface-secondary text-secondary">
+      <span>Last request: {formatLastUpdate(lastUpdate)}</span>
       {statusIcon && <Icon name={statusIcon.name} size="sm" className={statusIcon.className} />}
     </div>
   );
@@ -79,7 +71,7 @@ const ErrorContent = React.memo(() => (
 
 export const GenericTile = React.memo(
   forwardRef<HTMLDivElement, GenericTileProps>(
-    ({ tile, meta, onRemove, dragHandleProps, className, style, children, status, lastUpdate }, ref) => {
+    ({ tile, meta, onRemove, dragHandleProps, className, children, status, lastUpdate }, ref) => {
       const handleRemove = useCallback(async () => {
         try {
           onRemove?.(tile.id);
@@ -94,8 +86,8 @@ export const GenericTile = React.memo(
           status === TileStatus.Error
             ? 'border-status-error'
             : status === TileStatus.Stale
-            ? 'border-status-warning'
-            : 'border-surface-primary';
+              ? 'border-status-warning'
+              : 'border-surface-primary';
         const baseClasses = [
           'bg-surface-primary',
           'text-primary',
@@ -156,9 +148,7 @@ export const GenericTile = React.memo(
                   className="text-theme-accent-primary"
                   aria-hidden="true"
                 />
-                <h3 className="text-base font-semibold text-primary truncate">
-                  {meta.title}
-                </h3>
+                <h3 className="text-base font-semibold text-primary truncate">{meta.title}</h3>
               </div>
             </div>
 
@@ -188,11 +178,10 @@ export const GenericTile = React.memo(
     },
   ),
   // TODO: remove the memo?
-  (prev, next) => (
+  (prev, next) =>
     prev.tile.id === next.tile.id &&
     prev.status === next.status &&
-    prev.lastUpdate === next.lastUpdate
-  ),
+    prev.lastUpdate === next.lastUpdate,
 );
 
 GenericTile.displayName = 'GenericTile';
