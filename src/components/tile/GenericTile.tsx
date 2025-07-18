@@ -59,8 +59,10 @@ const StatusBar = ({ status, lastUpdate }: {
   const statusIcon = getStatusIcon();
 
   return (
-    <div className="flex items-center justify-between px-2 py-1 text-xs border-t border-theme-border-primary bg-theme-surface-secondary">
-      <span className="text-theme-text-secondary">
+    <div
+      className="flex items-center justify-between px-2 py-1 text-xs border-t border-surface-primary bg-surface-secondary text-secondary"
+    >
+      <span>
         Last request: {formatLastUpdate(lastUpdate)}
       </span>
       {statusIcon && <Icon name={statusIcon.name} size="sm" className={statusIcon.className} />}
@@ -87,17 +89,27 @@ export const GenericTile = React.memo(
       }, [tile.id, onRemove]);
 
       const getTileClasses = useCallback(() => {
-        let borderClasses = 'border-theme-border-primary';
-        
-        // Apply status-specific border colors
-        if (status === TileStatus.Error) {
-          borderClasses = 'border-theme-status-error';
-        } else if (status === TileStatus.Stale) {
-          borderClasses = 'border-theme-status-warning';
-        }
-        
-        const baseClasses = `rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 relative border ${borderClasses}`;
-        return `${baseClasses} ${className || ''}`;
+        // Unified tile styling using Tailwind theme classes for theme support
+        const borderStatusClass =
+          status === TileStatus.Error
+            ? 'border-status-error'
+            : status === TileStatus.Stale
+            ? 'border-status-warning'
+            : 'border-surface-primary';
+        const baseClasses = [
+          'bg-surface-primary',
+          'text-primary',
+          'rounded-xl',
+          'shadow-md',
+          'hover:shadow-lg',
+          'transition-shadow',
+          'duration-200',
+          'relative',
+          'border',
+          borderStatusClass,
+          className || '',
+        ].join(' ');
+        return baseClasses;
       }, [status, className]);
 
       // Memoize the content based on status
@@ -116,7 +128,7 @@ export const GenericTile = React.memo(
       const headerProps = useMemo(
         () => ({
           className:
-            'flex items-center justify-between px-4 py-2 border-b border-theme-border-primary bg-theme-surface-secondary cursor-grab active:cursor-grabbing relative min-h-[2.5rem]',
+            'flex items-center justify-between px-4 py-2 border-b border-surface-primary bg-surface-secondary text-primary cursor-grab active:cursor-grabbing relative min-h-[2.5rem]',
           style: { minHeight: '2.5rem' },
           ...dragHandleProps,
         }),
@@ -130,7 +142,6 @@ export const GenericTile = React.memo(
           <div
             ref={ref}
             className={getTileClasses()}
-            style={style}
             data-tile-id={tile.id}
             data-tile-type={tile.type}
             role="gridcell"
@@ -145,7 +156,7 @@ export const GenericTile = React.memo(
                   className="text-theme-accent-primary"
                   aria-hidden="true"
                 />
-                <h3 className="text-base font-semibold text-theme-text-primary truncate">
+                <h3 className="text-base font-semibold text-primary truncate">
                   {meta.title}
                 </h3>
               </div>
@@ -155,7 +166,7 @@ export const GenericTile = React.memo(
             {onRemove && (
               <button
                 onClick={handleRemove}
-                className="absolute top-1 right-1 p-1 text-theme-text-tertiary hover:text-theme-text-primary hover:bg-theme-text-tertiary rounded transition-colors cursor-pointer z-10"
+                className="absolute top-1 right-1 p-1 text-theme-text-tertiary hover:text-primary hover:bg-theme-text-tertiary rounded transition-colors cursor-pointer z-10"
                 aria-label={`Remove ${meta.title} tile`}
                 onMouseDown={(e) => e.stopPropagation()}
                 onTouchStart={(e) => e.stopPropagation()}
