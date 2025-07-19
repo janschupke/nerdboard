@@ -82,7 +82,10 @@ export class DataFetcher {
         const responseObj = apiResponse as Record<string, unknown>;
         for (const field of avErrorFields) {
           if (field in responseObj && typeof responseObj[field] === 'string') {
-            throw Object.assign(new Error(responseObj[field] as string), { status: httpStatus });
+            const error = new Error(responseObj[field] as string);
+            // Preserve the HTTP status code for logging
+            Object.assign(error, { status: httpStatus });
+            throw error;
           }
         }
       }
