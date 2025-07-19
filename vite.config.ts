@@ -34,18 +34,6 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/emmi/, ''),
       },
-      // Gold API
-      '/api/gold-api': {
-        target: 'https://www.gold-api.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/gold-api/, ''),
-      },
-      // Metals API
-      '/api/metals-api': {
-        target: 'https://metals-api.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/metals-api/, ''),
-      },
       // USGS API
       '/api/usgs': {
         target: 'https://earthquake.usgs.gov',
@@ -64,11 +52,18 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/time/, ''),
       },
-      // Precious Metals (combined endpoint)
+      // Precious Metals API
       '/api/precious-metals': {
-        target: 'https://www.gold-api.com',
+        target: 'https://api.gold-api.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/precious-metals/, '/api/XAU'),
+        rewrite: (path) => {
+          // Extract symbol from path like /api/precious-metals/XAU
+          const match = path.match(/^\/api\/precious-metals\/([^/]+)/);
+          if (match) {
+            return `/price/${match[1]}`;
+          }
+          return '/price/XAU'; // fallback
+        },
       },
     },
   },
