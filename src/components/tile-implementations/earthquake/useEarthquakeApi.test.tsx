@@ -100,12 +100,13 @@ describe('useEarthquakeApi', () => {
       const data = fetchResult.data;
       expect(data).toBeDefined();
       if (data) {
-        expect(Array.isArray(data)).toBe(true);
-        expect(data.length).toBe(1);
-        expect(data[0].id).toBe('abcd1234');
-        expect(data[0].place).toBe('100km S of Randomville');
-        expect(data[0].magnitude).toBe(5.2);
-        expect(data[0].coordinates).toEqual([140.123, 35.678, 10]);
+        expect(data).toHaveProperty('items');
+        expect(Array.isArray(data.items)).toBe(true);
+        expect(data.items.length).toBe(1);
+        expect(data.items[0].id).toBe('abcd1234');
+        expect(data.items[0].place).toBe('100km S of Randomville');
+        expect(data.items[0].magnitude).toBe(5.2);
+        expect(data.items[0].coordinates).toEqual([140.123, 35.678, 10]);
       }
     }
   });
