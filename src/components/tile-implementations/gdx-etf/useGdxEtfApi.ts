@@ -8,13 +8,13 @@ import type { TileConfig } from '../../../services/storageManager';
 
 export function useGdxEtfApi() {
   const { dataFetcher } = useDataServices();
-  const getGDXETF = useCallback(
+  const getGdxEtf = useCallback(
     async (
       tileId: string,
       params: AlphaVantageParams,
       forceRefresh = false,
     ): Promise<TileConfig<GdxEtfTileData>> => {
-      const url = buildApiUrl(ALPHA_VANTAGE_GDX_ENDPOINT, params);
+      const url = buildApiUrl<AlphaVantageParams>(ALPHA_VANTAGE_GDX_ENDPOINT, params);
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),
         tileId,
@@ -24,5 +24,5 @@ export function useGdxEtfApi() {
     },
     [dataFetcher],
   );
-  return { getGDXETF };
+  return { getGdxEtf };
 }

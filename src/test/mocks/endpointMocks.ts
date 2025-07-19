@@ -174,7 +174,7 @@ export class MockResponseData {
     };
   }
 
-  static getGDXETFData(): GdxEtfApiResponse {
+  static getGdxEtfData(): GdxEtfApiResponse {
     return {
       symbol: 'GDX',
       name: 'VanEck Gold Miners ETF',
@@ -194,16 +194,30 @@ export class MockResponseData {
 
   static getEuriborRateData(): EuriborRateApiResponse {
     return {
-      rates: [
+      dataSets: [
         {
-          date: '2024-01-15',
-          value: '3.85',
-        },
-        {
-          date: '2024-01-14',
-          value: '3.85',
+          series: {
+            '0:0:0:0:0': {
+              observations: {
+                '0': [3.85],
+                '1': [3.85],
+              },
+            },
+          },
         },
       ],
+      structure: {
+        dimensions: {
+          observation: [
+            {
+              values: [
+                { id: '2024-01-15', name: { en: '2024-01-15' } },
+                { id: '2024-01-14', name: { en: '2024-01-14' } },
+              ],
+            },
+          ],
+        },
+      },
     };
   }
 }

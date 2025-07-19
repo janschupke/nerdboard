@@ -4,7 +4,6 @@ import { usePreciousMetalsApi } from './usePreciousMetalsApi';
 import type { PreciousMetalsTileData } from './types';
 import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { useTileData } from '../../tile/useTileData';
-import { useMemo } from 'react';
 
 const PreciousMetalsTileContent = ({ data }: { data: PreciousMetalsTileData | null }) => {
   if (data) {
@@ -28,11 +27,10 @@ export const PreciousMetalsTile = ({
 }) => {
   const isForceRefresh = useForceRefreshFromKey();
   const { getPreciousMetals } = usePreciousMetalsApi();
-  const params = useMemo(() => ({ access_key: 'demo', base: 'USD', symbols: 'XAU' }), []);
   const { data, status, lastUpdated } = useTileData(
     getPreciousMetals,
     tile.id,
-    params,
+    { currency: 'USD', unit: 'ounce' },
     isForceRefresh,
   );
   return (

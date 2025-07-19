@@ -14,7 +14,8 @@ export function useTimeApi() {
       params: TimeParams,
       forceRefresh = false,
     ): Promise<TileConfig<TimeTileData>> => {
-      const url = buildApiUrl(TIME_API_ENDPOINT, params);
+      const url = buildApiUrl<TimeParams>(TIME_API_ENDPOINT, params);
+
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),
         tileId,

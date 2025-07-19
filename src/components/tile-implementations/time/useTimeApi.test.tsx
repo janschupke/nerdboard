@@ -81,7 +81,7 @@ describe('useTimeApi', () => {
         abbreviation: 'CET',
         client_ip: '127.0.0.1',
       };
-      setupDelayedMock(API_ENDPOINTS.TIME_API, delayedApiData, 50);
+      setupDelayedMock('/api/time/api/timezone/Europe/Berlin', delayedApiData, 50);
       const { result } = renderHook(() => useTimeApi(), { wrapper });
       // Use params that match the mock's timezone
       const params = { city: 'Europe/Berlin' };
@@ -252,7 +252,7 @@ describe('useTimeApi', () => {
         client_ip: '127.0.0.1',
       };
       EndpointTestUtils.clearMocks();
-      setupSuccessMock(API_ENDPOINTS.TIME_API, businessHoursApiData);
+      setupSuccessMock('/api/time/api/timezone/America/New_York', businessHoursApiData);
       const { result } = renderHook(() => useTimeApi(), { wrapper });
       // Use params that match the mock's timezone
       const params = { city: 'America/New_York' };
@@ -278,11 +278,11 @@ describe('useTimeApi', () => {
         client_ip: '127.0.0.1',
       };
       EndpointTestUtils.clearMocks();
-      setupSuccessMock(API_ENDPOINTS.TIME_API, timeApiData);
+      setupSuccessMock('/api/time/api/timezone/Europe/London', timeApiData);
       const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act
-      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      const fetchResult = await result.current.getTime(mockTileId, { city: 'Europe/London' });
       const data = fetchResult.data;
 
       // Assert
@@ -306,11 +306,11 @@ describe('useTimeApi', () => {
         client_ip: '127.0.0.1',
       };
       EndpointTestUtils.clearMocks();
-      setupSuccessMock(API_ENDPOINTS.TIME_API, timezoneApiData);
+      setupSuccessMock('/api/time/api/timezone/America/Chicago', timezoneApiData);
       const { result } = renderHook(() => useTimeApi(), { wrapper });
 
       // Act
-      const fetchResult = await result.current.getTime(mockTileId, mockParams);
+      const fetchResult = await result.current.getTime(mockTileId, { city: 'America/Chicago' });
       const data = fetchResult.data;
 
       // Assert

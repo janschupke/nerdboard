@@ -1,2 +1,2 @@
-export { GDXETFTile } from './GDXETFTile';
-export type { GDXETFTileProps, GDXETFTileConfig, GdxEtfApiResponse, ChartPeriod } from './types';
+export { GdxEtfTile } from './GdxEtfTile';
+export type { GdxEtfTileProps, GdxEtfTileConfig, GdxEtfApiResponse, ChartPeriod } from './types';

@@ -33,8 +33,9 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 describe('useWeatherApi', () => {
   const mockTileId = 'test-weather-tile';
   const mockParams: WeatherParams = {
-    lat: 60.1699,
-    lon: 24.9384,
+    lat: 52.52,
+    lon: 13.405,
+    appid: 'test-api-key',
   };
 
   describe('getWeather - Success Scenarios', () => {
@@ -206,7 +207,7 @@ describe('useWeatherApi', () => {
       EndpointTestUtils.clearMocks();
       setupWeatherSuccessMock();
       const { result } = renderHook(() => useWeatherApi(), { wrapper });
-      const testParams: WeatherParams[] = [{ lat: 52.52, lon: 13.405 }];
+      const testParams: WeatherParams[] = [{ lat: 52.52, lon: 13.405, appid: 'test-api-key' }];
       for (const params of testParams) {
         const fetchResult = await result.current.getWeather(mockTileId, params);
         const data = fetchResult.data;

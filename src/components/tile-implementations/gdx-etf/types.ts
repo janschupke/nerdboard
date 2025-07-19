@@ -24,16 +24,16 @@ export interface GdxEtfHistoryEntry {
   volume?: number;
 }
 
-export interface GDXETFTileConfig {
+export interface GdxEtfTileConfig {
   chartPeriod?: '1D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '5Y' | 'MAX';
   refreshInterval?: number;
   showVolume?: boolean;
 }
 
-export interface GDXETFTileProps {
+export interface GdxEtfTileProps {
   id: string;
   size: TileSize;
-  config: GDXETFTileConfig;
+  config: GdxEtfTileConfig;
 }
 
 export type ChartPeriod = '1D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '5Y' | 'MAX';

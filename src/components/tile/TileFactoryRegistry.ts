@@ -97,8 +97,8 @@ export const TILE_CATALOG: TileCatalogEntry[] = [
     type: TileType.GDX_ETF,
     getLazyComponent: () =>
       React.lazy(() =>
-        import('../tile-implementations/gdx-etf/GDXETFTile').then((m) => ({
-          default: m.GDXETFTile,
+        import('../tile-implementations/gdx-etf/GdxEtfTile').then((m) => ({
+          default: m.GdxEtfTile,
         })),
       ),
     meta: gdxEtfTileMeta,

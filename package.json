@@ -18,7 +18,8 @@
     "ts-unused-exports": "ts-unused-exports ./tsconfig.json",
     "clean:unimported": "npx unimported --silent --list-unimported | xargs rm -f",
     "type-check": "tsc --noEmit",
-    "check:all": "npm run test:run && npm run build && npm run lint && npm run ts-unused-exports && npm run depcheck && npm run type-check && npm run prettier:write"
+    "check:all": "npm run test:run && npm run build && npm run lint && npm run ts-unused-exports && npm run depcheck && npm run type-check && npm run prettier:write",
+    "healthcheck": "node healthcheck.js"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
@@ -27,7 +28,9 @@
     "@testing-library/user-event": "^14.6.2",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "dotenv": "^17.2.0",
     "luxon": "^3.7.1",
+    "node-fetch": "^3.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
