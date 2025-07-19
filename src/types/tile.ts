@@ -19,7 +19,7 @@ export type TileType = (typeof TileType)[keyof typeof TileType];
 
 export const TileApiCallTitle = {
   CRYPTOCURRENCY: 'CoinGecko Markets API',
-  PRECIOUS_METALS: 'Metals-API',
+  PRECIOUS_METALS: 'Gold-API',
   FEDERAL_FUNDS_RATE: 'FRED Series Observations API',
   EURIBOR_RATE: 'EMMI Euribor Rate API',
   WEATHER: 'Weather API',

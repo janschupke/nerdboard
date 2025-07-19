@@ -8,49 +8,33 @@ interface GoldApiResponse {
   updatedAtReadable: string;
 }
 
-interface PreciousMetalsResponse {
-  gold: {
-    price: number;
-    change_24h: number;
-    change_percentage_24h: number;
-  };
-  silver: {
-    price: number;
-    change_24h: number;
-    change_percentage_24h: number;
-  };
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    // Fetch gold and silver prices from gold-api.com
-    const [goldResponse, silverResponse] = await Promise.all([
-      fetch('https://api.gold-api.com/price/XAU'),
-      fetch('https://api.gold-api.com/price/XAG'),
-    ]);
+    // Extract symbol from path like /api/precious-metals/XAU
+    const path = req.url || '';
+    const match = path.match(/^\/api\/precious-metals\/([^/]+)/);
 
-    if (!goldResponse.ok || !silverResponse.ok) {
-      throw new Error('Failed to fetch precious metals data');
+    if (!match) {
+      return res.status(400).json({ error: 'Missing metal symbol in path' });
     }
 
-    const goldData: GoldApiResponse = await goldResponse.json();
-    const silverData: GoldApiResponse = await silverResponse.json();
+    const symbol = match[1].toUpperCase();
 
-    // Convert to the expected format
-    const preciousMetalsData: PreciousMetalsResponse = {
-      gold: {
-        price: goldData.price,
-        change_24h: 0, // API doesn't provide 24h change data
-        change_percentage_24h: 0, // API doesn't provide 24h change data
-      },
-      silver: {
-        price: silverData.price,
-        change_24h: 0, // API doesn't provide 24h change data
-        change_percentage_24h: 0, // API doesn't provide 24h change data
-      },
-    };
+    // Validate symbol
+    if (!['XAU', 'XAG'].includes(symbol)) {
+      return res.status(400).json({ error: 'Invalid metal symbol. Supported: XAU, XAG' });
+    }
 
-    res.status(200).json(preciousMetalsData);
+    // Fetch metal price from gold-api.com
+    const response = await fetch(`https://api.gold-api.com/price/${symbol}`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${symbol} data: ${response.status}`);
+    }
+
+    const data: GoldApiResponse = await response.json();
+
+    res.status(200).json(data);
   } catch (error) {
     console.error('Error fetching precious metals data:', error);
     res.status(500).json({ error: 'Failed to fetch precious metals data' });

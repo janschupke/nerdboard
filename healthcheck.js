@@ -53,9 +53,10 @@ const endpoints = [
     key: 'FRED_API_KEY',
     required: true,
   },
+  // Precious Metals API
   {
     name: 'Precious Metals (Gold & Silver)',
-    url: 'http://localhost:5173/api/precious-metals',
+    url: 'http://localhost:5173/api/precious-metals/XAU',
     baseUrl: 'https://api.gold-api.com',
   },
   {
