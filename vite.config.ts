@@ -36,15 +36,9 @@ export default defineConfig({
       },
       // Gold API
       '/api/gold-api': {
-        target: 'https://www.gold-api.com',
+        target: 'https://api.gold-api.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/gold-api/, ''),
-      },
-      // Metals API
-      '/api/metals-api': {
-        target: 'https://metals-api.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/metals-api/, ''),
       },
       // USGS API
       '/api/usgs': {
@@ -64,29 +58,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/time/, ''),
       },
-      // Precious Metals (combined endpoint) - using mock data for now
+      // Precious Metals API
       '/api/precious-metals': {
-        target: 'https://httpbin.org',
+        target: 'https://api.gold-api.com',
         changeOrigin: true,
-        rewrite: () => '/json',
-        configure: (proxy) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            // Return mock precious metals data
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-              gold: {
-                price: 3350.31,
-                change_24h: 0,
-                change_percentage_24h: 0,
-              },
-              silver: {
-                price: 38.19,
-                change_24h: 0,
-                change_percentage_24h: 0,
-              },
-            }));
-          });
-        },
+        rewrite: () => '/price/XAU',
       },
     },
   },

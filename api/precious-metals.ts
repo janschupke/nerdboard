@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-interface CoinbaseResponse {
-  data: {
-    amount: string;
-    base: string;
-    currency: string;
-  };
+interface GoldApiResponse {
+  name: string;
+  price: number;
+  symbol: string;
+  updatedAt: string;
+  updatedAtReadable: string;
 }
 
 interface PreciousMetalsResponse {
@@ -23,30 +23,30 @@ interface PreciousMetalsResponse {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    // Fetch gold and silver prices from Coinbase
+    // Fetch gold and silver prices from gold-api.com
     const [goldResponse, silverResponse] = await Promise.all([
-      fetch('https://api.coinbase.com/v2/prices/XAU-USD/spot'),
-      fetch('https://api.coinbase.com/v2/prices/XAG-USD/spot'),
+      fetch('https://api.gold-api.com/price/XAU'),
+      fetch('https://api.gold-api.com/price/XAG'),
     ]);
 
     if (!goldResponse.ok || !silverResponse.ok) {
       throw new Error('Failed to fetch precious metals data');
     }
 
-    const goldData: CoinbaseResponse = await goldResponse.json();
-    const silverData: CoinbaseResponse = await silverResponse.json();
+    const goldData: GoldApiResponse = await goldResponse.json();
+    const silverData: GoldApiResponse = await silverResponse.json();
 
     // Convert to the expected format
     const preciousMetalsData: PreciousMetalsResponse = {
       gold: {
-        price: parseFloat(goldData.data.amount),
-        change_24h: 0, // Coinbase doesn't provide 24h change in spot endpoint
-        change_percentage_24h: 0, // Coinbase doesn't provide 24h change in spot endpoint
+        price: goldData.price,
+        change_24h: 0, // API doesn't provide 24h change data
+        change_percentage_24h: 0, // API doesn't provide 24h change data
       },
       silver: {
-        price: parseFloat(silverData.data.amount),
-        change_24h: 0, // Coinbase doesn't provide 24h change in spot endpoint
-        change_percentage_24h: 0, // Coinbase doesn't provide 24h change in spot endpoint
+        price: silverData.price,
+        change_24h: 0, // API doesn't provide 24h change data
+        change_percentage_24h: 0, // API doesn't provide 24h change data
       },
     };
 

@@ -89,24 +89,16 @@ export const URANIUM_HTML_ENDPOINT: ApiEndpoint<UraniumHtmlParams> = {
 // --- Precious Metals (Gold & Silver Spot, gold-api.com via local proxy) ---
 /**
  * Params for gold-api.com endpoints:
- * - currency: string (e.g., 'USD', 'EUR', 'GBP', etc.)
- * - unit: string (optional, e.g., 'ounce', 'gram', 'kg')
+ * The API only supports /price/XAU and /price/XAG endpoints
+ * No query parameters are supported - prices are returned in USD
  */
 export interface GoldApiParams {
-  currency: string;
-  unit?: 'ounce' | 'gram' | 'kg';
+  // No parameters supported by the actual API
+  [key: string]: never;
 }
-export const GOLD_API_GOLD_ENDPOINT: ApiEndpoint<GoldApiParams> = {
-  url: '/api/gold-api/XAU',
-  queryParams: { currency: 'USD', unit: 'ounce' } as GoldApiParams,
-};
-export const GOLD_API_SILVER_ENDPOINT: ApiEndpoint<GoldApiParams> = {
-  url: '/api/gold-api/XAG',
-  queryParams: { currency: 'USD', unit: 'ounce' } as GoldApiParams,
-};
 export const PRECIOUS_METALS_ENDPOINT: ApiEndpoint<GoldApiParams> = {
   url: '/api/precious-metals',
-  queryParams: { currency: 'USD', unit: 'ounce' } as GoldApiParams,
+  queryParams: {} as GoldApiParams,
 };
 
 // --- Time (WorldTimeAPI) ---

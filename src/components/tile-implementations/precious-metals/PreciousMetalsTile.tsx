@@ -28,7 +28,7 @@ export const PreciousMetalsTile = ({
 }) => {
   const isForceRefresh = useForceRefreshFromKey();
   const { getPreciousMetals } = usePreciousMetalsApi();
-  const params = useMemo(() => ({ currency: 'USD', unit: 'ounce' as const }), []);
+  const params = useMemo(() => ({}), []);
   const { data, status, lastUpdated } = useTileData(
     getPreciousMetals,
     tile.id,
