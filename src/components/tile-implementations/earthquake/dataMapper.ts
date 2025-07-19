@@ -1,27 +1,29 @@
-import type { EarthquakeApiResponse, EarthquakeTileData } from './types';
+import type { EarthquakeApiResponse } from './types';
 import type { DataMapper } from '../../../services/dataMapper';
+import type { EarthquakeTileDataArray } from './useEarthquakeApi';
 
 /**
- * Maps USGS Earthquake API response to an array of EarthquakeTileData for the tile.
+ * Maps USGS Earthquake API response to EarthquakeTileDataArray for the tile.
  */
-export const earthquakeDataMapper: DataMapper<EarthquakeApiResponse, EarthquakeTileData[]> = {
-  map: (apiResponse: EarthquakeApiResponse): EarthquakeTileData[] => {
+export const earthquakeDataMapper: DataMapper<EarthquakeApiResponse, EarthquakeTileDataArray> = {
+  map: (apiResponse: EarthquakeApiResponse): EarthquakeTileDataArray => {
     if (!apiResponse || !Array.isArray(apiResponse.features)) {
       throw new Error('Invalid EarthquakeApiResponse');
     }
-    return (apiResponse.features || []).map((feature) => ({
+    const items = (apiResponse.features || []).map((feature) => ({
       id: feature.id,
       place: feature.properties.place,
       magnitude: feature.properties.mag,
       time: feature.properties.time,
       coordinates: feature.geometry.coordinates,
     }));
+    return { items };
   },
-  safeMap(apiResponse: EarthquakeApiResponse): EarthquakeTileData[] {
+  safeMap(apiResponse: EarthquakeApiResponse): EarthquakeTileDataArray {
     try {
       return this.map(apiResponse);
     } catch {
-      return [];
+      return { items: [] };
     }
   },
   validate: (data: unknown): data is EarthquakeApiResponse => {
@@ -31,5 +33,5 @@ export const earthquakeDataMapper: DataMapper<EarthquakeApiResponse, EarthquakeT
       Array.isArray((data as EarthquakeApiResponse).features)
     );
   },
-  createDefault: (): EarthquakeTileData[] => [],
+  createDefault: (): EarthquakeTileDataArray => ({ items: [] }),
 };
