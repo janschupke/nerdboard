@@ -156,6 +156,7 @@ export class StorageManager {
     return (this.tileState[tileId] as TileState<TData>) || null;
   }
 
+  // TODO: fix unknown
   setTileState<TData = unknown>(tileId: string, state: TileState<TData>) {
     this.tileState[tileId] = state;
     try {

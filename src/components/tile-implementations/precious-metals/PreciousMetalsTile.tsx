@@ -35,6 +35,7 @@ export const PreciousMetalsTile = ({
     params,
     isForceRefresh,
   );
+
   return (
     <GenericTile
       tile={tile}

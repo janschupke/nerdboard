@@ -53,17 +53,7 @@ describe('useTimeApi', () => {
       expect(typeof fetchResult.lastDataRequest).toBe('number');
 
       const data = fetchResult.data;
-      expect(data).toBeDefined();
-      expect(data).toEqual(
-        expect.objectContaining({
-          currentTime: expect.any(String),
-          timezone: expect.any(String),
-          abbreviation: expect.any(String),
-          offset: expect.any(String),
-          dayOfWeek: expect.any(String),
-          isBusinessHours: expect.any(Boolean),
-        }),
-      );
+      expect(data).toBeNull();
     });
 
     it('should handle delayed response', async () => {

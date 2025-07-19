@@ -81,8 +81,8 @@ const StatusBar = ({
 };
 
 const ErrorContent = React.memo(() => (
-  <div className="flex flex-col items-center justify-center h-full space-y-2">
-    <Icon name="close" size="lg" className="text-theme-status-error" />
+  <div className="flex flex-col items-center justify-center h-full space-y-1">
+    <div className="text-4xl mb-4">🍆</div>
     <p className="text-theme-status-error text-sm text-center">Data failed to fetch</p>
   </div>
 ));

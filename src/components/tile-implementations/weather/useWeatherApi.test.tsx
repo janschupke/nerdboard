@@ -118,18 +118,7 @@ describe('useWeatherApi', () => {
       // Act & Assert
       const fetchResult = await result.current.getWeather(mockTileId, mockParams);
       expect(fetchResult.lastDataRequestSuccessful).toBe(false);
-      expect(fetchResult.data).toEqual({
-        city: 'Helsinki',
-        country: 'Finland',
-        temperature: { current: 0, feels_like: 0, min: 0, max: 0 },
-        conditions: { main: 'Unknown', description: 'No data available', icon: '01d' },
-        humidity: 0,
-        wind: { speed: 0, direction: 0 },
-        pressure: 0,
-        visibility: 0,
-        timestamp: expect.any(Number),
-        daily: [],
-      });
+      expect(fetchResult.data).toBeNull();
     });
 
     it('should handle timeout errors', async () => {
@@ -141,18 +130,7 @@ describe('useWeatherApi', () => {
       // Act & Assert
       const fetchResult = await result.current.getWeather(mockTileId, mockParams);
       expect(fetchResult.lastDataRequestSuccessful).toBe(false);
-      expect(fetchResult.data).toEqual({
-        city: 'Helsinki',
-        country: 'Finland',
-        temperature: { current: 0, feels_like: 0, min: 0, max: 0 },
-        conditions: { main: 'Unknown', description: 'No data available', icon: '01d' },
-        humidity: 0,
-        wind: { speed: 0, direction: 0 },
-        pressure: 0,
-        visibility: 0,
-        timestamp: expect.any(Number),
-        daily: [],
-      });
+      expect(fetchResult.data).toBeNull();
     });
 
     it('should handle API errors (500)', async () => {
@@ -164,18 +142,7 @@ describe('useWeatherApi', () => {
       // Act & Assert
       const fetchResult = await result.current.getWeather(mockTileId, mockParams);
       expect(fetchResult.lastDataRequestSuccessful).toBe(false);
-      expect(fetchResult.data).toEqual({
-        city: 'Helsinki',
-        country: 'Finland',
-        temperature: { current: 0, feels_like: 0, min: 0, max: 0 },
-        conditions: { main: 'Unknown', description: 'No data available', icon: '01d' },
-        humidity: 0,
-        wind: { speed: 0, direction: 0 },
-        pressure: 0,
-        visibility: 0,
-        timestamp: expect.any(Number),
-        daily: [],
-      });
+      expect(fetchResult.data).toBeNull();
     });
 
     it('should handle malformed JSON responses', async () => {
@@ -187,18 +154,7 @@ describe('useWeatherApi', () => {
       // Act & Assert
       const fetchResult = await result.current.getWeather(mockTileId, mockParams);
       expect(fetchResult.lastDataRequestSuccessful).toBe(false);
-      expect(fetchResult.data).toEqual({
-        city: 'Helsinki',
-        country: 'Finland',
-        temperature: { current: 0, feels_like: 0, min: 0, max: 0 },
-        conditions: { main: 'Unknown', description: 'No data available', icon: '01d' },
-        humidity: 0,
-        wind: { speed: 0, direction: 0 },
-        pressure: 0,
-        visibility: 0,
-        timestamp: expect.any(Number),
-        daily: [],
-      });
+      expect(fetchResult.data).toBeNull();
     });
   });
 

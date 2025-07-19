@@ -85,6 +85,26 @@ describe('DataFetcher.fetchAndParse', () => {
     expect(result.data).toEqual({ doubled: 14 });
     expect(result.lastDataRequestSuccessful).toBe(true);
   });
+
+  it('returns cached data when fetch fails', async () => {
+    // First call to cache data
+    const fetchFunction = async () => ({ value: 7 });
+    await fetcher.fetchAndParse(fetchFunction, 'cache-fail-key', tileType, {
+      forceRefresh: true,
+      apiCall: tileType,
+    });
+
+    // Second call with failing fetch should return cached data
+    const failingFetchFunction = async () => {
+      throw new Error('Network error');
+    };
+    const result = await fetcher.fetchAndParse(failingFetchFunction, 'cache-fail-key', tileType, {
+      forceRefresh: true,
+      apiCall: tileType,
+    });
+    expect(result.data).toEqual({ doubled: 14 });
+    expect(result.lastDataRequestSuccessful).toBe(false);
+  });
 });
 
 describe('DataParserRegistry', () => {
