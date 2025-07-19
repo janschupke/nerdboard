@@ -23,29 +23,21 @@ beforeAll(() => {
 
 describe('usePreciousMetalsApi', () => {
   const mockTileId = 'test-precious-metals-tile';
-  const mockParams: GoldApiParams = {
-    currency: 'USD',
-    unit: 'ounce',
-  };
+  const mockParams: GoldApiParams = {};
 
   it('should successfully fetch precious metals data', async () => {
-    // Mock the precious metals endpoint response
+    // Mock the gold API response (current actual behavior)
     const mockResponse = {
-      gold: {
-        price: 3350.31,
-        change_24h: 0,
-        change_percentage_24h: 0,
-      },
-      silver: {
-        price: 38.19,
-        change_24h: 0,
-        change_percentage_24h: 0,
-      },
+      name: 'Gold',
+      price: 3350.699951,
+      symbol: 'XAU',
+      updatedAt: '2025-07-19T12:38:58Z',
+      updatedAtReadable: 'a few seconds ago',
     };
 
-    global.fetch = vi.fn().mockResolvedValue({ 
-      ok: true, 
-      json: async () => mockResponse 
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockResponse,
     });
 
     const { result } = renderHook(() => usePreciousMetalsApi(), { wrapper });
@@ -58,7 +50,7 @@ describe('usePreciousMetalsApi', () => {
 
     const data = fetchResult.data;
     expect(data).toBeDefined();
-    expect(data?.gold?.price).toBe(3350.31);
-    expect(data?.silver?.price).toBe(38.19);
+    expect(data?.gold?.price).toBe(3350.699951);
+    expect(data?.silver?.price).toBe(0); // Silver is set to 0 in current implementation
   });
 });

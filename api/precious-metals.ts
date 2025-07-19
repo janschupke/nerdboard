@@ -55,4 +55,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Error fetching precious metals data:', error);
     res.status(500).json({ error: 'Failed to fetch precious metals data' });
   }
-} 
+}

@@ -28,14 +28,16 @@ export class PreciousMetalsDataMapper extends BaseDataMapper<
       },
     };
   }
-  
+
   validate(apiResponse: unknown): apiResponse is GoldApiResponse {
-    return !!apiResponse && 
-           typeof apiResponse === 'object' && 
-           'price' in apiResponse && 
-           typeof (apiResponse as { price: unknown }).price === 'number';
+    return (
+      !!apiResponse &&
+      typeof apiResponse === 'object' &&
+      'price' in apiResponse &&
+      typeof (apiResponse as { price: unknown }).price === 'number'
+    );
   }
-  
+
   createDefault(): PreciousMetalsTileData {
     return {
       gold: { price: 0, change_24h: 0, change_percentage_24h: 0 },

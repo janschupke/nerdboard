@@ -116,15 +116,17 @@ async function checkEndpoint(ep) {
   const results = await Promise.all(endpoints.map(checkEndpoint));
   const namePad = Math.max(...endpoints.map((e) => e.name.length)) + 2;
   const baseUrlPad = Math.max(...endpoints.map((e) => e.baseUrl.length)) + 2;
-  
+
   console.log(`${pad('Endpoint', namePad)} ${pad('Base URL', baseUrlPad)} Status`);
   console.log('-'.repeat(namePad + baseUrlPad + 10));
-  
+
   results.forEach((r) => {
-    const endpoint = endpoints.find(e => e.name === r.name);
-    console.log(`${pad(r.name, namePad)} ${pad(endpoint.baseUrl, baseUrlPad)} ${r.status}  ${r.msg}`);
+    const endpoint = endpoints.find((e) => e.name === r.name);
+    console.log(
+      `${pad(r.name, namePad)} ${pad(endpoint.baseUrl, baseUrlPad)} ${r.status}  ${r.msg}`,
+    );
   });
-  
+
   const failed = results.filter((r) => r.status !== '✅');
   if (failed.length) {
     console.log(`\n${failed.length} endpoint(s) need attention.`);
