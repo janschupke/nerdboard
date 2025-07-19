@@ -126,7 +126,7 @@ describe('useEarthquakeApi', () => {
       expect(fetchResult).toHaveProperty('lastDataRequest');
       expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
       expect(fetchResult.lastDataRequestSuccessful).toBe(false);
-      expect(fetchResult.data).toEqual([]);
+      expect(fetchResult.data).toBeNull();
     }
   });
 
@@ -146,7 +146,7 @@ describe('useEarthquakeApi', () => {
       expect(fetchResult).toHaveProperty('lastDataRequest');
       expect(fetchResult).toHaveProperty('lastDataRequestSuccessful');
       expect(fetchResult.lastDataRequestSuccessful).toBe(false);
-      expect(fetchResult.data).toEqual([]);
+      expect(fetchResult.data).toBeNull();
     }
   });
 });

@@ -4,10 +4,10 @@ import {
   type APILogDetails,
   type TileDataType,
   type TileConfig,
+  type TileState,
 } from './storageManager';
 import { type BaseApiResponse, DataMapperRegistry } from './dataMapper';
 import { DataParserRegistry } from './dataParser';
-// tileDataMappers and tileDataParsers will be replaced by injected registries
 
 export const DATA_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
 
@@ -25,40 +25,28 @@ export class DataFetcher {
     this.parserRegistry = parserRegistry;
   }
 
-  // Centralized helper for setting tile state
-  private setTileState<T extends TileDataType>(
-    storageKey: string,
-    data: T | null,
-    lastDataRequestSuccessful: boolean,
-  ) {
-    storageManager.setTileState<T>(storageKey, {
-      data,
-      lastDataRequest: Date.now(),
-      lastDataRequestSuccessful,
-    });
-  }
-
   // Helper to handle fetch, status extraction, mapping/parsing, and error logging
   private async handleFetchAndTransform<TTileData extends TileDataType>(
     fetchFunction: () => Promise<unknown>,
     storageKey: string,
     apiCall: string,
     transform: (input: unknown) => TTileData,
-    createDefault: () => TTileData,
     forceRefresh = false,
   ): Promise<TileConfig<TTileData>> {
-    if (!forceRefresh) {
-      const cached = storageManager.getTileState<TTileData>(storageKey);
-      const now = Date.now();
-      const isFresh = cached && now - cached.lastDataRequest < DATA_REFRESH_INTERVAL;
-      if (cached && isFresh) {
-        return {
-          data: cached.data,
-          lastDataRequest: cached.lastDataRequest,
-          lastDataRequestSuccessful: cached.lastDataRequestSuccessful,
-        };
-      }
+    const cachedTileState = storageManager.getTileState<TTileData>(storageKey);
+    const now = Date.now();
+    const isRefreshNeeded =
+      cachedTileState && now - cachedTileState.lastDataRequest > DATA_REFRESH_INTERVAL;
+
+    // Return cached data, no API call performed
+    if (!forceRefresh && cachedTileState && !isRefreshNeeded) {
+      return {
+        data: cachedTileState.data,
+        lastDataRequest: cachedTileState.lastDataRequest,
+        lastDataRequestSuccessful: cachedTileState.lastDataRequestSuccessful,
+      };
     }
+
     let httpStatus: number | undefined;
     try {
       let apiResponse: unknown = await fetchFunction();
@@ -88,13 +76,15 @@ export class DataFetcher {
           { status: httpStatus },
         );
       }
+
       const transformed = transform(apiResponse);
-      this.setTileState<TTileData>(storageKey, transformed, true);
-      return {
+      const tileState: TileState<TTileData> = {
         data: transformed,
-        lastDataRequest: Date.now(),
+        lastDataRequest: now,
         lastDataRequestSuccessful: true,
       };
+      storageManager.setTileState<TTileData>(storageKey, tileState);
+      return tileState;
     } catch (error: unknown) {
       if (
         error &&
@@ -117,13 +107,14 @@ export class DataFetcher {
         reason: errorMessage,
         details: logDetails,
       });
-      const prevData = storageManager.getTileState<TTileData>(storageKey)?.data || createDefault();
-      this.setTileState<TTileData>(storageKey, prevData, false);
-      return {
-        data: prevData,
-        lastDataRequest: Date.now(),
+
+      const tileState: TileState<TTileData> = {
+        data: cachedTileState?.data || null,
+        lastDataRequest: now,
         lastDataRequestSuccessful: false,
       };
+      storageManager.setTileState<TTileData>(storageKey, tileState);
+      return tileState;
     }
   }
 
@@ -147,7 +138,6 @@ export class DataFetcher {
       storageKey,
       apiCall,
       (input) => mapper.safeMap(input) as unknown as TTileData,
-      () => mapper.createDefault() as unknown as TTileData,
       forceRefresh,
     );
   }
@@ -168,7 +158,6 @@ export class DataFetcher {
       storageKey,
       apiCall,
       (input) => parser.safeParse(input) as unknown as TTileData,
-      () => parser.createDefault() as unknown as TTileData,
       forceRefresh,
     );
   }

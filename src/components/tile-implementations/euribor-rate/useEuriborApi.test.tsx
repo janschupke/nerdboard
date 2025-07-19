@@ -63,11 +63,7 @@ describe('useEuriborApi', () => {
     const { result } = renderHook(() => useEuriborApi(), { wrapper });
     const fetchResult = await result.current.getEuriborRate(mockTileId, mockParams);
     expect(fetchResult.lastDataRequestSuccessful).toBe(false);
-    expect(fetchResult.data).toEqual({
-      currentRate: 0,
-      lastUpdate: new Date(0),
-      historicalData: [],
-    });
+    expect(fetchResult.data).toBeNull();
   });
 
   it('returns empty data and error if fetch fails', async () => {
@@ -78,10 +74,6 @@ describe('useEuriborApi', () => {
     const { result } = renderHook(() => useEuriborApi(), { wrapper });
     const fetchResult = await result.current.getEuriborRate(mockTileId, mockParams);
     expect(fetchResult.lastDataRequestSuccessful).toBe(false);
-    expect(fetchResult.data).toEqual({
-      currentRate: 0,
-      lastUpdate: new Date(0),
-      historicalData: [],
-    });
+    expect(fetchResult.data).toBeNull();
   });
 });

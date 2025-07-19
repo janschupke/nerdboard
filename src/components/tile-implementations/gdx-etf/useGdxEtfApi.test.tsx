@@ -89,21 +89,7 @@ describe('useGdxEtfApi', () => {
     const { result } = renderHook(() => useGdxEtfApi(), { wrapper });
     const fetchResult = await result.current.getGdxEtf(mockTileId, mockParams);
     expect(fetchResult.lastDataRequestSuccessful).toBe(false);
-    expect(fetchResult.data).toEqual({
-      symbol: '',
-      name: '',
-      currentPrice: 0,
-      previousClose: 0,
-      priceChange: 0,
-      priceChangePercent: 0,
-      volume: 0,
-      marketCap: 0,
-      high: 0,
-      low: 0,
-      open: 0,
-      lastUpdated: '',
-      tradingStatus: 'closed',
-    });
+    expect(fetchResult.data).toBeNull();
   });
 
   it('returns empty data and error if fetch fails', async () => {
@@ -114,20 +100,6 @@ describe('useGdxEtfApi', () => {
     const { result } = renderHook(() => useGdxEtfApi(), { wrapper });
     const fetchResult = await result.current.getGdxEtf(mockTileId, mockParams);
     expect(fetchResult.lastDataRequestSuccessful).toBe(false);
-    expect(fetchResult.data).toEqual({
-      symbol: '',
-      name: '',
-      currentPrice: 0,
-      previousClose: 0,
-      priceChange: 0,
-      priceChangePercent: 0,
-      volume: 0,
-      marketCap: 0,
-      high: 0,
-      low: 0,
-      open: 0,
-      lastUpdated: '',
-      tradingStatus: 'closed',
-    });
+    expect(fetchResult.data).toBeNull();
   });
 });
