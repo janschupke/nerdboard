@@ -6,6 +6,7 @@ import { useForceRefreshFromKey } from '../../../contexts/RefreshContext';
 import { useTileData } from '../../tile/useTileData';
 import type { AlphaVantageParams } from '../../../services/apiEndpoints';
 import { useMemo } from 'react';
+import { isLocalhost } from '../../../utils/isLocalhost';
 
 const GdxEtfTileContent = ({ data }: { data: GdxEtfTileData | null }) => {
   // Check if data is null or contains only default/empty values
@@ -65,14 +66,19 @@ export const GdxEtfTile = ({
 }) => {
   const isForceRefresh = useForceRefreshFromKey();
   const { getGdxEtf } = useGdxEtfApi();
-  const params = useMemo<AlphaVantageParams>(
-    () => ({
+  const params = useMemo<AlphaVantageParams>(() => {
+    const base = {
       function: 'GLOBAL_QUOTE',
       symbol: 'GDX',
-      apikey: import.meta.env.ALPHA_VANTAGE_API_KEY,
-    }),
-    [],
-  );
+    };
+    if (isLocalhost()) {
+      return {
+        ...base,
+        apikey: import.meta.env.VITE_ALPHA_VANTAGE_API_KEY,
+      };
+    }
+    return base;
+  }, []);
   const { data, status, lastUpdated } = useTileData(getGdxEtf, tile.id, params, isForceRefresh);
 
   return (

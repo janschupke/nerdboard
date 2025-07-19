@@ -17,9 +17,10 @@
     "depcheck": "depcheck --ignores='@reduxjs/toolkit,@testing-library/user-event,@lhci/cli,@vitest/coverage-v8,autoprefixer,postcss,tailwindcss,wait-on'",
     "ts-unused-exports": "ts-unused-exports ./tsconfig.json",
     "clean:unimported": "npx unimported --silent --list-unimported | xargs rm -f",
-    "type-check": "tsc --noEmit",
-    "check:all": "npm run test:run && npm run build && npm run lint && npm run ts-unused-exports && npm run depcheck && npm run type-check && npm run prettier:write",
-    "healthcheck": "node healthcheck.js"
+    "types": "tsc --noEmit",
+    "check:all": "npm run test:run && npm run build && npm run lint && npm run ts-unused-exports && npm run depcheck && npm run types && npm run prettier:write",
+    "healthcheck": "node scripts/healthcheck.cjs",
+    "env": "node scripts/copy-env-to-local.cjs"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",

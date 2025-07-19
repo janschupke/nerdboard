@@ -76,6 +76,16 @@ export class DataFetcher {
           { status: httpStatus },
         );
       }
+      // Alpha Vantage and similar APIs: treat 'Information', 'Error Message', 'Note' as errors
+      if (apiResponse && typeof apiResponse === 'object') {
+        const avErrorFields = ['Information', 'Error Message', 'Note'];
+        const responseObj = apiResponse as Record<string, unknown>;
+        for (const field of avErrorFields) {
+          if (field in responseObj && typeof responseObj[field] === 'string') {
+            throw Object.assign(new Error(responseObj[field] as string), { status: httpStatus });
+          }
+        }
+      }
 
       const transformed = transform(apiResponse);
       const tileState: TileState<TTileData> = {
@@ -83,6 +93,7 @@ export class DataFetcher {
         lastDataRequest: now,
         lastDataRequestSuccessful: true,
       };
+
       storageManager.setTileState<TTileData>(storageKey, tileState);
       return tileState;
     } catch (error: unknown) {

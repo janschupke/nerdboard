@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-env node */
 /* global process */
 // Healthcheck script for dashboard API endpoints

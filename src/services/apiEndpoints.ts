@@ -38,7 +38,7 @@ export const OPENWEATHERMAP_ONECALL_ENDPOINT: ApiEndpoint<WeatherParams> = {
 export interface AlphaVantageParams {
   function: string; // e.g. 'GLOBAL_QUOTE'
   symbol: string; // e.g. 'GDX'
-  apikey: string; // API key, set from process.env.ALPHA_VANTAGE_API_KEY
+  apikey?: string; // API key, set from process.env.ALPHA_VANTAGE_API_KEY
   [key: string]: string | undefined;
 }
 export const ALPHA_VANTAGE_GDX_ENDPOINT: ApiEndpoint<AlphaVantageParams> = {
