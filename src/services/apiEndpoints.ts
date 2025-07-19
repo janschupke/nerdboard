@@ -13,8 +13,6 @@ export interface CryptoMarketsParams {
   per_page?: number; // optional
   page?: number; // optional
   sparkline?: boolean; // optional
-  // TODO: comlletely useless...
-  [key: string]: string | number | boolean | undefined;
 }
 
 export const COINGECKO_MARKETS_ENDPOINT: ApiEndpoint<CryptoMarketsParams> = {

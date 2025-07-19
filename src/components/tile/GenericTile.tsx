@@ -69,7 +69,7 @@ const StatusBar = ({
   const statusIcon = getStatusIcon();
 
   return (
-    <div className="flex items-center justify-between px-2 py-1 text-xs border-t border-surface-primary bg-surface-secondary text-secondary">
+    <div className="flex items-center justify-between px-2 py-1 text-xs border-t border-surface-primary bg-surface-secondary text-secondary rounded-b-xl">
       <span>Last request: {formatLastUpdate(lastUpdate)}</span>
       {statusIcon && (
         <span onClick={logTileState} className="cursor-pointer">
@@ -141,7 +141,7 @@ export const GenericTile = React.memo(
       const headerProps = useMemo(
         () => ({
           className:
-            'flex items-center justify-between px-4 py-2 border-b border-surface-primary bg-surface-secondary text-primary cursor-grab active:cursor-grabbing relative min-h-[2.5rem]',
+            'flex items-center justify-between px-4 py-2 border-b border-surface-primary bg-surface-secondary text-primary cursor-grab active:cursor-grabbing relative min-h-[2.5rem] rounded-t-xl',
           style: { minHeight: '2.5rem' },
           ...dragHandleProps,
         }),

@@ -4,7 +4,72 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   server: {
     proxy: {
-      // All /api/* proxies removed; serverless handlers in /api handle all API endpoints.
+      // CoinGecko API
+      '/api/coingecko': {
+        target: 'https://api.coingecko.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/coingecko/, ''),
+      },
+      // OpenWeatherMap API
+      '/api/openweathermap': {
+        target: 'https://api.openweathermap.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/openweathermap/, ''),
+      },
+      // Alpha Vantage API
+      '/api/alpha-vantage': {
+        target: 'https://www.alphavantage.co',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/alpha-vantage/, ''),
+      },
+      // FRED API
+      '/api/fred': {
+        target: 'https://api.stlouisfed.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/fred/, ''),
+      },
+      // EMMI API
+      '/api/emmi': {
+        target: 'https://www.emmi-benchmarks.eu',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/emmi/, ''),
+      },
+      // Gold API
+      '/api/gold-api': {
+        target: 'https://www.gold-api.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/gold-api/, ''),
+      },
+      // Metals API
+      '/api/metals-api': {
+        target: 'https://metals-api.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/metals-api/, ''),
+      },
+      // USGS API
+      '/api/usgs': {
+        target: 'https://earthquake.usgs.gov',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/usgs/, ''),
+      },
+      // CWB API
+      '/api/cwb': {
+        target: 'https://opendata.cwb.gov.tw',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/cwb/, ''),
+      },
+      // WorldTime API
+      '/api/time': {
+        target: 'https://worldtimeapi.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/time/, ''),
+      },
+      // Precious Metals (combined endpoint)
+      '/api/precious-metals': {
+        target: 'https://www.gold-api.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/precious-metals/, '/api/XAU'),
+      },
     },
   },
 });
