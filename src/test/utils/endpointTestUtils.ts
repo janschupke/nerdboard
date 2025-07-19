@@ -143,8 +143,8 @@ export const setupPreciousMetalsSuccessMock = (): void => {
   setupSuccessMock(API_ENDPOINTS.PRECIOUS_METALS, MockResponseData.getPreciousMetalsData());
 };
 
-export const setupGDXETFSuccessMock = (): void => {
-  setupSuccessMock(API_ENDPOINTS.YAHOO_FINANCE_CHART, MockResponseData.getGDXETFData());
+export const setupGdxEtfSuccessMock = (): void => {
+  setupSuccessMock(API_ENDPOINTS.YAHOO_FINANCE_CHART, MockResponseData.getGdxEtfData());
 };
 
 export const setupEuriborRateSuccessMock = (): void => {
@@ -159,7 +159,7 @@ export const setupAllSuccessMocks = (): void => {
   setupTimeSuccessMock();
   setupUraniumSuccessMock();
   setupPreciousMetalsSuccessMock();
-  setupGDXETFSuccessMock();
+  setupGdxEtfSuccessMock();
   setupEuriborRateSuccessMock();
 };
 

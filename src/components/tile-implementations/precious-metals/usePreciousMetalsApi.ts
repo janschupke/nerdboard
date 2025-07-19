@@ -3,6 +3,7 @@ import { useDataServices } from '../../../contexts/DataServicesContext';
 import { useCallback } from 'react';
 import type { TileConfig } from '../../../services/storageManager';
 import { TileType, TileApiCallTitle } from '../../../types/tile';
+import { PRECIOUS_METALS_ENDPOINT, buildApiUrl } from '../../../services/apiEndpoints';
 import type { GoldApiParams } from '../../../services/apiEndpoints';
 
 export function usePreciousMetalsApi() {
@@ -13,8 +14,7 @@ export function usePreciousMetalsApi() {
       params: GoldApiParams,
       forceRefresh = false,
     ): Promise<TileConfig<PreciousMetalsTileData>> => {
-      // Make a single API call that returns both gold and silver data
-      const url = `/api/precious-metals?currency=${params.currency}&unit=${params.unit || 'ounce'}`;
+      const url = buildApiUrl<GoldApiParams>(PRECIOUS_METALS_ENDPOINT, params);
 
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),

@@ -174,7 +174,7 @@ export class MockResponseData {
     };
   }
 
-  static getGDXETFData(): GdxEtfApiResponse {
+  static getGdxEtfData(): GdxEtfApiResponse {
     return {
       symbol: 'GDX',
       name: 'VanEck Gold Miners ETF',

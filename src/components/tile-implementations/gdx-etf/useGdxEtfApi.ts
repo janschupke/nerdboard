@@ -8,7 +8,7 @@ import type { TileConfig } from '../../../services/storageManager';
 
 export function useGdxEtfApi() {
   const { dataFetcher } = useDataServices();
-  const getGDXETF = useCallback(
+  const getGdxEtf = useCallback(
     async (
       tileId: string,
       params: AlphaVantageParams,
@@ -24,5 +24,5 @@ export function useGdxEtfApi() {
     },
     [dataFetcher],
   );
-  return { getGDXETF };
+  return { getGdxEtf };
 }

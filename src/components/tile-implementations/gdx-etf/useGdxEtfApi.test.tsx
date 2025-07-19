@@ -62,7 +62,7 @@ describe('useGdxEtfApi', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let fetchResult: any = null;
     await act(async () => {
-      fetchResult = await result.current.getGDXETF(mockTileId, mockParams);
+      fetchResult = await result.current.getGdxEtf(mockTileId, mockParams);
     });
     expect(fetchResult).not.toBeNull();
     if (fetchResult) {
@@ -87,7 +87,7 @@ describe('useGdxEtfApi', () => {
       responseData: { error: 'API error' },
     });
     const { result } = renderHook(() => useGdxEtfApi(), { wrapper });
-    const fetchResult = await result.current.getGDXETF(mockTileId, mockParams);
+    const fetchResult = await result.current.getGdxEtf(mockTileId, mockParams);
     expect(fetchResult.lastDataRequestSuccessful).toBe(false);
     expect(fetchResult.data).toEqual({
       symbol: '',
@@ -112,7 +112,7 @@ describe('useGdxEtfApi', () => {
       errorType: 'network',
     });
     const { result } = renderHook(() => useGdxEtfApi(), { wrapper });
-    const fetchResult = await result.current.getGDXETF(mockTileId, mockParams);
+    const fetchResult = await result.current.getGdxEtf(mockTileId, mockParams);
     expect(fetchResult.lastDataRequestSuccessful).toBe(false);
     expect(fetchResult.data).toEqual({
       symbol: '',

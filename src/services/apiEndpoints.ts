@@ -1,6 +1,7 @@
 export interface ApiEndpoint<TParams extends object> {
   url: string;
   queryParams: TParams;
+  pathParams?: Record<string, string>; // Add path parameters support
   broken?: boolean;
 }
 
@@ -105,14 +106,19 @@ export const GOLD_API_SILVER_ENDPOINT: ApiEndpoint<GoldApiParams> = {
   url: '/api/gold-api/XAG',
   queryParams: { currency: 'USD', unit: 'ounce' } as GoldApiParams,
 };
+export const PRECIOUS_METALS_ENDPOINT: ApiEndpoint<GoldApiParams> = {
+  url: '/api/precious-metals',
+  queryParams: { currency: 'USD', unit: 'ounce' } as GoldApiParams,
+};
 
 // --- Time (WorldTimeAPI) ---
 export interface TimeParams {
   city: string; // required, e.g. 'Europe/Berlin'
 }
 export const TIME_API_ENDPOINT: ApiEndpoint<TimeParams> = {
-  url: '/api/time',
+  url: '/api/time/api/timezone/{city}',
   queryParams: {} as TimeParams,
+  pathParams: { city: '{city}' },
 };
 
 // --- Typhoon (CWB) ---
@@ -165,11 +171,37 @@ export function buildApiUrl<TParams extends TileApiParams>(
   if (endpoint.broken) {
     throw new Error('This endpoint is currently broken or not implemented.');
   }
-  // For endpoints with path params (e.g. Yahoo Finance), handle manually in the hook
-  const url = endpoint.url;
-  const query = Object.entries(params)
+
+  let url = endpoint.url;
+
+  // Handle path parameters
+  if (endpoint.pathParams) {
+    for (const [paramName, placeholder] of Object.entries(endpoint.pathParams)) {
+      if (paramName in params) {
+        const value = params[paramName as keyof TParams];
+        if (value !== undefined && value !== null) {
+          url = url.replace(placeholder, String(value));
+        }
+      }
+    }
+  }
+
+  // Handle query parameters
+  const queryParams = { ...params };
+
+  // Remove path parameters from query params
+  if (endpoint.pathParams) {
+    for (const paramName of Object.keys(endpoint.pathParams)) {
+      if (paramName in queryParams) {
+        delete queryParams[paramName as keyof TParams];
+      }
+    }
+  }
+
+  const query = Object.entries(queryParams)
     .filter((entry) => entry[1] !== undefined && entry[1] !== null)
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
     .join('&');
+
   return query ? `${url}?${query}` : url;
 }

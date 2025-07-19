@@ -8,7 +8,21 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const BASE_URL = 'http://localhost:5173';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
+
+// Generate dynamic date range for USGS earthquake API (last 7 days)
+function getDateRange() {
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(endDate.getDate() - 7);
+
+  return {
+    starttime: startDate.toISOString().split('T')[0], // YYYY-MM-DD format
+    endtime: endDate.toISOString().split('T')[0], // YYYY-MM-DD format
+  };
+}
+
+const { starttime, endtime } = getDateRange();
 
 const endpoints = [
   {
@@ -49,7 +63,7 @@ const endpoints = [
   },
   {
     name: 'USGS Earthquake',
-    url: `${BASE_URL}/api/usgs/fdsnws/event/1/query?format=geojson&starttime=2024-07-01&endtime=2024-07-18`,
+    url: `${BASE_URL}/api/usgs/fdsnws/event/1/query?format=geojson&starttime=${starttime}&endtime=${endtime}`,
     key: null,
     required: false,
   },

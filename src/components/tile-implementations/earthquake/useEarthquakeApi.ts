@@ -28,13 +28,15 @@ export function useEarthquakeApi() {
       start.setDate(end.getDate() - days);
       const starttime = start.toISOString().slice(0, 10);
       const endtime = end.toISOString().slice(0, 10);
-      const query: UsgsEarthquakeParams & { days?: number } = {
+
+      // Create query object without the 'days' property
+      const query: UsgsEarthquakeParams = {
         format: 'geojson',
         starttime,
         endtime,
-        ...params,
+        ...Object.fromEntries(Object.entries(params).filter(([key]) => key !== 'days')),
       };
-      delete (query as Partial<UsgsEarthquakeParams> & { days?: number }).days;
+
       const url = buildApiUrl<UsgsEarthquakeParams>(USGS_EARTHQUAKE_ENDPOINT, query);
       return dataFetcher.fetchAndMap(
         () => fetch(url).then((res) => res.json()),

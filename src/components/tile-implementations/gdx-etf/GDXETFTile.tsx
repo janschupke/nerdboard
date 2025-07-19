@@ -7,7 +7,7 @@ import { useTileData } from '../../tile/useTileData';
 import type { AlphaVantageParams } from '../../../services/apiEndpoints';
 import { useMemo } from 'react';
 
-const GDXETFTileContent = ({ data }: { data: GdxEtfTileData | null }) => {
+const GdxEtfTileContent = ({ data }: { data: GdxEtfTileData | null }) => {
   if (data) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-2">
@@ -19,7 +19,7 @@ const GDXETFTileContent = ({ data }: { data: GdxEtfTileData | null }) => {
   return null;
 };
 
-export const GDXETFTile = ({
+export const GdxEtfTile = ({
   tile,
   meta,
   ...rest
@@ -28,7 +28,7 @@ export const GDXETFTile = ({
   meta: TileMeta;
 }) => {
   const isForceRefresh = useForceRefreshFromKey();
-  const { getGDXETF } = useGdxEtfApi();
+  const { getGdxEtf } = useGdxEtfApi();
   const params = useMemo<AlphaVantageParams>(
     () => ({
       function: 'GLOBAL_QUOTE',
@@ -37,7 +37,7 @@ export const GDXETFTile = ({
     }),
     [],
   );
-  const { data, status, lastUpdated } = useTileData(getGDXETF, tile.id, params, isForceRefresh);
+  const { data, status, lastUpdated } = useTileData(getGdxEtf, tile.id, params, isForceRefresh);
   return (
     <GenericTile
       tile={tile}
@@ -47,9 +47,9 @@ export const GDXETFTile = ({
       data={data}
       {...rest}
     >
-      <GDXETFTileContent data={data} />
+      <GdxEtfTileContent data={data} />
     </GenericTile>
   );
 };
 
-GDXETFTile.displayName = 'GDXETFTile';
+GdxEtfTile.displayName = 'GdxEtfTile';
