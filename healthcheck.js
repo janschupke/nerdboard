@@ -50,14 +50,8 @@ const endpoints = [
     required: true,
   },
   {
-    name: 'Gold Spot (XAU/USD, ounce)',
-    url: `${BASE_URL}/api/gold-api/XAU?currency=USD&unit=ounce`,
-    key: null,
-    required: false,
-  },
-  {
-    name: 'Silver Spot (XAG/USD, ounce)',
-    url: `${BASE_URL}/api/gold-api/XAG?currency=USD&unit=ounce`,
+    name: 'Precious Metals (Gold & Silver)',
+    url: `${BASE_URL}/api/precious-metals`,
     key: null,
     required: false,
   },

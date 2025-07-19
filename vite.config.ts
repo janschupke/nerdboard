@@ -64,11 +64,29 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/time/, ''),
       },
-      // Precious Metals (combined endpoint)
+      // Precious Metals (combined endpoint) - using mock data for now
       '/api/precious-metals': {
-        target: 'https://www.gold-api.com',
+        target: 'https://httpbin.org',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/precious-metals/, '/api/XAU'),
+        rewrite: () => '/json',
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            // Return mock precious metals data
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              gold: {
+                price: 3350.31,
+                change_24h: 0,
+                change_percentage_24h: 0,
+              },
+              silver: {
+                price: 38.19,
+                change_24h: 0,
+                change_percentage_24h: 0,
+              },
+            }));
+          });
+        },
       },
     },
   },

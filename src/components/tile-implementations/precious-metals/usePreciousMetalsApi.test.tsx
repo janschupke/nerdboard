@@ -5,7 +5,6 @@ import { usePreciousMetalsApi } from './usePreciousMetalsApi';
 import { PreciousMetalsDataMapper } from './dataMapper';
 import { TileType } from '../../../types/tile';
 import type { GoldApiParams } from '../../../services/apiEndpoints';
-import type { PreciousMetalsTileData } from './types';
 import { MockDataServicesProvider } from '../../../test/mocks/componentMocks.tsx';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -28,13 +27,27 @@ describe('usePreciousMetalsApi', () => {
     currency: 'USD',
     unit: 'ounce',
   };
-  const mockApiResponse: PreciousMetalsTileData = {
-    gold: { price: 2050.75, change_24h: 10, change_percentage_24h: 0.5 },
-    silver: { price: 23.45, change_24h: 0.2, change_percentage_24h: 0.8 },
-  };
 
   it('should successfully fetch precious metals data', async () => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => mockApiResponse });
+    // Mock the precious metals endpoint response
+    const mockResponse = {
+      gold: {
+        price: 3350.31,
+        change_24h: 0,
+        change_percentage_24h: 0,
+      },
+      silver: {
+        price: 38.19,
+        change_24h: 0,
+        change_percentage_24h: 0,
+      },
+    };
+
+    global.fetch = vi.fn().mockResolvedValue({ 
+      ok: true, 
+      json: async () => mockResponse 
+    });
+
     const { result } = renderHook(() => usePreciousMetalsApi(), { wrapper });
     const fetchResult = await result.current.getPreciousMetals(mockTileId, mockParams);
     expect(fetchResult).toBeDefined();
@@ -45,7 +58,7 @@ describe('usePreciousMetalsApi', () => {
 
     const data = fetchResult.data;
     expect(data).toBeDefined();
-    expect(data?.gold?.price).toBe(2050.75);
-    expect(data?.silver?.price).toBe(23.45);
+    expect(data?.gold?.price).toBe(3350.31);
+    expect(data?.silver?.price).toBe(38.19);
   });
 });
